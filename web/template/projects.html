@@ -1,0 +1,19 @@
+{{template "header" .}}
+<main>
+<table class="table table-bordered">
+	<tbody>
+		{{ range .projects }}
+			<td scope="col">{{.ProjectId}}</td>
+			<td scope="col">
+				<a href="/{{.ProjectCd}}/tables">
+					{{.ProjectCd}}
+				</a>
+			</td>
+			<td scope="col">{{.ProjectName}}</td>
+			<td scope="col">{{.CreateAt}}</td>
+		</tr>
+		{{ end }}
+	</tbody>
+</table>
+</main>
+{{template "footer"}}

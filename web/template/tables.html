@@ -1,0 +1,21 @@
+{{template "header" .}}
+<main>
+テーブル作成
+<form method="post">
+	<input type="text" name="table_name">
+	<input type="text" name="table_name_logical">
+	<input type="submit" value="作成">
+</form>
+<table class="table table-bordered">
+	<tbody>
+		{{ range .tables }}
+			<td scope="col">{{.TableId}}</td>
+			<td scope="col">{{.TableName}}</td>
+			<td scope="col">{{.TableNameLogical}}</td>
+			<td scope="col">{{.CreateAt}}</td>
+		</tr>
+		{{ end }}
+	</tbody>
+</table>
+</main>
+{{template "footer"}}

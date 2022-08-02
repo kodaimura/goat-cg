@@ -1,0 +1,10 @@
+{{template "header" .}}
+<main>
+プロジェクト作成
+<form method="post" action="/projects">
+	<input type="text" name="project_cd">
+	<input type="text" name="project_name">
+	<input type="submit" value="作成">
+</form>
+</main>
+{{template "footer"}}
