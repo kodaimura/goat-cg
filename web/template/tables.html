@@ -10,7 +10,11 @@
 	<tbody>
 		{{ range .tables }}
 			<td scope="col">{{.TableId}}</td>
-			<td scope="col">{{.TableName}}</td>
+			<td scope="col">
+				<a href="tables/{{.TableId}}/columns">
+					{{.TableName}}
+				</a>
+			</td>
 			<td scope="col">{{.TableNameLogical}}</td>
 			<td scope="col">{{.CreateAt}}</td>
 		</tr>

@@ -9,18 +9,6 @@ import (
 )
 
 
-func setProjectRoute(r *gin.Engine) {
-    pc := newProjectController()
-
-    p := r.Group("/", jwt.JwtAuthMiddleware())
-    {
-        p.GET("/projects", pc.projectsPage)
-        p.GET("/projects/new", pc.projectPage)
-        p.POST("/projects", pc.postProjects)
-    }
-}
-
-
 type projectController struct {
     pServ service.ProjectService
 }

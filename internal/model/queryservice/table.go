@@ -11,6 +11,7 @@ import (
 
 type TableQueryService interface {
 	QueryTables(projectId int) ([]entity.Table, error)
+	QueryTable(projectId int, tableId int) (entity.Table, error)
 }
 
 type tableQueryService struct {
@@ -62,6 +63,40 @@ func (qs *tableQueryService) QueryTables(
 		}
 		ret = append(ret, t)
 	}
+
+	return ret, err
+}
+
+
+func (qs *tableQueryService) QueryTable(
+	projectId int,
+	tableId int,
+) (entity.Table, error){
+	
+	var ret entity.Table
+	err := qs.db.QueryRow(
+		`SELECT 
+			table_id,
+			table_name,
+			table_name_logical,
+			create_user_id,
+			update_user_id
+		 FROM 
+		 	tables
+		 WHERE 
+		 	project_id = ?
+		 	table_id = ?
+		 AND del_flg = ?`, 
+		 projectId,
+		 tableId,
+		 constant.FLG_OFF,
+	).Scan(
+		&ret.TableId, 
+		&ret.TableName,
+		&ret.TableNameLogical,
+		&ret.CreateUserId,
+		&ret.UpdateUserId,
+	)
 
 	return ret, err
 }

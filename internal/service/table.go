@@ -10,6 +10,7 @@ import (
 
 type TableService interface {
 	GetTables(projectId int) ([]entity.Table, error)
+	GetTable(projectId, tableId int) (entity.Table, error)
 	CreateTable(
 		userId, projectId int,
 		tableName, tableNameLogical string,
@@ -41,6 +42,20 @@ func (serv *tableService) GetTables(
 	}
 
 	return tables, err
+}
+
+
+func (serv *tableService) GetTable(
+	projectId int,
+	tableId int,
+) (entity.Table, error) {
+	table, err := serv.tQue.QueryTable(projectId, tableId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+	}
+
+	return table, err
 }
 
 

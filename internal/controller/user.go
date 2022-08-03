@@ -12,23 +12,6 @@ import (
 )
 
 
-func setUserRoute(r *gin.Engine) {
-    uc := newUserController()
-
-    r.GET("/signup", uc.signupPage)
-    r.GET("/login", uc.loginPage)
-    r.GET("/logout", uc.logout)
-
-    r.POST("/signup", uc.signup)
-    r.POST("/login", uc.login)
-
-    api := r.Group("/api", jwt.JwtAuthMiddleware())
-    {
-        api.GET("/profile", uc.getProfile)
-    }
-}
-
-
 type userController struct {
     uServ service.UserService
 }
