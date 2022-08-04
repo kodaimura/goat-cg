@@ -1,11 +1,11 @@
 package controller
 
 import (
-    "strconv"
-
     "github.com/gin-gonic/gin"
 
-    "goat-cg/internal/constant"
+    "goat-cg/internal/core/jwt"
+    "goat-cg/internal/shared/constant"
+    "goat-cg/internal/shared/form"
     "goat-cg/internal/service"
 )
 
@@ -26,20 +26,14 @@ func newColumnController() *columnController {
 //GET /:project_cd/tables/:table_id/columns
 func (ctr *columnController) columnsPage(c *gin.Context) {
     projectId := CheckProjectCdAndGetProjectId(c)
-    tableId, err := strconv.Atoi(c.Param("table_id"))
+    tableId := CheckTableIdAndGetTableId(c, projectId)
 
-    if err != nil {
-        c.Redirect(303, "/projects")
-        return
-    }
+    tn := c.PostForm("table_name")
+    tnl := c.PostForm("table_name_logical")
 
-    table, err := ctr.tServ.GetTable(projectId, tableId)
+    ctr.tServ.CreateTable(jwt.GetUserId(c), projectId, tn, tnl)
 
-    if err != nil {
-        c.Redirect(303, "/projects")
-        return
-    }
-
+    table, _ := ctr.tServ.GetTable(projectId, tableId)
     columns, _ := ctr.cServ.GetColumns(tableId)
 
     c.HTML(200, "columns.html", gin.H{
@@ -52,7 +46,14 @@ func (ctr *columnController) columnsPage(c *gin.Context) {
 
 //POST /:project_cd/tables/:table_id/columns
 func (ctr *columnController) postColumns(c *gin.Context) {
-    c.HTML(200, "tables.html", gin.H{
-        "commons": constant.Commons,
-    })  
+    projectId := CheckProjectCdAndGetProjectId(c)
+    tableId := CheckTableIdAndGetTableId(c, projectId)
+
+    var form *form.PostColumnsForm
+    c.BindJSON(&form)
+
+    ctr.cServ.CreateColumn(form.ToServInCreateColumn(tableId, jwt.GetUserId(c)))
+
+    c.Redirect(303, c.Request.URL.Path)
 }
+

@@ -1,7 +1,7 @@
 package service
 
 import (	
-	"goat-cg/internal/constant"
+	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
 	"goat-cg/internal/model/repository"
@@ -10,6 +10,7 @@ import (
 
 
 type ProjectService interface {
+	GetProjectId(userId int, projectCd string) int 
 	GetProjects(userId int) ([]entity.Project, error)
 	CreateProject(userId int, projectCd, projectName string) int
 }
@@ -27,6 +28,38 @@ func NewProjectService() ProjectService {
 	upRep := repository.NewUserProjectRepository()
 	pQue := queryservice.NewProjectQueryService()
 	return &projectService{pRep, upRep, pQue}
+}
+
+// GetProjectId() Return value
+/*----------------------------------------*/
+const GET_PROJECT_ID_NOT_FOUND_INT = -1
+// 正常時: プロジェクトID
+/*----------------------------------------*/
+
+func (serv *projectService) GetProjectId(
+	userId int, 
+	projectCd string,
+) int {
+	project, err := serv.pQue.QueryProjectByCdAndUserId(projectCd, userId)
+
+	if err != nil {
+		return GET_PROJECT_ID_NOT_FOUND_INT
+	}
+
+	return project.ProjectId
+}
+
+
+func (serv *projectService) GetProjects(
+	userId int,
+) ([]entity.Project, error) {
+	projects, err := serv.pQue.QueryProjectsByUserId(userId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+	}
+
+	return projects, err
 }
 
 
@@ -77,17 +110,4 @@ func (serv *projectService) CreateProject(
 	}
 
 	return CREATE_PROJECT_SUCCESS_INT
-}
-
-
-func (serv *projectService) GetProjects(
-	userId int,
-) ([]entity.Project, error) {
-	projects, err := serv.pQue.QueryProjectsByUserId(userId)
-
-	if err != nil {
-		logger.LogError(err.Error())
-	}
-
-	return projects, err
 }

@@ -18,9 +18,6 @@ func SetRouter(r *gin.Engine) {
 
     a := r.Group("/", jwt.JwtAuthMiddleware())
     {
-        rc := newRootController()
-        a.GET("/", rc.indexPage)
-
         pc := newProjectController()
         a.GET("/projects", pc.projectsPage)
         a.GET("/projects/new", pc.projectPage)
@@ -36,7 +33,7 @@ func SetRouter(r *gin.Engine) {
             {
                 cc := newColumnController()
                 aptt.GET("/columns", cc.columnsPage)
-                aptt.POST("/columns/new", cc.postColumns)
+                aptt.POST("/columns", cc.postColumns)
             }
         }
     }

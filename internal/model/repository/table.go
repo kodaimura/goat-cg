@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 
-	"goat-cg/internal/constant"
+	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/db"
 	"goat-cg/internal/model/entity"
 )

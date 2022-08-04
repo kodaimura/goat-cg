@@ -1,0 +1,20 @@
+### queryservice 引数DTO
+QueIn*
+
+### queryservice 戻り値DTO
+QueOut*
+
+### repository 引数DTO
+RepIn*
+
+### repository 戻り値DTO
+RepOut*
+
+### service 引数DTO
+ServIn*
+
+### service 戻り値DTO
+ServOut*
+
+### 汎用DTO
+*Dto

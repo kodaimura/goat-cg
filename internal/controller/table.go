@@ -4,7 +4,7 @@ import (
     "github.com/gin-gonic/gin"
 
     "goat-cg/internal/core/jwt"
-    "goat-cg/internal/constant"
+    "goat-cg/internal/shared/constant"
     "goat-cg/internal/service"
 )
 
