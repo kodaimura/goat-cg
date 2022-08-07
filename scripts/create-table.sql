@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS columns (
 	column_name_logical TEXT NOT NULL,
 	data_type_cls TEXT,
 	data_byte INTEGER,
+	decimal_byte INTEGER,
 	primary_key_flg INTEGER DEFAULT 0,
 	not_null_flg INTEGER DEFAULT 0,
 	unique_flg INTEGER DEFAULT 0,

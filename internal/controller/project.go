@@ -31,7 +31,7 @@ func (ctr *projectController) projectsPage(c *gin.Context) {
 
 
 //GET /projects/new
-func (ctr *projectController) projectPage(c *gin.Context) {
+func (ctr *projectController) createProjectPage(c *gin.Context) {
     
     c.HTML(200, "project.html", gin.H{
         "commons": constant.Commons,
@@ -40,7 +40,7 @@ func (ctr *projectController) projectPage(c *gin.Context) {
 
 
 //POST /projects
-func (ctr *projectController) postProjects(c *gin.Context) {
+func (ctr *projectController) createProject(c *gin.Context) {
     result := ctr.pServ.CreateProject(
         jwt.GetUserId(c), 
         c.PostForm("project_cd"), 

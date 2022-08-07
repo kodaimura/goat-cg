@@ -6,8 +6,9 @@ type Column struct {
 	TableId int `db:"table_id" json:"table_id"`
 	ColumnName string `db:"column_name json:"column_name"`
 	ColumnNameLogical string `db:"column_name_logical" json:"column_name_logical"`
-	DataTypeCls int `db:"data_type_cls" json:"data_type_cls"`
+	DataTypeCls string `db:"data_type_cls" json:"data_type_cls"`
 	DataByte int `db:"data_byte" json:"data_byte"`
+	DecimalByte int `db:"decimal_byte" json:"decimal_byte"`
 	PrimaryKeyFlg int `db:"primary_key_flg" json:"primary_key_flg"`
 	NotNullFlg int `db:"not_null_flg" json:"not_null_flg"`
 	UniqueFlg int `db:"unique_flg" json:"unique_flg"`

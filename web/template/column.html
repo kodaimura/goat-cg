@@ -1,0 +1,72 @@
+{{template "header" .}}
+<main>
+<h1 class="title">{{.project_cd}}</h1>
+<h2 class="subtitle">{{ .table.TableName }}</h2>
+
+<form method="post" class="mb-6">
+	<div class="columns">
+		<div class="column is-3">
+			<label class="label">カラム名</label>
+			<input type="text" name="column_name" class="input"
+			value="{{.column.ColumnName}}">
+		</div>
+		<div class="column is-3">
+			<label class="label">カラム名（和）</label>
+			<input type="text" name="column_name_logical" class="input"
+			value="{{.column.ColumnNameLogical}}">
+		</div>
+	</div>
+	<div class="columns">
+		<div class="column is-2">
+			<label class="label">データ型</label>
+			<div class="control">
+  			<div class="select">
+    		<select name="data_type_cls">
+      			<option>INTEGER</option>
+      			<option>TEXT</option>
+    		</select>
+  		</div>
+		</div>
+		</div>
+		<div class="column is-2">
+			<label class="label">桁(byte)</label>
+			<input type="number" name="data_byte" class="input"
+			value="{{.column.DataByte}}">
+		</div>
+		<div class="column is-2">
+			<label class="label">少数桁</label>
+			<input type="number" name="decimal_byte" class="input"
+			value="{{.column.DecimalByte}}">
+		</div>
+	</div>
+	<div class="columns">
+		<div class="column is-2">
+			<label class="checkboxl">Prumary Key</label>
+			{{ if eq .column.PrimaryKeyFlg 1 }}
+			<input type="checkbox" checked name="primary_key_flg" value="1">
+			{{ else }}
+			<input type="checkbox" name="primary_key_flg" value="1">
+			{{ end }}
+		</div>
+		<div class="column is-2">
+			<label class="checkbox">Not Null</label>
+			{{ if eq .column.NotNullFlg 1 }}
+			<input type="checkbox" checked name="not_null_flg" value="1">
+			{{ else }}
+			<input type="checkbox" name="not_null_flg" value="1">
+			{{ end }}
+		</div>
+		<div class="column is-2">
+			<label class="checkbox">Unique</label>
+			{{ if eq .column.UniqueFlg 1 }}
+			<input type="checkbox" checked name="unique_flg" value="1">
+			{{ else }}
+			<input type="checkbox" name="unique_flg" value="1">
+			{{ end }}
+		</div>
+	</div>
+	<input type="submit" value="登録" class="button is-success">
+</form>
+<a href="../columns">カラム一覧</a>
+</main>
+{{template "footer"}}

@@ -1,6 +1,7 @@
 package controller
 
 import (
+    "fmt"
     "github.com/gin-gonic/gin"
 
     "goat-cg/internal/core/jwt"
@@ -13,47 +14,97 @@ import (
 type columnController struct {
     cServ service.ColumnService
     tServ service.TableService
+    urlServ service.UrlCheckService
 }
 
 
 func newColumnController() *columnController {
     cServ := service.NewColumnService()
     tServ := service.NewTableService()
-    return &columnController{cServ, tServ}
+    urlServ := service.NewUrlCheckService()
+    return &columnController{cServ, tServ, urlServ}
 }
 
 
 //GET /:project_cd/tables/:table_id/columns
 func (ctr *columnController) columnsPage(c *gin.Context) {
-    projectId := CheckProjectCdAndGetProjectId(c)
-    tableId := CheckTableIdAndGetTableId(c, projectId)
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
 
-    tn := c.PostForm("table_name")
-    tnl := c.PostForm("table_name_logical")
-
-    ctr.tServ.CreateTable(jwt.GetUserId(c), projectId, tn, tnl)
-
-    table, _ := ctr.tServ.GetTable(projectId, tableId)
+    table, _ := ctr.tServ.GetTable(tableId)
     columns, _ := ctr.cServ.GetColumns(tableId)
 
     c.HTML(200, "columns.html", gin.H{
         "commons": constant.Commons,
+        "project_cd" : c.Param("project_cd"),
         "table": table,
         "columns": columns,
     })
 }
 
 
-//POST /:project_cd/tables/:table_id/columns
-func (ctr *columnController) postColumns(c *gin.Context) {
-    projectId := CheckProjectCdAndGetProjectId(c)
-    tableId := CheckTableIdAndGetTableId(c, projectId)
+//GET /:project_cd/tables/:table_id/columns/new
+func (ctr *columnController) createColumnPage(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
 
-    var form *form.PostColumnsForm
-    c.BindJSON(&form)
+    table, _ := ctr.tServ.GetTable(tableId)
 
-    ctr.cServ.CreateColumn(form.ToServInCreateColumn(tableId, jwt.GetUserId(c)))
-
-    c.Redirect(303, c.Request.URL.Path)
+    c.HTML(200, "column.html", gin.H{
+        "commons": constant.Commons,
+        "project_cd" : c.Param("project_cd"),
+        "table": table,
+    })
 }
 
+
+//POST /:project_cd/tables/:table_id/columns/new
+func (ctr *columnController) createColumn(c *gin.Context) {
+    userId := jwt.GetUserId(c)
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+
+    var form form.PostColumnsForm
+    c.Bind(&form)
+    ctr.cServ.CreateColumn(
+        form.ToServInCreateColumn(tableId, userId),
+    )
+    
+    c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+}
+
+
+//GET /:project_cd/tables/:table_id/columns/:column_id
+func (ctr *columnController) updateColumnPage(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+    columnId := ctr.urlServ.CheckColumnIdAndGetColumnId(c, tableId)
+
+    table, _ := ctr.tServ.GetTable(tableId)
+    column, _ := ctr.cServ.GetColumn(columnId)
+
+    c.HTML(200, "column.html", gin.H{
+        "commons": constant.Commons,
+        "project_cd" : c.Param("project_cd"),
+        "table": table,
+        "column": column,
+    })
+}
+
+
+//POST /:project_cd/tables/:table_id/columns/:column_id
+func (ctr *columnController) updateColumn(c *gin.Context) {
+    userId := jwt.GetUserId(c)
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+    columnId := ctr.urlServ.CheckColumnIdAndGetColumnId(c, tableId)
+
+    var form form.PostColumnsForm
+    c.Bind(&form)
+    ctr.cServ.UpdateColumn(
+        columnId, form.ToServInCreateColumn(tableId, userId),
+    )
+
+    c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+
+}

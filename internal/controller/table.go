@@ -1,6 +1,7 @@
 package controller
 
 import (
+    "fmt"
     "github.com/gin-gonic/gin"
 
     "goat-cg/internal/core/jwt"
@@ -11,40 +12,80 @@ import (
 
 type tableController struct {
     tServ service.TableService
+    urlServ service.UrlCheckService
 }
 
 
 func newTableController() *tableController {
     tServ := service.NewTableService()
-    return &tableController{tServ}
+    urlServ := service.NewUrlCheckService()
+    return &tableController{tServ, urlServ}
 }
 
 
 //GET /:project_cd/tables
 func (ctr *tableController) tablesPage(c *gin.Context) {
-    projectId := CheckProjectCdAndGetProjectId(c)
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
     tables, _ := ctr.tServ.GetTables(projectId)
 
     c.HTML(200, "tables.html", gin.H{
         "commons": constant.Commons,
+        "project_cd": c.Param("project_cd"), 
         "tables": tables,
     })
 }
 
 
-//POST /:project_cd/tables
-func (ctr *tableController) postTable(c *gin.Context) {
-    userId := jwt.GetUserId(c)
-    projectId := CheckProjectCdAndGetProjectId(c)
-    tn := c.PostForm("table_name")
-    tnl := c.PostForm("table_name_logical")
+//GET /:project_cd/tables/new
+func (ctr *tableController) createTablePage(c *gin.Context) {
+    ctr.urlServ.CheckProjectCdAndGetProjectId(c)
 
-    ctr.tServ.CreateTable(userId, projectId, tn, tnl)
-
-    tables, _ := ctr.tServ.GetTables(projectId)
-
-    c.HTML(200, "tables.html", gin.H{
+    c.HTML(200, "table.html", gin.H{
         "commons": constant.Commons,
-        "tables": tables,
-    })  
+        "project_cd": c.Param("project_cd"), 
+    })
+}
+
+
+//POST /:project_cd/tables/new
+func (ctr *tableController) createTable(c *gin.Context) {
+    userId := jwt.GetUserId(c)
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+
+    tableName := c.PostForm("table_name")
+    tableNameLogical := c.PostForm("table_name_logical")
+
+    ctr.tServ.CreateTable(projectId, userId, tableName, tableNameLogical)
+
+    c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+}
+
+
+//GET /:project_cd/tables/:table_id
+func (ctr *tableController) updateTablePage(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+
+    table, _ := ctr.tServ.GetTable(tableId)
+
+    c.HTML(200, "table.html", gin.H{
+        "commons": constant.Commons,
+        "project_cd": c.Param("project_cd"),
+        "table": table,
+    })
+}
+
+
+//POST /:project_cd/tables/:table_id
+func (ctr *tableController) updateTable(c *gin.Context) {
+    userId := jwt.GetUserId(c)
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+
+    tableName := c.PostForm("table_name")
+    tableNameLogical := c.PostForm("table_name_logical")
+
+    ctr.tServ.UpdateTable(tableId, userId, tableName, tableNameLogical)
+
+    c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
 }

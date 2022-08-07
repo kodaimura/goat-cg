@@ -5,7 +5,6 @@ import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
 	"goat-cg/internal/model/repository"
-	"goat-cg/internal/model/queryservice"
 )
 
 
@@ -19,15 +18,13 @@ type ProjectService interface {
 type projectService struct {
 	pRep repository.ProjectRepository
 	upRep repository.UserProjectRepository
-	pQue queryservice.ProjectQueryService
 }
 
 
 func NewProjectService() ProjectService {
 	pRep := repository.NewProjectRepository()
 	upRep := repository.NewUserProjectRepository()
-	pQue := queryservice.NewProjectQueryService()
-	return &projectService{pRep, upRep, pQue}
+	return &projectService{pRep, upRep}
 }
 
 // GetProjectId() Return value
@@ -40,7 +37,7 @@ func (serv *projectService) GetProjectId(
 	userId int, 
 	projectCd string,
 ) int {
-	project, err := serv.pQue.QueryProjectByCdAndUserId(projectCd, userId)
+	project, err := serv.pRep.SelectByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		return GET_PROJECT_ID_NOT_FOUND_INT
@@ -53,7 +50,7 @@ func (serv *projectService) GetProjectId(
 func (serv *projectService) GetProjects(
 	userId int,
 ) ([]entity.Project, error) {
-	projects, err := serv.pQue.QueryProjectsByUserId(userId)
+	projects, err := serv.pRep.SelectByUserId(userId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -75,7 +72,7 @@ func (serv *projectService) CreateProject(
 	projectCd string, 
 	projectName string,
 ) int {
-	_, err := serv.pQue.QueryProjectByCd(projectCd)
+	_, err := serv.pRep.SelectByCd(projectCd)
 	if err == nil {
 		return CREATE_PROJECT_CONFLICT_INT
 	}
@@ -90,7 +87,7 @@ func (serv *projectService) CreateProject(
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	project, err := serv.pQue.QueryProjectByCd(projectCd)
+	project, err := serv.pRep.SelectByCd(projectCd)
 
 	if err != nil {
 		logger.LogError(err.Error())

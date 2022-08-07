@@ -5,11 +5,38 @@
 	<meta charset="utf-8">
 	<meta name=”description“ content=““ />
 	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<link rel="stylesheet" href="css/style.css">
-	<title>{{.appname}}</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="/css/style.css">
+	<title>{{.commons.appname}}</title>
 </head>
 <body>
-<header>
-{{.appname}}
+<header class="navbar is-link">
+	<div class="navbar-brand">
+    	<a class="navbar-item" href="/projects">GOAT-CG</a>
+  	</div>
+  	<div class="navbar-end">
+		<div class="navbar-item has-dropdown is-hoverable ">
+		<a class="navbar-link">
+		Docs
+		</a>
+
+		<div class="navbar-dropdown is-right">
+		<a class="navbar-item">
+		Overview
+		</a>
+		<a class="navbar-item">
+		Elements
+		</a>
+		<a class="navbar-item">
+      		Components
+    	</a>
+      	<hr class="navbar-divider">
+      	<div class="navbar-item">
+      		Version 0.9.4
+		</div>
+    	</div>
+	</div>
+	</div>
 </header>
 {{end}}

@@ -1,25 +1,55 @@
 {{template "header" .}}
 <main>
-テーブル作成
-<form method="post">
-	<input type="text" name="table_name">
-	<input type="text" name="table_name_logical">
-	<input type="submit" value="作成">
-</form>
-<table class="table table-bordered">
+<h1 class="title">{{.project_cd}}</h1>
+<h2 class="subtitle">テーブル一覧</h2>
+<a href="tables/new" class="material-icons is-pulled-right"
+style="font-size: 40px;">
+add
+</a>
+<div class="box">
+<table class="table is-fullwidth is-hoverable">
+  	<thead>
+		<tr>
+			<th style="width:7%;"></th>
+			<th style="width:25%;">テーブル名</th>
+			<th style="width:30%;">テーブル名（和）</th>
+			<th style="width:4%;"></th>
+			<th style="width:4%;"></th>
+			<th style="width:15%;">作成</th>
+			<th style="width:15%;">更新</th>
+		</tr>
+	</thead>
+</table>
+<div style="height: 380px; overflow-y:scroll;">
+<table class="table is-fullwidth is-hoverable is-bordered">
 	<tbody>
-		{{ range .tables }}
-			<td scope="col">{{.TableId}}</td>
-			<td scope="col">
-				<a href="tables/{{.TableId}}/columns">
-					{{.TableName}}
-				</a>
+		{{ range $i, $t := .tables }}
+		<tr>
+			<td style="width:7%;">{{$i}}</td>
+			<td style="width:25%;">{{$t.TableName}}</td>
+			<td style="width:30%;">{{$t.TableNameLogical}}</td>
+			<td style="width:4%;" class="py-1">
+				<a href="./tables/{{$t.TableId}}"
+				class="material-icons">edit</a>
 			</td>
-			<td scope="col">{{.TableNameLogical}}</td>
-			<td scope="col">{{.CreateAt}}</td>
+			<td style="width:4%;" class="py-1">
+				<a href="./tables/{{$t.TableId}}/columns" 
+				class="material-icons">reorder</a>
+			</td>
+			<td style="width:15%;" class="py-1">
+				<p style="font-size:0.7rem">{{$t.CreateAt}}</p>
+				<p style="font-size:0.6rem">murakami koudai</p>
+			</td>
+			<td style="width:15%;" class="py-1">
+				<p style="font-size:0.7rem">{{$t.UpdateAt}}</p>
+				<p style="font-size:0.6rem">murakami koudai</p>
+			</td>
 		</tr>
 		{{ end }}
 	</tbody>
 </table>
+</div>
+</div>
+<a href="/projects">プロジェクト一覧</a>
 </main>
 {{template "footer"}}

@@ -9,8 +9,9 @@ type ServInCreateColumn struct {
 	TableId int
 	ColumnName string
 	ColumnNameLogical string
-	DataTypeCls int
+	DataTypeCls string
 	DataByte int
+	DecimalByte int
 	PrimaryKeyFlg int
 	NotNullFlg int
 	UniqueFlg int
@@ -28,6 +29,7 @@ func (d ServInCreateColumn) ToColumn() entity.Column {
 	c.ColumnNameLogical = d.ColumnNameLogical
 	c.DataTypeCls = d.DataTypeCls
 	c.DataByte = d.DataByte
+	c.DecimalByte = d.DecimalByte
 	c.PrimaryKeyFlg = d.PrimaryKeyFlg
 	c.NotNullFlg = d.NotNullFlg
 	c.UniqueFlg = d.UniqueFlg

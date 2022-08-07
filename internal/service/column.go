@@ -5,34 +5,45 @@ import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
 	"goat-cg/internal/model/repository"
-	"goat-cg/internal/model/queryservice"
 )
 
 
 type ColumnService interface {
+	GetColumn(columnId int) (entity.Column, error)
 	GetColumns(tableId int) ([]entity.Column, error)
 	CreateColumn(in dto.ServInCreateColumn) int
+	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
 }
 
 
 type columnService struct {
 	cRep repository.ColumnRepository
-	cQue queryservice.ColumnQueryService
 }
 
 
 func NewColumnService() ColumnService {
 	cRep := repository.NewColumnRepository()
-	cQue := queryservice.NewColumnQueryService()
+	return &columnService{cRep}
+}
 
-	return &columnService{cRep, cQue}
+
+func (serv *columnService) GetColumn(
+	columnId int,
+) (entity.Column, error) {
+	column, err := serv.cRep.Select(columnId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+	}
+
+	return column, err
 }
 
 
 func (serv *columnService) GetColumns(
 	tableId int,
 ) ([]entity.Column, error) {
-	columns, err := serv.cQue.QueryColumns(tableId)
+	columns, err := serv.cRep.SelectByTableId(tableId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -52,7 +63,7 @@ const CREATE_COLUMN_ERROR_INT = 2
 func (serv *columnService) CreateColumn(
 	sin dto.ServInCreateColumn,
 ) int {
-	_, err := serv.cQue.QueryColumnByNameAndTableId(sin.ColumnName, sin.TableId)
+	_, err := serv.cRep.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
 	if err == nil {
 		return CREATE_COLUMN_CONFLICT_INT
 	}
@@ -66,4 +77,33 @@ func (serv *columnService) CreateColumn(
 	}
 
 	return CREATE_COLUMN_SUCCESS_INT
+}
+
+
+// UpdateColumn() Return value
+/*----------------------------------------*/
+const UPDATE_COLUMN_SUCCESS_INT = 0
+const UPDATE_COLUMN_CONFLICT_INT = 1
+const UPDATE_COLUMN_ERROR_INT = 2
+/*----------------------------------------*/
+
+func (serv *columnService) UpdateColumn(
+	columnId int,
+	sin dto.ServInCreateColumn,
+) int {
+	col, err := serv.cRep.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	
+	if err == nil && col.ColumnId != columnId {
+		return UPDATE_COLUMN_CONFLICT_INT
+	}
+	
+	column := sin.ToColumn()
+	err = serv.cRep.Update(columnId, &column)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return UPDATE_COLUMN_ERROR_INT
+	}
+
+	return UPDATE_COLUMN_SUCCESS_INT
 }

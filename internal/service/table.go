@@ -4,15 +4,18 @@ import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
 	"goat-cg/internal/model/repository"
-	"goat-cg/internal/model/queryservice"
 )
 
 
 type TableService interface {
 	GetTables(projectId int) ([]entity.Table, error)
-	GetTable(projectId, tableId int) (entity.Table, error)
+	GetTable(tableId int) (entity.Table, error)
 	CreateTable(
-		userId, projectId int,
+		projectId, userId int,
+		tableName, tableNameLogical string,
+	) int
+	UpdateTable(
+		tableId, userId int,
 		tableName, tableNameLogical string,
 	) int	
 }
@@ -20,22 +23,20 @@ type TableService interface {
 
 type tableService struct {
 	tRep repository.TableRepository
-	tQue queryservice.TableQueryService
 }
 
 
 func NewTableService() TableService {
 	tRep := repository.NewTableRepository()
-	tQue := queryservice.NewTableQueryService()
 
-	return &tableService{tRep, tQue}
+	return &tableService{tRep}
 }
 
 
 func (serv *tableService) GetTables(
 	projectId int,
 ) ([]entity.Table, error) {
-	tables, err := serv.tQue.QueryTables(projectId)
+	tables, err := serv.tRep.SelectByProjectId(projectId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -45,11 +46,8 @@ func (serv *tableService) GetTables(
 }
 
 
-func (serv *tableService) GetTable(
-	projectId int,
-	tableId int,
-) (entity.Table, error) {
-	table, err := serv.tQue.QueryTable(projectId, tableId)
+func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
+	table, err := serv.tRep.Select(tableId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -66,7 +64,7 @@ const CREATE_TABLE_ERROR_INT = 1
 /*----------------------------------------*/
 
 func (serv *tableService) CreateTable(
-	userId, projectId int,
+	projectId, userId int,
 	tableName, tableNameLogical string, 
 ) int {
 
@@ -84,4 +82,30 @@ func (serv *tableService) CreateTable(
 	}
 
 	return CREATE_TABLE_SUCCESS_INT
+}
+
+
+// UpdateTable() Return value
+/*----------------------------------------*/
+const UPDATE_TABLE_SUCCESS_INT = 0
+const UPDATE_TABLE_ERROR_INT = 1
+/*----------------------------------------*/
+
+func (serv *tableService) UpdateTable(
+	tableId, userId int,
+	tableName, tableNameLogical string, 
+) int {
+
+	var t entity.Table
+	t.TableName = tableName
+	t.TableNameLogical = tableNameLogical
+	t.UpdateUserId = userId
+	err := serv.tRep.Update(tableId, &t)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return UPDATE_TABLE_ERROR_INT
+	}
+
+	return UPDATE_TABLE_SUCCESS_INT
 }

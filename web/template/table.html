@@ -1,0 +1,32 @@
+{{template "header" .}}
+<main>
+<h1 class="title">{{.project_cd}}</h1>
+<h2 class="subtitle">
+{{ if eq .table.TableId nil }}
+テーブル作成
+{{ else }}
+テーブル編集
+{{ end }}
+</h2>
+	
+<form method="post" class="mb-6">
+	<div class="columns">
+		<div class="column is-3">
+			<label class="label">テーブル名</label>
+			<input type="text" name="table_name" class="input" 
+			value={{.table.TableName}}>
+		</div>
+		<div class="column is-3">
+			<label class="label">テーブル名（和）</label>
+			<input type="text" name="table_name_logical" class="input"
+			value={{.table.TableNameLogical}}>
+		</div>
+		<div class="column">
+			<label class="label">&nbsp;</label>
+		</div>
+	</div>
+	<input type="submit" value="登録" class="button is-success">
+</form>
+<a href="../tables">テーブル一覧</a>
+</main>
+{{template "footer"}}

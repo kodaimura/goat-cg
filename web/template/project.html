@@ -1,10 +1,22 @@
 {{template "header" .}}
 <main>
-プロジェクト作成
-<form method="post" action="/projects">
-	<input type="text" name="project_cd">
-	<input type="text" name="project_name">
-	<input type="submit" value="作成">
+<h2 class="subtitle">プロジェクト作成</h2>
+<form method="post" action="/projects" class="mb-5">
+	<div class="columns">
+		<div class="column is-3">
+			<label class="label">プロジェクトコード</label>
+			<input type="text" name="project_cd" class="input">
+		</div>
+		<div class="column is-3">
+			<label class="label">プロジェクト名</label>
+			<input type="text" name="project_name" class="input">
+		</div>
+		<div class="column">
+			<label class="label">&nbsp;</label>
+		<input type="submit" value="登録" class="button is-success">
+		</div>
+	</div>
 </form>
+<a href="../projects">プロジェクト一覧</a>
 </main>
 {{template "footer"}}
