@@ -1,7 +1,7 @@
 {{template "header" .}}
 <main>
 <h1 class="title">{{.project_cd}}</h1>
-<h2 class="subtitle">テーブル一覧</h2>
+<h2 class="subtitle">Table list</h2>
 <a href="tables/new" class="material-icons is-pulled-right"
 style="font-size: 40px;">
 add
@@ -11,23 +11,35 @@ add
   	<thead>
 		<tr>
 			<th style="width:7%;"></th>
-			<th style="width:25%;">テーブル名</th>
-			<th style="width:30%;">テーブル名（和）</th>
+			<th style="width:25%;">TableName</th>
+			<th style="width:30%;">TableName（JP）</th>
+			
+			<th style="width:15%;">create</th>
+			<th style="width:15%;">update</th>
 			<th style="width:4%;"></th>
 			<th style="width:4%;"></th>
-			<th style="width:15%;">作成</th>
-			<th style="width:15%;">更新</th>
 		</tr>
 	</thead>
 </table>
 <div style="height: 380px; overflow-y:scroll;">
-<table class="table is-fullwidth is-hoverable is-bordered">
+<table class="table is-fullwidth is-hoverable is-bordered is-striped">
 	<tbody>
 		{{ range $i, $t := .tables }}
+		{{ if eq $t.DelFlg 1 }}
+		<tr class="has-background-grey">
+		{{ else }}
 		<tr>
+		{{ end }}
 			<td style="width:7%;">{{$i}}</td>
 			<td style="width:25%;">{{$t.TableName}}</td>
 			<td style="width:30%;">{{$t.TableNameLogical}}</td>
+			
+			<td style="width:15%;" class="py-1">
+				<p style="font-size:0.8rem">{{$t.CreateAt}}</p>
+			</td>
+			<td style="width:15%;" class="py-1">
+				<p style="font-size:0.8rem">{{$t.UpdateAt}}</p>
+			</td>
 			<td style="width:4%;" class="py-1">
 				<a href="./tables/{{$t.TableId}}"
 				class="material-icons">edit</a>
@@ -36,20 +48,12 @@ add
 				<a href="./tables/{{$t.TableId}}/columns" 
 				class="material-icons">reorder</a>
 			</td>
-			<td style="width:15%;" class="py-1">
-				<p style="font-size:0.7rem">{{$t.CreateAt}}</p>
-				<p style="font-size:0.6rem">murakami koudai</p>
-			</td>
-			<td style="width:15%;" class="py-1">
-				<p style="font-size:0.7rem">{{$t.UpdateAt}}</p>
-				<p style="font-size:0.6rem">murakami koudai</p>
-			</td>
 		</tr>
 		{{ end }}
 	</tbody>
 </table>
 </div>
 </div>
-<a href="/projects">プロジェクト一覧</a>
+<a href="/projects">Back to Project list.</a>
 </main>
 {{template "footer"}}

@@ -3,30 +3,54 @@
 <h1 class="title">{{.project_cd}}</h1>
 <h2 class="subtitle">
 {{ if eq .table.TableId nil }}
-テーブル作成
+Create Table
 {{ else }}
-テーブル編集
+Edit Table
 {{ end }}
 </h2>
 	
-<form method="post" class="mb-6">
-	<div class="columns">
+<form method="post" class="mb-4 box">
+	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">テーブル名</label>
-			<input type="text" name="table_name" class="input" 
-			value={{.table.TableName}}>
+			<label class="label">TableName</label>
+			<input type="text" name="table_name" class="input is-danger" 
+			value="{{.table.TableName}}" required>
+			<p class="help is-danger">
+        	This field is required
+      		</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">テーブル名（和）</label>
-			<input type="text" name="table_name_logical" class="input"
-			value={{.table.TableNameLogical}}>
-		</div>
-		<div class="column">
-			<label class="label">&nbsp;</label>
+			<label class="label">TableName（JP）</label>
+			<input type="text" name="table_name_logical" class="input is-danger"
+			value="{{.table.TableNameLogical}}" required>
+			<p class="help is-danger">
+        	This field is required
+      		</p>
 		</div>
 	</div>
-	<input type="submit" value="登録" class="button is-success">
+	{{ if ne .table.TableId nil }}
+	<div class="columns">
+		<div class="column">
+			<label class="label has-text-grey">Soft Delete</label>
+			{{ if eq .table.DelFlg 1 }}
+			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
+			{{ else }}
+			<input type="checkbox" name="del_flg" value="1" id="del_flg">
+			{{ end }}
+			<label class="checkbox has-text-grey" for="del_flg">Soft Delete</label>
+		</div>
+	</div>
+	{{ end }}
+	<input type="submit" value="Register" class="button is-success">
 </form>
-<a href="../tables">テーブル一覧</a>
+
+{{ if eq .table.DelFlg 1 }}
+{{template "modal-del" .}}
+<script type="text/javascript" src="/js/table.js"></script>
+{{ end }}
+
+<div class="mt-5">
+<a href="../tables">Back to Table list.</a>
+</div>
 </main>
 {{template "footer"}}

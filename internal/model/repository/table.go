@@ -13,6 +13,7 @@ type TableRepository interface {
 	Select(id int) (entity.Table, error)
 	Insert(t *entity.Table) error
     Update(id int, t *entity.Table) error
+    Delete(id int) error
 
     SelectByProjectId(projectId int) ([]entity.Table, error)
     UpdateDelFlg(id, delFlg int) error
@@ -40,14 +41,13 @@ func (rep *tableRepository) Select(tableId int) (entity.Table, error){
 			table_name,
 			table_name_logical,
 			create_user_id,
-			update_user_id
+			update_user_id,
+			del_flg
 		 FROM 
 		 	tables
 		 WHERE 
-		 	table_id = ?
-		 AND del_flg = ?`,
+		 	table_id = ?`,
 		 tableId,
-		 constant.FLG_OFF,
 	).Scan(
 		&ret.ProjectId, 
 		&ret.TableId, 
@@ -55,6 +55,7 @@ func (rep *tableRepository) Select(tableId int) (entity.Table, error){
 		&ret.TableNameLogical,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
+		&ret.DelFlg,
 	)
 
 	return ret, err
@@ -87,13 +88,25 @@ func (rep *tableRepository) Update(id int, t *entity.Table) error {
 		 SET 
 		 	table_name = ?,
 		 	table_name_logical = ?,
-		 	update_user_id= ?
+		 	update_user_id = ?,
+		 	del_flg = ?
 		 WHERE table_id= ?`,
 		t.TableName,
 		t.TableNameLogical,
 		t.UpdateUserId,
+		t.DelFlg,
 		id,
 	)
+	return err
+}
+
+
+func (rep *tableRepository) Delete(id int) error {
+	_, err := rep.db.Exec(
+		`DELETE FROM tables WHERE table_id = ?`, 
+		id,
+	)
+
 	return err
 }
 
@@ -108,15 +121,14 @@ func (rep *tableRepository) SelectByProjectId(projectId int) ([]entity.Table, er
 			table_name_logical,
 			create_user_id,
 			update_user_id,
+			del_flg,
 			create_at,
 			update_at
 		 FROM 
 		 	tables
 		 WHERE 
-		 	project_id = ?
-		 AND del_flg = ?`, 
+		 	project_id = ?`, 
 		 projectId,
-		 constant.FLG_OFF,
 	)
 
 	if err != nil {
@@ -131,6 +143,7 @@ func (rep *tableRepository) SelectByProjectId(projectId int) ([]entity.Table, er
 			&t.TableNameLogical,
 			&t.CreateUserId,
 			&t.UpdateUserId,
+			&t.DelFlg,
 			&t.CreateAt,
 			&t.UpdateAt,
 		)

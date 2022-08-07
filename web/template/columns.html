@@ -8,20 +8,20 @@ style="font-size: 40px;">
 add
 </a>
 <div class="box">
-<table class="table is-fullwidth is-hoverable">
+<table class="table is-fullwidth is-hoverable is-striped">
   	<thead>
 		<tr>
 			<th style="width:4%;"></th>
-			<th style="width:20%;">カラム名</th>
-			<th style="width:25%;">カラム名（和）</th>
-			<th style="width:8%;">型</th>
-			<th style="width:6%;">桁</th>
-			<th style="width:6%;">少桁</th>
+			<th style="width:20%;">ColumnName</th>
+			<th style="width:25%;">ColumnName（JP）</th>
+			<th style="width:8%;">Type</th>
+			<th style="width:6%;">prec</th>
+			<th style="width:6%;">scale</th>
 			<th style="width:4%;">PK</th>
 			<th style="width:4%;">NN</th>
 			<th style="width:4%;">UQ</th>
+			<th style="width:15%;">update</th>
 			<th style="width:4%;"></th>
-			<th style="width:15%;">更新</th>
 		</tr>
 	</thead>
 </table>
@@ -29,13 +29,35 @@ add
 <table class="table is-fullwidth is-hoverable is-bordered">
 	<tbody>
 		{{ range $i, $c := .columns }}
+		{{ if eq $c.DelFlg 1 }}
+		<tr class="has-background-grey">
+		{{ else }}
 		<tr>
+		{{ end }}
 			<td style="width:4%;">{{$i}}</td>
 			<td style="width:20%;">{{$c.ColumnName}}</td>
 			<td style="width:25%;">{{$c.ColumnNameLogical}}</td>
-			<td style="width:8%;">{{$c.DataTypeCls}}</td>
-			<td style="width:6%;">{{$c.DataByte}}</td>
-			<td style="width:6%;">{{$c.DataByte}}</td>
+			<td style="width:8%;">
+			{{ if eq $c.DataTypeCls "10" }}
+    		TEXT
+    		{{ else if eq $c.DataTypeCls "11"}}
+    		VARCHAR
+    		{{ else if eq $c.DataTypeCls "12"}}
+    		CHAR
+    		{{ else if eq $c.DataTypeCls "20"}}
+    		INTEGER
+    		{{ else if eq $c.DataTypeCls "30"}}
+    		NUMERIC
+    		{{ else if eq $c.DataTypeCls "40"}}
+    		TIMESTAMP
+    		{{ else if eq $c.DataTypeCls "41"}}
+    		DATE
+    		{{ else if eq $c.DataTypeCls "01"}}
+    		SERIAL
+    		{{ end }}
+			</td>
+			<td style="width:6%;">{{$c.Precision}}</td>
+			<td style="width:6%;">{{$c.Scale}}</td>
 			<td style="width:4%;">
 			{{ if eq $c.PrimaryKeyFlg 1 }}
 				○
@@ -51,13 +73,12 @@ add
 				○
 			{{ end }}
 			</td>
+			<td style="width:15%;" class="py-1">
+				<p style="font-size:0.8rem">{{.UpdateAt}}</p>
+			</td>
 			<td style="width:4%;" class="py-1">
 				<a href="./columns/{{$c.ColumnId}}" 
 				class="material-icons">edit</a>
-			</td>
-			<td style="width:15%;" class="py-1">
-				<p style="font-size:0.7rem">{{.UpdateAt}}</p>
-				<p style="font-size:0.6rem">murakami koudai</p>
 			</td>
 		</tr>
 		{{ end }}
@@ -66,6 +87,6 @@ add
 </div>
 </div>
 
-<a href="../../tables">テーブル一覧</a>
+<a href="../../tables">Back to Table list.</a>
 </main>
 {{template "footer"}}

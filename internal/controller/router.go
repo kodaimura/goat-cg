@@ -18,6 +18,9 @@ func SetRouter(r *gin.Engine) {
 
     a := r.Group("/", jwt.JwtAuthMiddleware())
     {
+        rc := newRootController()
+        a.GET("/", rc.indexPage)
+
         pc := newProjectController()
         a.GET("/projects", pc.projectsPage)
         a.GET("/projects/new", pc.createProjectPage)
@@ -31,6 +34,7 @@ func SetRouter(r *gin.Engine) {
             ap.POST("/tables/new", tc.createTable)
             ap.GET("/tables/:table_id", tc.updateTablePage)
             ap.POST("/tables/:table_id", tc.updateTable)
+            ap.DELETE("/tables/:table_id", tc.deleteTable)
 
             aptt := ap.Group("/tables/:table_id")
             {
@@ -40,6 +44,7 @@ func SetRouter(r *gin.Engine) {
                 aptt.POST("/columns/new", cc.createColumn)
                 aptt.GET("/columns/:column_id", cc.updateColumnPage)
                 aptt.POST("/columns/:column_id", cc.updateColumn)
+                aptt.DELETE("/columns/:column_id", cc.deleteColumn)
             }
         }
     }

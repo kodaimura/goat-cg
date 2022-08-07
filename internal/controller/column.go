@@ -108,3 +108,16 @@ func (ctr *columnController) updateColumn(c *gin.Context) {
     c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
 
 }
+
+
+//DELETE /:project_cd/tables/:table_id/columns/:column_id
+func (ctr *columnController) deleteColumn(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+    columnId := ctr.urlServ.CheckColumnIdAndGetColumnId(c, tableId)
+
+    ctr.cServ.DeleteColumn(columnId)
+
+    c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+
+}

@@ -13,6 +13,7 @@ type ColumnService interface {
 	GetColumns(tableId int) ([]entity.Column, error)
 	CreateColumn(in dto.ServInCreateColumn) int
 	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
+	DeleteColumn(columnId int) int
 }
 
 
@@ -106,4 +107,22 @@ func (serv *columnService) UpdateColumn(
 	}
 
 	return UPDATE_COLUMN_SUCCESS_INT
+}
+
+
+// DeleteColumn() Return value
+/*----------------------------------------*/
+const DELETE_COLUMN_SUCCESS_INT = 0
+const DELETE_COLUMN_ERROR_INT = 1
+/*----------------------------------------*/
+
+func (serv *columnService) DeleteColumn(columnId int) int {
+	err := serv.cRep.Delete(columnId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return DELETE_COLUMN_ERROR_INT
+	}
+
+	return DELETE_COLUMN_SUCCESS_INT
 }

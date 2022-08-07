@@ -3,70 +3,129 @@
 <h1 class="title">{{.project_cd}}</h1>
 <h2 class="subtitle">{{ .table.TableName }}</h2>
 
-<form method="post" class="mb-6">
-	<div class="columns">
+<form method="post" class="mb-4 box">
+	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">カラム名</label>
-			<input type="text" name="column_name" class="input"
-			value="{{.column.ColumnName}}">
+			<label class="label">ColumnName</label>
+			<input type="text" name="column_name" class="input is-danger"
+			value="{{.column.ColumnName}}" required>
+			<p class="help is-danger">
+        	This field is required
+      		</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">カラム名（和）</label>
-			<input type="text" name="column_name_logical" class="input"
-			value="{{.column.ColumnNameLogical}}">
+			<label class="label">ColumnName（JP）</label>
+			<input type="text" name="column_name_logical" class="input is-danger"
+			value="{{.column.ColumnNameLogical}}" required>
+			<p class="help is-danger">
+        	This field is required
+      		</p>
 		</div>
 	</div>
-	<div class="columns">
+	<div class="columns is-gapless">
 		<div class="column is-2">
-			<label class="label">データ型</label>
+			<label class="label">DataType</label>
 			<div class="control">
   			<div class="select">
-    		<select name="data_type_cls">
-      			<option>INTEGER</option>
-      			<option>TEXT</option>
+    		<select name="data_type_cls" value="{{.column.DataTypeCls}}">
+    			{{ if eq .column.DataTypeCls "10" }}
+    			<option value="10" selected>TEXT</option>
+    			{{ else if eq .column.DataTypeCls "11"}}
+    			<option value="11" selected>VARCHAR</option>
+    			{{ else if eq .column.DataTypeCls "12"}}
+    			<option value="12" selected>CHAR</option>
+    			{{ else if eq .column.DataTypeCls "20"}}
+    			<option value="20" selected>INTEGER</option>
+    			{{ else if eq .column.DataTypeCls "30"}}
+    			<option value="30" selected>NUMERIC</option>
+    			{{ else if eq .column.DataTypeCls "40"}}
+    			<option value="40" selected>TIMESTAMP</option>
+    			{{ else if eq .column.DataTypeCls "41"}}
+    			<option value="41" selected>DATE</option>
+    			{{ else if eq .column.DataTypeCls "01"}}
+    			<option value="01" selected>SERIAL</option>
+    			{{ end }}
+    			<option value="10">TEXT</option>
+      			<option value="11">VARCHAR</option>
+      			<option value="12">CHAR</option>
+      			<option value="20">INTEGER</option>
+      			<option value="30">NUMERIC</option>
+      			<option value="40">TIMESTAMP</option>
+      			<option value="41">DATE</option>
+      			<option value="01">SERIAL</option>
     		</select>
   		</div>
 		</div>
 		</div>
 		<div class="column is-2">
-			<label class="label">桁(byte)</label>
-			<input type="number" name="data_byte" class="input"
-			value="{{.column.DataByte}}">
+			<label class="label">Precision</label>
+			<input type="number" name="precision" class="input is-success"
+			value="{{.column.Precision}}">
+			<p class="help is-success">
+        	[var]char(<b>N</b>) / numeric(<b>P</b>,-)
+      		</p>
 		</div>
 		<div class="column is-2">
-			<label class="label">少数桁</label>
-			<input type="number" name="decimal_byte" class="input"
-			value="{{.column.DecimalByte}}">
+			<label class="label">Scale</label>
+			<input type="number" name="scale" class="input is-success"
+			value="{{.column.Scale}}">
+			<p class="help is-success">
+        	numeric(-, <b>S</b>)
+      		</p>
+		</div>
 		</div>
 	</div>
-	<div class="columns">
+	<label class="label">Constraints</label>
+	<div class="columns is-gapless">
 		<div class="column is-2">
-			<label class="checkboxl">Prumary Key</label>
 			{{ if eq .column.PrimaryKeyFlg 1 }}
-			<input type="checkbox" checked name="primary_key_flg" value="1">
+			<input type="checkbox" checked name="primary_key_flg" value="1" id="p_k_f">
 			{{ else }}
-			<input type="checkbox" name="primary_key_flg" value="1">
+			<input type="checkbox" name="primary_key_flg" value="1" id="p_k_f">
 			{{ end }}
+			<label class="checkboxl" for="p_k_f">Prumary Key</label>
 		</div>
 		<div class="column is-2">
-			<label class="checkbox">Not Null</label>
 			{{ if eq .column.NotNullFlg 1 }}
-			<input type="checkbox" checked name="not_null_flg" value="1">
+			<input type="checkbox" checked name="not_null_flg" value="1" id="n_n_f">
 			{{ else }}
-			<input type="checkbox" name="not_null_flg" value="1">
+			<input type="checkbox" name="not_null_flg" value="1" id="n_n_f">
 			{{ end }}
+			<label class="checkbox" for="n_n_f">Not Null</label>
 		</div>
 		<div class="column is-2">
-			<label class="checkbox">Unique</label>
 			{{ if eq .column.UniqueFlg 1 }}
-			<input type="checkbox" checked name="unique_flg" value="1">
+			<input type="checkbox" checked name="unique_flg" value="1" id="u_f">
 			{{ else }}
-			<input type="checkbox" name="unique_flg" value="1">
+			<input type="checkbox" name="unique_flg" value="1" id="u_f">
 			{{ end }}
+			<label class="checkbox" for="u_f">Unique</label>
 		</div>
 	</div>
-	<input type="submit" value="登録" class="button is-success">
+	{{ if ne .column.ColumnId nil }}
+	<div class="columns">
+		<div class="column">
+			<label class="label has-text-grey">Soft Delete</label>
+			{{ if eq .column.DelFlg 1 }}
+			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
+			{{ else }}
+			<input type="checkbox" name="del_flg" value="1" id="del_flg">
+			{{ end }}
+			<label class="checkbox has-text-grey" for="del_flg">Soft Delete</label>
+		</div>
+	</div>
+	{{ end }}
+
+	<input type="submit" value="Register" class="button is-success">
 </form>
-<a href="../columns">カラム一覧</a>
+
+{{ if eq .column.DelFlg 1 }}
+{{template "modal-del" .}}
+<script type="text/javascript" src="/js/column.js"></script>
+{{ end }}
+
+<div class="mt-5">
+<a href="../columns">Back to Column list</a>
+</div>
 </main>
 {{template "footer"}}

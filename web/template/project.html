@@ -1,22 +1,29 @@
 {{template "header" .}}
 <main>
-<h2 class="subtitle">プロジェクト作成</h2>
+<h2 class="subtitle">Create new project</h2>
+
+<div class="box">
 <form method="post" action="/projects" class="mb-5">
-	<div class="columns">
+	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">プロジェクトコード</label>
-			<input type="text" name="project_cd" class="input">
+			<label class="label">ProjectCD</label>
+        	<input type="text" name="project_cd" class="input is-danger" 
+        	required pattern="[0-9a-zA-Z]{4,}">
+			<p class="help is-danger">
+        	[0-9a-zA-Z]{4,}
+      		</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">プロジェクト名</label>
-			<input type="text" name="project_name" class="input">
-		</div>
-		<div class="column">
-			<label class="label">&nbsp;</label>
-		<input type="submit" value="登録" class="button is-success">
+			<label class="label">ProjectName</label>
+			<input type="text" name="project_name" class="input is-danger" required>
+			<p class="help is-danger">
+        	This field is required
+      		</p>
 		</div>
 	</div>
+	<input type="submit" value="Register" class="button is-success">
 </form>
-<a href="../projects">プロジェクト一覧</a>
+</div>
+<a href="../projects">Back to Project list.</a>
 </main>
 {{template "footer"}}

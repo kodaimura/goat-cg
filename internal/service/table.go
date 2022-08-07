@@ -17,19 +17,23 @@ type TableService interface {
 	UpdateTable(
 		tableId, userId int,
 		tableName, tableNameLogical string,
-	) int	
+		delFlg int,
+	) int
+	DeleteTable(tableId int) int 
 }
 
 
 type tableService struct {
 	tRep repository.TableRepository
+	cRep repository.ColumnRepository
 }
 
 
 func NewTableService() TableService {
 	tRep := repository.NewTableRepository()
+	cRep := repository.NewColumnRepository()
 
-	return &tableService{tRep}
+	return &tableService{tRep, cRep}
 }
 
 
@@ -94,12 +98,14 @@ const UPDATE_TABLE_ERROR_INT = 1
 func (serv *tableService) UpdateTable(
 	tableId, userId int,
 	tableName, tableNameLogical string, 
+	delFlg int,
 ) int {
 
 	var t entity.Table
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
+	t.DelFlg = delFlg
 	err := serv.tRep.Update(tableId, &t)
 
 	if err != nil {
@@ -108,4 +114,29 @@ func (serv *tableService) UpdateTable(
 	}
 
 	return UPDATE_TABLE_SUCCESS_INT
+}
+
+
+// DeleteTable() Return value
+/*----------------------------------------*/
+const DELETE_TABLE_SUCCESS_INT = 0
+const DELETE_TABLE_ERROR_INT = 1
+/*----------------------------------------*/
+
+func (serv *tableService) DeleteTable(tableId int) int {
+	err := serv.tRep.Delete(tableId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return DELETE_TABLE_ERROR_INT
+	}
+
+	err = serv.cRep.DeleteByTableId(tableId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return DELETE_TABLE_ERROR_INT
+	}
+
+	return DELETE_TABLE_SUCCESS_INT
 }

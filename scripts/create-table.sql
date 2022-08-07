@@ -74,14 +74,15 @@ CREATE TABLE IF NOT EXISTS columns (
 	column_name TEXT NOT NULL,
 	column_name_logical TEXT NOT NULL,
 	data_type_cls TEXT,
-	data_byte INTEGER,
-	decimal_byte INTEGER,
+	precision INTEGER,
+	scale INTEGER,
 	primary_key_flg INTEGER DEFAULT 0,
 	not_null_flg INTEGER DEFAULT 0,
 	unique_flg INTEGER DEFAULT 0,
 	remark TEXT,
 	create_user_id INTEGER,
 	update_user_id INTEGER,
+	del_flg INTEGER NOT NULL DEFAULT 0,
 	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );

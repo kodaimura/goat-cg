@@ -1,0 +1,27 @@
+<!-- 確定押下の後の処理は、id="modal-del-buttonにイベント指定する-->
+
+{{define "modal-del"}}
+<div>
+<script type="text/javascript" src="/js/bulma-modal.js"></script>
+<div id="modal-del" class="modal">
+	<div class="modal-background"></div>
+	<div class="modal-content">
+		<div class="modal-card">
+			<div class="modal-card-head">
+				<p class="modal-card-title">Delete</p>
+				<button class="delete" aria-label="close"></button>
+			</div>
+			<div class="modal-card-body">
+				<p>Once you press OK. there is no going back.</p>
+			</div>
+			<div class="modal-card-foot">
+				<button class="button is-dark" id="modal-del-button">OK</button>
+			</div>
+		</div>
+	</div>
+	<button class="modal-close is-large" aria-label="close"></button>
+</div>
+<input type="button" value="Hard Delete" class="button is-danger js-modal-trigger" 
+data-target="modal-del">
+</div>
+{{end}}

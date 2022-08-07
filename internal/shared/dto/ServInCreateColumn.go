@@ -10,14 +10,15 @@ type ServInCreateColumn struct {
 	ColumnName string
 	ColumnNameLogical string
 	DataTypeCls string
-	DataByte int
-	DecimalByte int
+	Precision int
+	Scale int
 	PrimaryKeyFlg int
 	NotNullFlg int
 	UniqueFlg int
 	Remark string
 	CreateUserId int
 	UpdateUserId int
+	DelFlg int
 }
 
 
@@ -28,14 +29,15 @@ func (d ServInCreateColumn) ToColumn() entity.Column {
 	c.ColumnName = d.ColumnName
 	c.ColumnNameLogical = d.ColumnNameLogical
 	c.DataTypeCls = d.DataTypeCls
-	c.DataByte = d.DataByte
-	c.DecimalByte = d.DecimalByte
+	c.Precision = d.Precision
+	c.Scale = d.Scale
 	c.PrimaryKeyFlg = d.PrimaryKeyFlg
 	c.NotNullFlg = d.NotNullFlg
 	c.UniqueFlg = d.UniqueFlg
 	c.Remark = d.Remark
 	c.CreateUserId = d.CreateUserId
 	c.UpdateUserId = d.UpdateUserId
+	c.DelFlg = d.DelFlg
 
 	return c
 }

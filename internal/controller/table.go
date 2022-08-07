@@ -2,6 +2,7 @@ package controller
 
 import (
     "fmt"
+    "strconv"
     "github.com/gin-gonic/gin"
 
     "goat-cg/internal/core/jwt"
@@ -84,8 +85,24 @@ func (ctr *tableController) updateTable(c *gin.Context) {
 
     tableName := c.PostForm("table_name")
     tableNameLogical := c.PostForm("table_name_logical")
+    delFlg, err := strconv.Atoi(c.PostForm("del_flg"))
+    if err != nil || delFlg != 1 {
+        delFlg = 0
+    }
 
-    ctr.tServ.UpdateTable(tableId, userId, tableName, tableNameLogical)
+    ctr.tServ.UpdateTable(tableId, userId, tableName, tableNameLogical, delFlg)
 
     c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+}
+
+
+//DELETE /:project_cd/tables/:table_id
+func (ctr *tableController) deleteTable(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+
+    ctr.tServ.DeleteTable(tableId)
+
+    c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+
 }
