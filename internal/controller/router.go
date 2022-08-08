@@ -25,6 +25,8 @@ func SetRouter(r *gin.Engine) {
         a.GET("/projects", pc.projectsPage)
         a.GET("/projects/new", pc.createProjectPage)
         a.POST("/projects", pc.createProject)
+        a.GET("/projects/:project_id/join", pc.joinRequest)
+        a.GET("/projects/:project_id/cancel", pc.cancelJoinRequest)
 
         ap := a.Group("/:project_cd")
         {

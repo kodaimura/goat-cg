@@ -7,8 +7,8 @@
 style="font-size: 40px;">
 add
 </a>
-<div class="box">
-<table class="table is-fullwidth is-hoverable is-striped">
+<div class="box has-background-g-lighter">
+<table class="table is-fullwidth is-hoverable is-striped mb-1 has-background-white-lighter">
   	<thead>
 		<tr>
 			<th style="width:4%;"></th>
@@ -39,22 +39,22 @@ add
 			<td style="width:25%;">{{$c.ColumnNameLogical}}</td>
 			<td style="width:8%;">
 			{{ if eq $c.DataTypeCls "10" }}
-    		TEXT
-    		{{ else if eq $c.DataTypeCls "11"}}
-    		VARCHAR
-    		{{ else if eq $c.DataTypeCls "12"}}
-    		CHAR
-    		{{ else if eq $c.DataTypeCls "20"}}
-    		INTEGER
-    		{{ else if eq $c.DataTypeCls "30"}}
-    		NUMERIC
-    		{{ else if eq $c.DataTypeCls "40"}}
-    		TIMESTAMP
-    		{{ else if eq $c.DataTypeCls "41"}}
-    		DATE
-    		{{ else if eq $c.DataTypeCls "01"}}
-    		SERIAL
-    		{{ end }}
+			TEXT
+			{{ else if eq $c.DataTypeCls "11"}}
+			VARCHAR
+			{{ else if eq $c.DataTypeCls "12"}}
+			CHAR
+			{{ else if eq $c.DataTypeCls "20"}}
+			INTEGER
+			{{ else if eq $c.DataTypeCls "30"}}
+			NUMERIC
+			{{ else if eq $c.DataTypeCls "40"}}
+			TIMESTAMP
+			{{ else if eq $c.DataTypeCls "41"}}
+			DATE
+			{{ else if eq $c.DataTypeCls "01"}}
+			SERIAL
+			{{ end }}
 			</td>
 			<td style="width:6%;">{{$c.Precision}}</td>
 			<td style="width:6%;">{{$c.Scale}}</td>
@@ -73,7 +73,7 @@ add
 				○
 			{{ end }}
 			</td>
-			<td style="width:15%;" class="py-1">
+			<td style="width:15%;">
 				<p style="font-size:0.8rem">{{.UpdateAt}}</p>
 			</td>
 			<td style="width:4%;" class="py-1">

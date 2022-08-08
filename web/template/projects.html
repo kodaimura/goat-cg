@@ -1,20 +1,63 @@
 {{template "header" .}}
 <main>
 <a href="./projects/new">Create new project</a>
-<table class="table table-bordered my-5">
-	<tbody>
-		{{ range .projects }}
-			<td scope="col">{{.ProjectId}}</td>
-			<td scope="col">
-				<a href="/{{.ProjectCd}}/tables">
-					{{.ProjectCd}}
-				</a>
-			</td>
-			<td scope="col">{{.ProjectName}}</td>
-			<td scope="col">{{.CreateAt}}</td>
-		</tr>
-		{{ end }}
-	</tbody>
-</table>
+
+<form method="GET" action="/projects" class="mb-4">
+	<div class="columns is-gapless">
+		<div class="column is-3">
+		<input type="text" name="project_cd" class="input"
+		placeholder="ProjectCD">
+		</div>
+		<div class="column">
+		<input type="submit" value="Search" class="button is-success">
+		</div>
+	</div>
+</form>
+
+{{ if ne .project.ProjectId 0 }}
+<div class="mb-4">
+<span class="has-text-grey">Search result.</span>
+<li>
+	{{.project.ProjectCd}}
+	{{.project.ProjectName}}
+	<a class="button is-small is-rounded is-info" 
+	href="./projects/{{.project.ProjectId}}/join">
+		join
+	</a>
+</li>
+</div>
+{{ end }}
+
+{{ $l := len .projects2 }}
+{{ if ne $l 0 }}
+<div class="mb-4">
+<span class="has-text-grey">Pending approval.</span>
+{{ range .projects2 }}
+<li>
+	{{.ProjectCd}}
+	{{.ProjectName}}
+	<a a class="button is-small is-rounded is-link"
+	href="./projects/{{.ProjectId}}/cancel">
+	cancel
+	</a>
+</li>
+{{ end }}
+</div>
+{{ end }}
+
+<div>
+<span class="is-size-5">Accessible projects.</span>
+
+{{ range .projects }}
+<li>
+<a href="/{{.ProjectCd}}/tables">
+<span class="is-size-3">
+	{{.ProjectCd}}
+</span>
+<span class="is-size-3">{{.ProjectName}}</span>
+</a>
+</li>
+{{ end }}
+</div>
 </main>
 {{template "footer"}}

@@ -14,7 +14,9 @@ type ProjectRepository interface {
     Update(id int, p *entity.Project) error
 
     SelectByCd(cd string) (entity.Project, error)
-    SelectByUserId(userId int) ([]entity.Project, error)
+    SelectByUserIdAndStateCls(
+    	userId int, state string,
+    ) ([]entity.Project, error)
     SelectByCdAndUserId(cd string, userId int) (entity.Project, error)
     
 }
@@ -80,7 +82,9 @@ func (rep *projectRepository) SelectByCd(cd string) (entity.Project, error) {
 }
 
 
-func (rep *projectRepository) SelectByUserId(userId int) ([]entity.Project, error){
+func (rep *projectRepository) SelectByUserIdAndStateCls(
+	userId int, state string,
+) ([]entity.Project, error){
 	var ret []entity.Project
 	rows, err := rep.db.Query(
 		`SELECT 
@@ -96,7 +100,7 @@ func (rep *projectRepository) SelectByUserId(userId int) ([]entity.Project, erro
 		 AND up.user_id = ?
 		 AND up.state_cls = ?`, 
 		 userId,
-		 constant.STATE_CLS_JOIN,
+		 state,
 	)
 
 	if err != nil {

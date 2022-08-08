@@ -9,6 +9,7 @@ import (
 
 
 type UserProjectRepository interface {
+	Select(userId, projectId int) (entity.UserProject, error)
     Upsert(up *entity.UserProject) error
     Delete(userId, projectId int) error
 }
@@ -22,6 +23,31 @@ type userProjectRepository struct {
 func NewUserProjectRepository() UserProjectRepository {
 	db := db.GetDB()
 	return &userProjectRepository{db}
+}
+
+
+func (rep *userProjectRepository) Select(userId, projectId int) (entity.UserProject, error) {
+	var ret entity.UserProject
+
+	err := rep.db.QueryRow(
+		`SELECT
+			user_id, 
+			project_id, 
+			state_cls, 
+			role_cls
+		 FROM users_projects
+		 WHERE user_id = ?
+		  AND project_id = ?`,
+		 userId,
+		 projectId,
+	).Scan(
+		&ret.UserId, 
+		&ret.ProjectId, 
+		&ret.StateCls, 
+		&ret.RoleCls,
+	)
+
+	return ret, err
 }
 
 
