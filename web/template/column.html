@@ -3,7 +3,7 @@
 <h1 class="title">{{.project_cd}}</h1>
 <h2 class="subtitle">{{ .table.TableName }}</h2>
 
-<form method="post" class="mb-4 box">
+<form method="post" class="mb-4 box has-background-light">
 	<div class="columns is-gapless">
 		<div class="column is-3">
 			<label class="label">ColumnName</label>
@@ -15,11 +15,7 @@
 		</div>
 		<div class="column is-3">
 			<label class="label">ColumnName（JP）</label>
-			<input type="text" name="column_name_logical" class="input is-danger"
-			value="{{.column.ColumnNameLogical}}" required>
-			<p class="help is-danger">
-        	This field is required
-      		</p>
+			<input type="text" name="column_name_logical" class="input" value="{{.column.ColumnNameLogical}}">
 		</div>
 	</div>
 	<div class="columns is-gapless">
@@ -116,7 +112,7 @@
 	</div>
 	{{ end }}
 
-	<input type="submit" value="Register" class="button is-success">
+	<input type="submit" value="Register" class="button is-dark">
 </form>
 
 {{ if eq .column.DelFlg 1 }}

@@ -14,8 +14,6 @@ type ProjectService interface {
 	GetProjectsPendingApproval(userId int) ([]entity.Project, error)
 	GetProjectByCd(projectCd string) entity.Project
 	CreateProject(userId int, projectCd, projectName string) int
-	JoinRequest(userId, projectId int) int
-	CancelJoinRequest(userId, projectId int) int
 }
 
 
@@ -138,59 +136,3 @@ func (serv *projectService) CreateProject(
 
 	return CREATE_PROJECT_SUCCESS_INT
 }
-
-
-// JoinRequest() Return value
-/*----------------------------------------*/
-const JOIN_REQUEST_SUCCESS_INT = 0
-const JOIN_REQUEST_ALREADY_INT= 1
-const JOIN_REQUEST_ERROR_INT = 2
-/*----------------------------------------*/
-
-func (serv *projectService) JoinRequest(
-	userId int, projectId int,
-) int {
-	up0, err := serv.upRep.Select(userId, projectId)
-
-	if err == nil && up0.StateCls == constant.STATE_CLS_JOIN {
-		return JOIN_REQUEST_ALREADY_INT
-	} 
-
-	var up entity.UserProject
-	up.UserId = userId
-	up.ProjectId = projectId
-	up.StateCls = constant.STATE_CLS_REQUEST
-	up.RoleCls = constant.ROLE_CLS_NOMAL
-
-	err = serv.upRep.Upsert(&up)
-
-	if err != nil {
-		logger.LogError(err.Error())
-		return JOIN_REQUEST_ERROR_INT
-	}
-
-	return JOIN_REQUEST_SUCCESS_INT
-
-}
-
-
-// CancelJoinRequest() Return value
-/*----------------------------------------*/
-const CANCEL_JOIN_REQUEST_SUCCESS_INT = 0
-const CANCEL_JOIN_REQUEST_ERROR_INT= 1
-/*----------------------------------------*/
-
-func (serv *projectService) CancelJoinRequest(
-	userId int, projectId int,
-) int {
-	err := serv.upRep.Delete(userId, projectId)
-
-	if err != nil {
-		logger.LogError(err.Error())
-		return CANCEL_JOIN_REQUEST_ERROR_INT
-	}
-
-	return CANCEL_JOIN_REQUEST_SUCCESS_INT
-
-}
-

@@ -1,6 +1,6 @@
 {{define "header"}}
 <!DOCTYPE html>
-<html class="has-background-white-ter">
+<html class="has-background-white-bis">
 <head>
 	<meta charset="utf-8">
 	<meta name=”description“ content=““ />
@@ -11,22 +11,24 @@
 	<title>{{.commons.appname}}</title>
 </head>
 <body>
-<header class="navbar is-link">
+<header class="navbar is-dark">
 	<div class="navbar-brand">
     	<a class="navbar-item" href="/projects">GOAT-CG</a>
   	</div>
   	<div class="navbar-end">
 		<div class="navbar-item has-dropdown is-hoverable ">
-		<a class="navbar-link">
-		</a>
-
+		<a class="navbar-link"></a>
 		<div class="navbar-dropdown is-right">
-		<a class="navbar-item">
+		<a class="navbar-item" href="/projects/new">
+			Create new project.
 		</a>
-		<a class="navbar-item">
+		<a class="navbar-item" href="/projects">
+			Change project.
 		</a>
-		<a class="navbar-item">
-    	</a>
+		<hr class="navbar-divider">
+		<a class="navbar-item" href="/projects/requests">
+			Manage members.
+		</a>
       	<hr class="navbar-divider">
       	<a href="/logout" class="navbar-item">
       		Logout

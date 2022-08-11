@@ -6,23 +6,23 @@
 style="font-size: 40px;">
 add
 </a>
-<div class="box">
-<table class="table is-fullwidth is-hoverable mb-1">
+<div class="box has-background-light">
+<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
   	<thead>
 		<tr>
 			<th style="width:7%;"></th>
-			<th style="width:25%;">TableName</th>
-			<th style="width:30%;">TableName（JP）</th>
+			<th style="width:22%;">TableName</th>
+			<th style="width:22%;">TableName（JP）</th>
 			
-			<th style="width:15%;">create</th>
-			<th style="width:15%;">update</th>
+			<th style="width:18%;">create</th>
+			<th style="width:18%;">update</th>
 			<th style="width:4%;"></th>
-			<th style="width:4%;"></th>
+			<th style="width:9%;"></th>
 		</tr>
 	</thead>
 </table>
-<div style="height: 380px; overflow-y:scroll;">
-<table class="table is-fullwidth is-hoverable is-bordered is-striped">
+<div style="height: 360px; overflow-y:scroll;">
+<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
 	<tbody>
 		{{ range $i, $t := .tables }}
 		{{ if eq $t.DelFlg 1 }}
@@ -31,24 +31,25 @@ add
 		<tr>
 		{{ end }}
 			<td style="width:7%;">{{$i}}</td>
-			<td style="width:25%;">{{$t.TableName}}</td>
-			<td style="width:30%;">{{$t.TableNameLogical}}</td>
+			<td style="width:22%;">{{$t.TableName}}</td>
+			<td style="width:22%;">{{$t.TableNameLogical}}</td>
 			
-			<td style="width:15%;">
-				<p style="font-size:0.8rem">{{$t.CreateAt}}</p>
+			<td style="width:18%;">
+				<p>{{$t.CreateAt}}</p>
 			</td>
-			<td style="width:15%;">
-				<p style="font-size:0.8rem">{{$t.UpdateAt}}</p>
+			<td style="width:18%;">
+				<p>{{$t.UpdateAt}}</p>
 			</td>
 			<td style="width:4%;" class="py-1">
 				<a href="./tables/{{$t.TableId}}"
-				class="material-icons">edit</a>
+				class="button is-small is-info is-rounded is-outlined">edit</a>
 			</td>
-			<td style="width:4%;" class="py-1">
+			<td style="width:9%;" class="py-1">
 				<a href="./tables/{{$t.TableId}}/columns" 
-				class="material-icons">reorder</a>
+				class="button is-small is-link">columns</a>
 			</td>
 		</tr>
+		
 		{{ end }}
 	</tbody>
 </table>

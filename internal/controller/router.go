@@ -25,8 +25,13 @@ func SetRouter(r *gin.Engine) {
         a.GET("/projects", pc.projectsPage)
         a.GET("/projects/new", pc.createProjectPage)
         a.POST("/projects", pc.createProject)
-        a.GET("/projects/:project_id/join", pc.joinRequest)
-        a.GET("/projects/:project_id/cancel", pc.cancelJoinRequest)
+
+        upc := newUserProjectController()
+        a.GET("/projects/requests", upc.requestsPage)
+        a.POST("/projects/requests/join", upc.joinRequest)
+        a.POST("/projects/requests/cancel", upc.cancelJoinRequest)
+        a.POST("/projects/requests/permit", upc.permitJoinRequest)
+
 
         ap := a.Group("/:project_cd")
         {

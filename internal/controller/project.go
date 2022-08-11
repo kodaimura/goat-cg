@@ -1,7 +1,6 @@
 package controller
 
 import (
-    "strconv"
     "github.com/gin-gonic/gin"
 
     "goat-cg/internal/core/jwt"
@@ -40,36 +39,6 @@ func (ctr *projectController) projectsPage(c *gin.Context) {
         "projects2": projects2,
         "project":project,
     })
-}
-
-
-//GET /projects/:project_id/join
-func (ctr *projectController) joinRequest(c *gin.Context) {
-    userId := jwt.GetUserId(c)
-    projectId, err := strconv.Atoi(c.Param("project_id"))
-
-    if err != nil {
-        c.Redirect(303, "/projects")
-    }
-
-    ctr.pServ.JoinRequest(userId, projectId)
-    
-    c.Redirect(303, "/projects")
-}
-
-
-//GET /projects/:project_id/cancel
-func (ctr *projectController) cancelJoinRequest(c *gin.Context) {
-    userId := jwt.GetUserId(c)
-    projectId, err := strconv.Atoi(c.Param("project_id"))
-
-    if err != nil {
-        c.Redirect(303, "/projects")
-    }
-
-    ctr.pServ.CancelJoinRequest(userId, projectId)
-    
-    c.Redirect(303, "/projects")
 }
 
 
