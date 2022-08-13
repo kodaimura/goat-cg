@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
@@ -14,17 +16,21 @@ type ColumnService interface {
 	CreateColumn(in dto.ServInCreateColumn) int
 	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
 	DeleteColumn(columnId int) int
+
+	updateTableLastLog(tableId int, action, columnName string)
 }
 
 
 type columnService struct {
 	cRep repository.ColumnRepository
+	tRep repository.TableRepository
 }
 
 
 func NewColumnService() ColumnService {
 	cRep := repository.NewColumnRepository()
-	return &columnService{cRep}
+	tRep := repository.NewTableRepository()
+	return &columnService{cRep, tRep}
 }
 
 
@@ -77,6 +83,8 @@ func (serv *columnService) CreateColumn(
 		return CREATE_COLUMN_ERROR_INT
 	}
 
+	serv.updateTableLastLog(sin.TableId, "create", sin.ColumnName)
+
 	return CREATE_COLUMN_SUCCESS_INT
 }
 
@@ -106,6 +114,8 @@ func (serv *columnService) UpdateColumn(
 		return UPDATE_COLUMN_ERROR_INT
 	}
 
+	serv.updateTableLastLog(sin.TableId, "update", sin.ColumnName)
+
 	return UPDATE_COLUMN_SUCCESS_INT
 }
 
@@ -117,12 +127,32 @@ const DELETE_COLUMN_ERROR_INT = 1
 /*----------------------------------------*/
 
 func (serv *columnService) DeleteColumn(columnId int) int {
-	err := serv.cRep.Delete(columnId)
+	col, err := serv.cRep.Select(columnId)
 
 	if err != nil {
 		logger.LogError(err.Error())
 		return DELETE_COLUMN_ERROR_INT
 	}
 
+	err = serv.cRep.Delete(columnId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return DELETE_COLUMN_ERROR_INT
+	}
+
+	serv.updateTableLastLog(col.TableId, "delete", col.ColumnName)
+
 	return DELETE_COLUMN_SUCCESS_INT
+}
+
+
+func (serv *columnService) updateTableLastLog(tableId int, action, columnName string) {
+	msg := fmt.Sprintf("%s: %s", action, columnName)
+
+	err := serv.tRep.UpdateLastLog(tableId, msg)
+
+	if err != nil {
+		logger.LogError(err.Error())
+	}
 }

@@ -1,13 +1,12 @@
 {{template "header" .}}
 <main>
-<h1 class="title">{{.project_cd}}</h1>
-<h2 class="subtitle">
+<h1 class="title">
 {{ if eq .table.TableId nil }}
 Create Table
 {{ else }}
 Edit Table
 {{ end }}
-</h2>
+</h1>
 	
 <form method="post" class="mb-4 box has-background-light">
 	<div class="columns is-gapless">

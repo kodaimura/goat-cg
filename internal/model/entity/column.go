@@ -12,6 +12,7 @@ type Column struct {
 	PrimaryKeyFlg int `db:"primary_key_flg" json:"primary_key_flg"`
 	NotNullFlg int `db:"not_null_flg" json:"not_null_flg"`
 	UniqueFlg int `db:"unique_flg" json:"unique_flg"`
+	DefaultValue string `db: "default_value" json:"default_value"`
 	Remark string `db:"remark" json:"remark"`
 	CreateUserId int `db:"create_user_id" json:"create_user_id"`
 	UpdateUserId int `db:"update_user_id" json:"update_user_id"`

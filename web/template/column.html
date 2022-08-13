@@ -1,7 +1,6 @@
 {{template "header" .}}
 <main>
-<h1 class="title">{{.project_cd}}</h1>
-<h2 class="subtitle">{{ .table.TableName }}</h2>
+<h1 class="title">{{ .table.TableName }}</h1>
 
 <form method="post" class="mb-4 box has-background-light">
 	<div class="columns is-gapless">
@@ -38,8 +37,10 @@
     			<option value="40" selected>TIMESTAMP</option>
     			{{ else if eq .column.DataTypeCls "41"}}
     			<option value="41" selected>DATE</option>
+    			{{ else if eq .column.DataTypeCls "50"}}
+    			<option value="50" selected>BLOB</option>
     			{{ else if eq .column.DataTypeCls "01"}}
-    			<option value="01" selected>SERIAL</option>
+    			<option value="01" selected>*SERIAL*</option>    			
     			{{ end }}
     			<option value="10">TEXT</option>
       			<option value="11">VARCHAR</option>
@@ -48,20 +49,21 @@
       			<option value="30">NUMERIC</option>
       			<option value="40">TIMESTAMP</option>
       			<option value="41">DATE</option>
-      			<option value="01">SERIAL</option>
+      			<option value="50">BLOB</option>
+      			<option value="01">**SERIAL**</option>
     		</select>
-  		</div>
+  			</div>
+			</div>
 		</div>
-		</div>
-		<div class="column is-2">
+		<div class="column is-1">
 			<label class="label">Precision</label>
 			<input type="number" name="precision" class="input is-success"
 			value="{{.column.Precision}}">
 			<p class="help is-success">
-        	[var]char(<b>N</b>) / numeric(<b>P</b>,-)
+        	numeric(<b>P</b>,-) / [var]char(<b>N</b>)
       		</p>
 		</div>
-		<div class="column is-2">
+		<div class="column is-1">
 			<label class="label">Scale</label>
 			<input type="number" name="scale" class="input is-success"
 			value="{{.column.Scale}}">
@@ -69,19 +71,15 @@
         	numeric(-, <b>S</b>)
       		</p>
 		</div>
+		<div class="column is-1"></div>
+		<div class="column is-1">
+			<label class="label">Default</label>
+			<input type="text" name="default_value" class="input"
+			value="{{.column.DefaultValue}}">
 		</div>
 	</div>
-	<label class="label">Constraints</label>
 	<div class="columns is-gapless">
-		<div class="column is-2">
-			{{ if eq .column.PrimaryKeyFlg 1 }}
-			<input type="checkbox" checked name="primary_key_flg" value="1" id="p_k_f">
-			{{ else }}
-			<input type="checkbox" name="primary_key_flg" value="1" id="p_k_f">
-			{{ end }}
-			<label class="checkboxl" for="p_k_f">Prumary Key</label>
-		</div>
-		<div class="column is-2">
+		<div class="column is-1">
 			{{ if eq .column.NotNullFlg 1 }}
 			<input type="checkbox" checked name="not_null_flg" value="1" id="n_n_f">
 			{{ else }}
@@ -89,13 +87,21 @@
 			{{ end }}
 			<label class="checkbox" for="n_n_f">Not Null</label>
 		</div>
-		<div class="column is-2">
+		<div class="column is-1">
 			{{ if eq .column.UniqueFlg 1 }}
 			<input type="checkbox" checked name="unique_flg" value="1" id="u_f">
 			{{ else }}
 			<input type="checkbox" name="unique_flg" value="1" id="u_f">
 			{{ end }}
 			<label class="checkbox" for="u_f">Unique</label>
+		</div>
+		<div class="column is-2">
+			{{ if eq .column.PrimaryKeyFlg 1 }}
+			<input type="checkbox" checked name="primary_key_flg" value="1" id="p_k_f">
+			{{ else }}
+			<input type="checkbox" name="primary_key_flg" value="1" id="p_k_f">
+			{{ end }}
+			<label class="checkboxl" for="p_k_f">Primary Key</label>
 		</div>
 	</div>
 	{{ if ne .column.ColumnId nil }}
@@ -121,7 +127,7 @@
 {{ end }}
 
 <div class="mt-5">
-<a href="../columns">Back to Column list</a>
+<a href="../columns">Back to Columns</a>
 </div>
 </main>
 {{template "footer"}}

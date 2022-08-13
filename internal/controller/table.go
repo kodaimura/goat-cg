@@ -90,7 +90,9 @@ func (ctr *tableController) updateTable(c *gin.Context) {
         delFlg = 0
     }
 
-    ctr.tServ.UpdateTable(tableId, userId, tableName, tableNameLogical, delFlg)
+    ctr.tServ.UpdateTable(
+        projectId, tableId, userId, tableName, tableNameLogical, delFlg,
+    )
 
     c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
 }

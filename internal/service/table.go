@@ -15,7 +15,7 @@ type TableService interface {
 		tableName, tableNameLogical string,
 	) int
 	UpdateTable(
-		tableId, userId int,
+		projectId, tableId, userId int,
 		tableName, tableNameLogical string,
 		delFlg int,
 	) int
@@ -64,7 +64,8 @@ func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
 // CreateTable() Return value
 /*----------------------------------------*/
 const CREATE_TABLE_SUCCESS_INT = 0
-const CREATE_TABLE_ERROR_INT = 1
+const CREATE_TABLE_CONFLICT_INT = 1
+const CREATE_TABLE_ERROR_INT = 2
 /*----------------------------------------*/
 
 func (serv *tableService) CreateTable(
@@ -72,13 +73,18 @@ func (serv *tableService) CreateTable(
 	tableName, tableNameLogical string, 
 ) int {
 
+	_, err := serv.tRep.SelectByNameAndProjectId(tableName, projectId)
+	if err == nil {
+		return CREATE_TABLE_CONFLICT_INT
+	}
+
 	var t entity.Table
 	t.ProjectId = projectId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
-	err := serv.tRep.Insert(&t)
+	err = serv.tRep.Insert(&t)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -92,21 +98,27 @@ func (serv *tableService) CreateTable(
 // UpdateTable() Return value
 /*----------------------------------------*/
 const UPDATE_TABLE_SUCCESS_INT = 0
-const UPDATE_TABLE_ERROR_INT = 1
+const UPDATE_TABLE_CONFLICT_INT = 1
+const UPDATE_TABLE_ERROR_INT = 2
 /*----------------------------------------*/
 
 func (serv *tableService) UpdateTable(
-	tableId, userId int,
+	projectId, tableId, userId int,
 	tableName, tableNameLogical string, 
 	delFlg int,
 ) int {
+
+	t0, err := serv.tRep.SelectByNameAndProjectId(tableName, projectId)
+	if err == nil && t0.TableId != tableId{
+		return UPDATE_TABLE_CONFLICT_INT
+	}
 
 	var t entity.Table
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
 	t.DelFlg = delFlg
-	err := serv.tRep.Update(tableId, &t)
+	err = serv.tRep.Update(tableId, &t)
 
 	if err != nil {
 		logger.LogError(err.Error())

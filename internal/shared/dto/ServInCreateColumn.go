@@ -15,6 +15,7 @@ type ServInCreateColumn struct {
 	PrimaryKeyFlg int
 	NotNullFlg int
 	UniqueFlg int
+	DefaultValue string
 	Remark string
 	CreateUserId int
 	UpdateUserId int
@@ -34,6 +35,7 @@ func (d ServInCreateColumn) ToColumn() entity.Column {
 	c.PrimaryKeyFlg = d.PrimaryKeyFlg
 	c.NotNullFlg = d.NotNullFlg
 	c.UniqueFlg = d.UniqueFlg
+	c.DefaultValue = d.DefaultValue
 	c.Remark = d.Remark
 	c.CreateUserId = d.CreateUserId
 	c.UpdateUserId = d.UpdateUserId

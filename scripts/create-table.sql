@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS tables (
 	create_user_id INTEGER,
 	update_user_id INTEGER,
 	del_flg INTEGER NOT NULL DEFAULT 0,
+	last_log TEXT NOT NULL DEFAULT "",
 	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
@@ -74,11 +75,12 @@ CREATE TABLE IF NOT EXISTS columns (
 	column_name TEXT NOT NULL,
 	column_name_logical TEXT,
 	data_type_cls TEXT,
-	precision INTEGER,
-	scale INTEGER,
+	precision INTEGER DEFAULT 0,
+	scale INTEGER DEFAULT 0,
 	primary_key_flg INTEGER DEFAULT 0,
 	not_null_flg INTEGER DEFAULT 0,
 	unique_flg INTEGER DEFAULT 0,
+	default_value TEXT,
 	remark TEXT,
 	create_user_id INTEGER,
 	update_user_id INTEGER,
@@ -90,8 +92,8 @@ CREATE TABLE IF NOT EXISTS columns (
 CREATE TRIGGER IF NOT EXISTS trigger_columns_updated_at AFTER UPDATE ON columns
 BEGIN
     UPDATE columns
-    	SET update_at = DATETIME('now', 'localtime') 
-    	WHERE rowid == NEW.rowid;
+    SET update_at = DATETIME('now', 'localtime') 
+    WHERE rowid == NEW.rowid;
 END;
 
 

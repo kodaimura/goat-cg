@@ -43,6 +43,12 @@ func SetRouter(r *gin.Engine) {
             ap.POST("/tables/:table_id", tc.updateTable)
             ap.DELETE("/tables/:table_id", tc.deleteTable)
 
+
+            cgc := newCodegenController()
+            ap.GET("/codegen", cgc.codegenPage)
+            ap.POST("/codegen/goat", cgc.codegenGOAT)
+            ap.POST("/codegen/ddl", cgc.codegenDDL)
+
             aptt := ap.Group("/tables/:table_id")
             {
                 cc := newColumnController()

@@ -1,27 +1,24 @@
 {{template "header" .}}
 <main>
-<h1 class="title">{{.project_cd}}</h1>
-<h2 class="subtitle">{{ .table.TableName }}</h2>
-
+<h1 class="title">{{ .table.TableName }}</h1>
 <a href="columns/new" class="material-icons is-pulled-right"
 style="font-size: 40px;">
 add
 </a>
 <div class="box has-background-light">
-<table class="table is-fullwidth is-hoverable is-striped mb-1 has-background-light">
+<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
   	<thead>
 		<tr>
 			<th style="width:4%;"></th>
 			<th style="width:20%;">ColumnName</th>
-			<th style="width:25%;">ColumnName（JP）</th>
-			<th style="width:8%;">Type</th>
-			<th style="width:6%;">prec</th>
-			<th style="width:6%;">scale</th>
-			<th style="width:4%;">PK</th>
-			<th style="width:4%;">NN</th>
-			<th style="width:4%;">UQ</th>
+			<th style="width:20%;">ColumnName（JP）</th>
+			<th style="width:15%;">Type</th>
+			<th style="width:6%;">dflt</th>
+			<th style="width:5%;">PK</th>
+			<th style="width:5%;">NN</th>
+			<th style="width:5%;">UQ</th>
 			<th style="width:15%;">update</th>
-			<th style="width:4%;"></th>
+			<th style="width:5%;"></th>
 		</tr>
 	</thead>
 </table>
@@ -36,8 +33,8 @@ add
 		{{ end }}
 			<td style="width:4%;">{{$i}}</td>
 			<td style="width:20%;">{{$c.ColumnName}}</td>
-			<td style="width:22%;">{{$c.ColumnNameLogical}}</td>
-			<td style="width:8%;">
+			<td style="width:20%;">{{$c.ColumnNameLogical}}</td>
+			<td style="width:15%;">
 			{{ if eq $c.DataTypeCls "10" }}
 			TEXT
 			{{ else if eq $c.DataTypeCls "11"}}
@@ -52,31 +49,40 @@ add
 			TIMESTAMP
 			{{ else if eq $c.DataTypeCls "41"}}
 			DATE
+			{{ else if eq $c.DataTypeCls "50"}}
+			BLOB
 			{{ else if eq $c.DataTypeCls "01"}}
 			SERIAL
 			{{ end }}
+
+			{{ if ne $c.Precision 0}}
+				{{ if ne $c.Scale 0}}
+				({{$c.Precision}}, {{$c.Scale}})
+				{{ else }}
+				({{$c.Precision}})
+				{{ end }}
+			{{ end }}
 			</td>
-			<td style="width:6%;">{{$c.Precision}}</td>
-			<td style="width:6%;">{{$c.Scale}}</td>
-			<td style="width:4%;">
+			<td style="width:6%;">{{$c.DefaultValue}}</td>
+			<td style="width: 5%;">
 			{{ if eq $c.PrimaryKeyFlg 1 }}
 				○
 			{{ end }}
 			</td>
-			<td style="width:4%;">
+			<td style="width:5%;">
 			{{ if eq $c.NotNullFlg 1 }}
 				○
 			{{ end }}
 			</td>
-			<td style="width:4%;">
+			<td style="width:5%;">
 			{{ if eq $c.UniqueFlg 1 }}
 				○
 			{{ end }}
 			</td>
-			<td style="width:18%;">
-				<p>{{.UpdateAt}}</p>
+			<td style="width:15%; font-size: 0.8em">
+				{{.UpdateAt}}
 			</td>
-			<td style="width:4%;" class="py-1">
+			<td style="width:5%;" class="py-1">
 				<a href="./columns/{{$c.ColumnId}}" 
 				class="button is-small is-info is-rounded is-outlined">edit</a>
 			</td>
@@ -87,6 +93,6 @@ add
 </div>
 </div>
 
-<a href="../../tables">Back to Table list.</a>
+<a href="../../tables">Back to Tables.</a>
 </main>
 {{template "footer"}}
