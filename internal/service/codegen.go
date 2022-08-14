@@ -426,6 +426,8 @@ func (serv *codegenService) generateGoatEntity(
 			"json:\"" + strings.ToLower(col.ColumnName) + "\"`\n"
 	}
 
+	entity += "\tCreateAt string `db:\"create_at\" json:\"create_at\"`\n"
+	entity += "\tUpdateAt string `db:\"update_at\" json:\"update_at\"`\n"
 	return entity + "}"
 }
 
@@ -660,6 +662,13 @@ func (serv *codegenService) generateGoatRepositoryInsert(
 func (serv *codegenService) generateGoatRepositorySelect(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
+	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
+
+	//pkがない場合
+	if args == "" {
+		return ""
+	}
+
 	cols := []string{}
 	conds := []string{}
 	bvals := []string{}
@@ -686,7 +695,6 @@ func (serv *codegenService) generateGoatRepositorySelect(
 	scans = append(scans, "CreateAt")
 	scans = append(scans, "UpdateAt")
 
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	ret := "func (rep *" + repoName + ") " +
 		serv.generateGoatRepositoryInterfaceSelect(args, entityName) + " {\n" +
 		"\tvar ret entity." + entityName + "\n\n" +
@@ -732,6 +740,13 @@ func (serv *codegenService) generateGoatRepositorySelect(
 func (serv *codegenService) generateGoatRepositoryUpdate(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
+	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
+
+	//pkがない場合
+	if args == "" {
+		return ""
+	}
+
 	sets := []string{}
 	bsets := []string{}
 	conds := []string{}
@@ -766,7 +781,6 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 		}
 	}
 
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	ret := "func (rep *" + repoName + ") " +
 		serv.generateGoatRepositoryInterfaceUpdate(args, entityName) + " {\n" +
 		"\t_, err := rep.db.Exec(\n" + 
@@ -810,6 +824,13 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 func (serv *codegenService) generateGoatRepositoryDelete(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
+	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
+
+	//pkがない場合
+	if args == "" {
+		return ""
+	}
+
 	conds := []string{}
 	bvals := []string{}
 
@@ -825,8 +846,7 @@ func (serv *codegenService) generateGoatRepositoryDelete(
 			bvals = append(bvals, serv.columnNameToVariableName(tableName, col.ColumnName))
 		}
 	}
-
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
+	
 	ret := "func (rep *" + repoName + ") " +
 		serv.generateGoatRepositoryInterfaceDelete(args, entityName) + " {\n" +
 		"\tvar ret entity." + entityName + "\n\n" +

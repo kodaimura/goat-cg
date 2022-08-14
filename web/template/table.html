@@ -1,34 +1,35 @@
 {{template "header" .}}
 <main>
 <h1 class="title">
-{{ if eq .table.TableId nil }}
+{{ if eq .table_id nil }}
 Create Table
 {{ else }}
 Edit Table
 {{ end }}
 </h1>
-	
-<form method="post" class="mb-4 box has-background-light">
+<div class="box has-background-light">
+<div class="has-text-danger">{{.error}}</div>
+<form method="post">
 	<div class="columns is-gapless">
 		<div class="column is-3">
 			<label class="label">TableName</label>
 			<input type="text" name="table_name" class="input is-danger" 
-			value="{{.table.TableName}}" required pattern="[a-z0-9_]{1,}">
+			value="{{.table_name}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
 				This field is required. [a-z0-9_]{1,}. singular.
 			</p>
 		</div>
 		<div class="column is-3">
 			<label class="label">TableName（JP）</label>
-			<input type="text" name="table_name_logical" class="input" value="{{.table.TableNameLogical}}">
+			<input type="text" name="table_name_logical" class="input" value="{{.table_name_logical}}">
 		</div>
 	</div>
 
-	{{ if ne .table.TableId nil }}
+	{{ if ne .table_id nil }}
 	<div class="columns">
 		<div class="column">
 			<label class="label has-text-grey">Soft Delete</label>
-			{{ if eq .table.DelFlg 1 }}
+			{{ if eq .del_flg 1 }}
 			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
 			{{ else }}
 			<input type="checkbox" name="del_flg" value="1" id="del_flg">
@@ -39,8 +40,8 @@ Edit Table
 	{{ end }}
 	<input type="submit" value="Register" class="button is-dark">
 </form>
-
-{{ if eq .table.DelFlg 1 }}
+</div>
+{{ if eq .del_flg 1 }}
 {{template "modal-del" .}}
 <script type="text/javascript" src="/js/table.js"></script>
 {{ end }}

@@ -66,11 +66,32 @@ func (ctr *columnController) createColumn(c *gin.Context) {
 
     var form form.PostColumnsForm
     c.Bind(&form)
-    ctr.cServ.CreateColumn(
-        form.ToServInCreateColumn(tableId, userId),
-    )
-    
-    c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+    result := ctr.cServ.CreateColumn(form.ToServInCreateColumn(tableId, userId))
+
+    if result == service.CREATE_COLUMN_SUCCESS_INT {
+        c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+        return
+    }
+
+    table, _ := ctr.tServ.GetTable(tableId)
+
+    if result == service.CREATE_COLUMN_CONFLICT_INT {
+        c.HTML(409, "column.html", gin.H{
+            "commons": constant.Commons,
+            "project_cd" : c.Param("project_cd"),
+            "table": table,
+            "column": form,
+            "error": "同一ColumnNameが既に登録されています",
+        })
+    } else {
+        c.HTML(500, "column.html", gin.H{
+            "commons": constant.Commons,
+            "project_cd" : c.Param("project_cd"),
+            "table": table,
+            "column": form,
+            "error": "登録に失敗しました",
+        })
+    }
 }
 
 
@@ -101,12 +122,34 @@ func (ctr *columnController) updateColumn(c *gin.Context) {
 
     var form form.PostColumnsForm
     c.Bind(&form)
-    ctr.cServ.UpdateColumn(
+    result := ctr.cServ.UpdateColumn(
         columnId, form.ToServInCreateColumn(tableId, userId),
     )
 
-    c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+    if result == service.UPDATE_COLUMN_SUCCESS_INT {
+        c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+        return
+    }
 
+    table, _ := ctr.tServ.GetTable(tableId)
+
+    if result == service.UPDATE_COLUMN_CONFLICT_INT {
+        c.HTML(409, "column.html", gin.H{
+            "commons": constant.Commons,
+            "project_cd" : c.Param("project_cd"),
+            "table": table,
+            "column": form,
+            "error": "同一ColumnNameが既に登録されています",
+        })
+    } else {
+        c.HTML(500, "column.html", gin.H{
+            "commons": constant.Commons,
+            "project_cd" : c.Param("project_cd"),
+            "table": table,
+            "column": form,
+            "error": "更新に失敗しました",
+        })
+    }
 }
 
 

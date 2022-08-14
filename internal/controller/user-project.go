@@ -51,13 +51,10 @@ func (ctr *userProjectController) permitJoinRequest(c *gin.Context) {
     targetUserId, err := strconv.Atoi(c.PostForm("user_id"))
     projectId := ctr.pServ.GetProjectId(userId, c.PostForm("project_cd"))
 
-    if err != nil || projectId == service.GET_PROJECT_ID_NOT_FOUND_INT {
-        c.Redirect(303, "/projects/requests")
-        return
+    if err == nil && projectId != service.GET_PROJECT_ID_NOT_FOUND_INT {
+        ctr.upServ.PermitJoinRequest(targetUserId, projectId)
     }
 
-    ctr.upServ.PermitJoinRequest(targetUserId, projectId)
-    
     c.Redirect(303, "/projects/requests")
 }
 

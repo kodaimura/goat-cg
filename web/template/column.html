@@ -2,7 +2,9 @@
 <main>
 <h1 class="title">{{ .table.TableName }}</h1>
 
-<form method="post" class="mb-4 box has-background-light">
+<div class="box has-background-light">
+<div class="has-text-danger">{{.error}}</div>
+<form method="post">
 	<div class="columns is-gapless">
 		<div class="column is-3">
 			<label class="label">ColumnName</label>
@@ -122,6 +124,7 @@
 
 	<input type="submit" value="Register" class="button is-dark">
 </form>
+</div>
 
 {{ if eq .column.DelFlg 1 }}
 {{template "modal-del" .}}

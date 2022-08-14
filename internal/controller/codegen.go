@@ -4,9 +4,7 @@ import (
     "github.com/gin-gonic/gin"
 
     "goat-cg/pkg/utils"
-    //"goat-cg/internal/core/jwt"
     "goat-cg/internal/shared/constant"
-    //"goat-cg/internal/shared/form"
     "goat-cg/internal/service"
 )
 
@@ -45,6 +43,7 @@ type CodegenPostBody struct {
     DbType string `json:"dbtype"`
 }
 
+
 //POST /:project_cd/codegen/goat
 func (ctr *codegenController) codegenGOAT(c *gin.Context) {
     ctr.urlServ.CheckProjectCdAndGetProjectId(c)
@@ -56,6 +55,7 @@ func (ctr *codegenController) codegenGOAT(c *gin.Context) {
 
     if err != nil {
         c.String(200, "error.txt")
+        return
     }
 
     fpath := ctr.cgServ.CodeGenerateGoat(pb.DbType, tableIds)
@@ -75,6 +75,7 @@ func (ctr *codegenController) codegenDDL(c *gin.Context) {
 
     if err != nil {
         c.String(200, "error.txt")
+        return
     }
 
     fpath := ctr.cgServ.CodeGenerateDdl(pb.DbType, tableIds)

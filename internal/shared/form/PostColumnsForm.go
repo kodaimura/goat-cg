@@ -6,6 +6,7 @@ import (
 
 
 type PostColumnsForm struct {
+	ColumnId int `form:"column_id"`
 	ColumnName string `form:"column_name" binding:"required,max=50,min=1"`
 	ColumnNameLogical string `form:"column_name_logical"`
 	DataTypeCls string `form:"data_type_cls" binding:"required"`

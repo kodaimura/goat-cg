@@ -20,6 +20,7 @@ func newProjectController() *projectController {
     return &projectController{pServ}
 }
 
+
 //GET /projects
 func (ctr *projectController) projectsPage(c *gin.Context) {
     userId := jwt.GetUserId(c)
@@ -53,25 +54,28 @@ func (ctr *projectController) createProjectPage(c *gin.Context) {
 
 //POST /projects
 func (ctr *projectController) createProject(c *gin.Context) {
-    result := ctr.pServ.CreateProject(
-        jwt.GetUserId(c), 
-        c.PostForm("project_cd"), 
-        c.PostForm("project_name"),
-    )
+    projectCd := c.PostForm("project_cd")
+    projectName := c.PostForm("project_name")
+    result := ctr.pServ.CreateProject(jwt.GetUserId(c), projectCd, projectName)
     
     if result == service.CREATE_PROJECT_SUCCESS_INT {
         c.Redirect(303, "/projects")
+        return
+    }
 
-    } else if result == service.CREATE_PROJECT_CONFLICT_INT {
+    if result == service.CREATE_PROJECT_CONFLICT_INT {
         c.HTML(409, "project.html", gin.H{
             "commons": constant.Commons,
-            "error": "ProjectCd が既に使われています。",
+            "error": "ProjectCd が既に使われています",
+            "project_cd": projectCd,
+            "project_name": projectName,
         })
-
     } else {
         c.HTML(500, "project.html", gin.H{
             "commons": constant.Commons,
-            "error": "登録に失敗しました。",
+            "error": "登録に失敗しました",
+            "project_cd": projectCd,
+            "project_name": projectName,
         })
 
     }

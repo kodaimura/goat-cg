@@ -56,9 +56,28 @@ func (ctr *tableController) createTable(c *gin.Context) {
     tableName := c.PostForm("table_name")
     tableNameLogical := c.PostForm("table_name_logical")
 
-    ctr.tServ.CreateTable(projectId, userId, tableName, tableNameLogical)
+    result := ctr.tServ.CreateTable(projectId, userId, tableName, tableNameLogical)
 
-    c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+    if result == service.CREATE_TABLE_SUCCESS_INT {
+        c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+        return
+    }
+
+    if result == service.CREATE_TABLE_CONFLICT_INT {
+        c.HTML(409, "table.html", gin.H{
+            "commons": constant.Commons,
+            "table_name": tableName,
+            "table_name_logical": tableNameLogical,
+            "error": "同一TableNameが既に登録されています",
+        })
+    } else {
+        c.HTML(500, "table.html", gin.H{
+            "commons": constant.Commons,
+            "table_name": tableName,
+            "table_name_logical": tableNameLogical,
+            "error": "登録に失敗しました",
+        })
+    }
 }
 
 
@@ -72,7 +91,10 @@ func (ctr *tableController) updateTablePage(c *gin.Context) {
     c.HTML(200, "table.html", gin.H{
         "commons": constant.Commons,
         "project_cd": c.Param("project_cd"),
-        "table": table,
+        "table_id": tableId,
+        "table_name": table.TableName,
+        "table_name_logical": table.TableNameLogical,
+        "del_flg": table.DelFlg,
     })
 }
 
@@ -90,11 +112,34 @@ func (ctr *tableController) updateTable(c *gin.Context) {
         delFlg = 0
     }
 
-    ctr.tServ.UpdateTable(
+    result := ctr.tServ.UpdateTable(
         projectId, tableId, userId, tableName, tableNameLogical, delFlg,
     )
 
-    c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+    if result == service.UPDATE_TABLE_SUCCESS_INT {
+        c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
+
+    } else if result == service.UPDATE_TABLE_CONFLICT_INT {
+        c.HTML(409, "table.html", gin.H{
+            "commons": constant.Commons,
+            "project_cd" : c.Param("project_cd"),
+            "table_id": tableId,
+            "table_name": tableName,
+            "table_name_logical": tableNameLogical,
+            "del_flg": delFlg,
+            "error": "同一TableNameが既に登録されています",
+        })
+    } else {
+        c.HTML(500, "table.html", gin.H{
+            "commons": constant.Commons,
+            "project_cd" : c.Param("project_cd"),
+            "table_id": tableId,
+            "table_name": tableName,
+            "table_name_logical": tableNameLogical,
+            "del_flg": delFlg,
+            "error": "更新に失敗しました",
+        })
+    }
 }
 
 
