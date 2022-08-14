@@ -34,6 +34,9 @@ func NewColumnService() ColumnService {
 }
 
 
+/*
+ * カラム一件取得
+ */
 func (serv *columnService) GetColumn(
 	columnId int,
 ) (entity.Column, error) {
@@ -47,6 +50,9 @@ func (serv *columnService) GetColumn(
 }
 
 
+/*
+ * カラム一覧取得 (テーブルIDに紐づく)
+ */
 func (serv *columnService) GetColumns(
 	tableId int,
 ) ([]entity.Column, error) {
@@ -60,7 +66,9 @@ func (serv *columnService) GetColumns(
 }
 
 
-// CreateColumn() Return value
+/*
+ * カラム登録
+ */
 /*----------------------------------------*/
 const CREATE_COLUMN_SUCCESS_INT = 0
 const CREATE_COLUMN_CONFLICT_INT = 1
@@ -89,7 +97,9 @@ func (serv *columnService) CreateColumn(
 }
 
 
-// UpdateColumn() Return value
+/*
+ * カラム更新 (論理削除含む)
+ */
 /*----------------------------------------*/
 const UPDATE_COLUMN_SUCCESS_INT = 0
 const UPDATE_COLUMN_CONFLICT_INT = 1
@@ -120,7 +130,9 @@ func (serv *columnService) UpdateColumn(
 }
 
 
-// DeleteColumn() Return value
+/*
+ * カラム削除 (物理削除)
+ */
 /*----------------------------------------*/
 const DELETE_COLUMN_SUCCESS_INT = 0
 const DELETE_COLUMN_ERROR_INT = 1
@@ -147,6 +159,9 @@ func (serv *columnService) DeleteColumn(columnId int) int {
 }
 
 
+/*
+ * カラム登録・更新・削除に伴いログ更新
+ */
 func (serv *columnService) updateTableLastLog(tableId int, action, columnName string) {
 	msg := fmt.Sprintf("%s: %s", action, columnName)
 

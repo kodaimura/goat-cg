@@ -33,8 +33,9 @@ func NewUrlCheckService() UrlCheckService {
     return &urlCheckService{pRep, tRep, cRep}
 }
 
+
 /* 
-URLパラメータ/:project_cd がログインユーザのアクセス可能なProjectかチェック
+URLパラメータ/:project_cd がログインユーザの参加中のプロジェクトかチェック
 異常 -> Redirect
 正常 -> return ProjectId
 */
@@ -58,7 +59,7 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 
 
 /* 
-URLパラメータ /:tableId がProject管理のTableかチェック
+URLパラメータ /:tableId がプロジェクト管理のテーブルかチェック
 異常 -> Redirect
 正常 -> return TableId
 */
@@ -92,7 +93,7 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 
 
 /* 
-URLパラメータ /:columnId がTable管理のカラムかチェック
+URLパラメータ /:columnId がテーブルに紐づくカラムかチェック
 異常 -> Redirect
 正常 -> return ColumnId
 */

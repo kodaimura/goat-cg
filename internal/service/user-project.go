@@ -31,8 +31,9 @@ func NewUserProjectService() UserProjectService {
 }
 
 
-
-// JoinRequest() Return value
+/*
+ * プロジェクト参加リクエスト (ユーザプロジェクト更新)
+ */
 /*----------------------------------------*/
 const JOIN_REQUEST_SUCCESS_INT = 0
 const JOIN_REQUEST_ALREADY_INT= 1
@@ -66,7 +67,9 @@ func (serv *userProjectService) JoinRequest(
 }
 
 
-// CancelJoinRequest() Return value
+/*
+ * プロジェクト参加リクエストキャンセル (ユーザプロジェクト削除)
+ */
 /*----------------------------------------*/
 const CANCEL_JOIN_REQUEST_SUCCESS_INT = 0
 const CANCEL_JOIN_REQUEST_ERROR_INT= 1
@@ -87,7 +90,9 @@ func (serv *userProjectService) CancelJoinRequest(
 }
 
 
-// PermitJoinRequest() Return value
+/*
+ * プロジェクト参加許可 (ユーザプロジェクト更新)
+ */
 /*----------------------------------------*/
 const PERMIT_JOIN_REQUEST_SUCCESS_INT = 0
 const PERMIT_JOIN_REQUEST_ERROR_INT= 1
@@ -115,6 +120,9 @@ func (serv *userProjectService) PermitJoinRequest(
 }
 
 
+/*
+ * ログインユーザがオーナー権限であるプロジェクトへのリクエストの一覧取得
+ */
 func (serv *userProjectService) GetJoinRequests(
 	userId int,
 ) ([]dto.QueOutJoinRequest, error) {

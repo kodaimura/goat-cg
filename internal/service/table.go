@@ -37,6 +37,9 @@ func NewTableService() TableService {
 }
 
 
+/*
+ * テーブル一覧取得 (プロジェクトIDに紐づくもの)
+ */
 func (serv *tableService) GetTables(
 	projectId int,
 ) ([]entity.Table, error) {
@@ -61,7 +64,9 @@ func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
 }
 
 
-// CreateTable() Return value
+/*
+ * テーブル登録
+ */
 /*----------------------------------------*/
 const CREATE_TABLE_SUCCESS_INT = 0
 const CREATE_TABLE_CONFLICT_INT = 1
@@ -95,7 +100,9 @@ func (serv *tableService) CreateTable(
 }
 
 
-// UpdateTable() Return value
+/*
+ * テーブル更新 (論理削除含む)
+ */
 /*----------------------------------------*/
 const UPDATE_TABLE_SUCCESS_INT = 0
 const UPDATE_TABLE_CONFLICT_INT = 1
@@ -129,7 +136,9 @@ func (serv *tableService) UpdateTable(
 }
 
 
-// DeleteTable() Return value
+/*
+ * テーブル削除 (物理削除)
+ */
 /*----------------------------------------*/
 const DELETE_TABLE_SUCCESS_INT = 0
 const DELETE_TABLE_ERROR_INT = 1
