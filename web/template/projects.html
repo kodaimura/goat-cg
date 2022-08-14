@@ -3,54 +3,52 @@
 <form method="GET" action="/projects" class="mb-4 mt-3">
 	<div class="columns is-gapless">
 		<div class="column is-3">
-		<input type="text" name="project_cd" class="input"
-		placeholder="ProjectCD">
+			<input type="text" name="project_cd" class="input" placeholder="ProjectCD">
 		</div>
 		<div class="column">
-		<input type="submit" value="Search" class="button is-success">
+			<input type="submit" value="Search" class="button is-success">
 		</div>
 	</div>
 </form>
 
 {{ if ne .project.ProjectId 0 }}
 <div class="mb-4">
-<span class="has-text-grey">Search result.</span>
-<li>
+	<span class="has-text-grey">Search result.</span>
+	<li>
 	{{.project.ProjectCd}}
 	{{.project.ProjectName}}
-	<form method="post" action="./projects/requests/join" style="display: inline;">
-		<input type="hidden" name="project_cd" value="{{.project.ProjectCd}}">
-		<input type="submit" class="button is-small is-rounded is-info is-outlined" value="join">
-	</form>
-</li>
+		<form method="post" action="./projects/requests/join" style="display: inline;">
+			<input type="hidden" name="project_cd" value="{{.project.ProjectCd}}">
+			<input type="submit" class="button is-small is-rounded is-info is-outlined" value="join">
+		</form>
+	</li>
 </div>
 <hr>
 {{ end }}
 
-
 {{ $l := len .projects2 }}
 {{ if ne $l 0 }}
 <div class="mb-4">
-<span class="has-text-grey">Pending approval.</span>
-{{ range .projects2 }}
-<li>
-{{.ProjectCd}}
-{{.ProjectName}}
-<form method="post" action="./projects/requests/cancel" style="display: inline;">
-	<input type="hidden" name="project_cd" value="{{.ProjectCd}}">
-	<input type="submit" class="button is-small is-rounded is-link is-outlined" value="cancel">
-</form>
-</li>
-{{ end }}
+	<span class="has-text-grey">Pending approval.</span>
+	{{ range .projects2 }}
+	<li>
+	{{.ProjectCd}}
+	{{.ProjectName}}
+	<form method="post" action="./projects/requests/cancel" style="display: inline;">
+		<input type="hidden" name="project_cd" value="{{.ProjectCd}}">
+		<input type="submit" class="button is-small is-rounded is-link is-outlined" value="cancel">
+	</form>
+	</li>
+	{{ end }}
 </div>
 <hr>
 {{ end }}
 
 <div>
-<span class="is-size-5">Accessible projects.</span>
-<div style="height: 360px; overflow-y:scroll;">
-<table class="table is-striped">
-	<tbody>
+	<span class="is-size-5">Accessible projects.</span>
+	<div style="height: 360px; overflow-y:scroll;">
+	<table class="table is-striped">
+		<tbody>
 		{{ range .projects }}
 		<tr>
 			<td style="width:5"></td>
@@ -62,9 +60,8 @@
 			</td>
 		</tr>
 		{{ end }}
-	</tbody>
-</table>
-</div>
+		</tbody>
+	</table>
 </div>
 </main>
 {{template "footer"}}

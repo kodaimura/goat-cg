@@ -3,27 +3,30 @@
 <h1 class="title">Create new project</h1>
 
 <div class="box has-background-light">
-<form method="post" action="/projects" class="mb-5">
+<form method="post" action="/projects">
 	<div class="columns is-gapless">
 		<div class="column is-3">
 			<label class="label">ProjectCD</label>
-        	<input type="text" name="project_cd" class="input is-danger" 
-        	required pattern="[0-9A-Z]{4,}">
+			<input type="text" name="project_cd" class="input is-danger" 
+			required pattern="[0-9A-Z]{4,}">
 			<p class="help is-danger">
-        	[0-9A-Z]{4,}
-      		</p>
+				[0-9A-Z]{4,}
+			</p>
 		</div>
 		<div class="column is-3">
 			<label class="label">ProjectName</label>
 			<input type="text" name="project_name" class="input is-danger" required>
 			<p class="help is-danger">
-        	This field is required
-      		</p>
+				This field is required
+			</p>
 		</div>
 	</div>
 	<input type="submit" value="Register" class="button is-dark">
 </form>
 </div>
-<a href="../projects">Back to Project list.</a>
+
+<div class="mt-5">
+	<a href="../projects">Back to Project list.</a>
+</div>
 </main>
 {{template "footer"}}

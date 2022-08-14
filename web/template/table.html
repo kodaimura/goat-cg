@@ -13,16 +13,17 @@ Edit Table
 		<div class="column is-3">
 			<label class="label">TableName</label>
 			<input type="text" name="table_name" class="input is-danger" 
-			value="{{.table.TableName}}" required>
+			value="{{.table.TableName}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
-        	This field is required
-      		</p>
+				This field is required. [a-z0-9_]{1,}. singular.
+			</p>
 		</div>
 		<div class="column is-3">
 			<label class="label">TableName（JP）</label>
 			<input type="text" name="table_name_logical" class="input" value="{{.table.TableNameLogical}}">
 		</div>
 	</div>
+
 	{{ if ne .table.TableId nil }}
 	<div class="columns">
 		<div class="column">
@@ -45,7 +46,7 @@ Edit Table
 {{ end }}
 
 <div class="mt-5">
-<a href="../tables">Back to Table list.</a>
+	<a href="../tables">Back to Table list.</a>
 </div>
 </main>
 {{template "footer"}}

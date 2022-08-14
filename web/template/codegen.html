@@ -1,44 +1,44 @@
 {{template "header" .}}
 <main>
 <div class="level">
-<div class="level-left">
-	<h1 class="title">Code Generate</h1>
+	<div class="level-left">
+		<h1 class="title">Code Generate</h1>
+	</div>
+	<div class="level-right">
+		<input type="button" class="button is-small" value="Select All" id="all">
+		<input type="button" class="button is-small" value="Clear" id="clear">
+	</div>
 </div>
-<div class="level-right">
-<input type="button" class="button is-small" value="Select All" id="all">
-<input type="button" class="button is-small" value="Clear" id="clear">
-</div>
-</div>
+
+<form method="post" action="./codegen/goat" name="cg">
 <div class="box has-background-light">
-<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
-  	<thead>
-		<tr>
+	<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
+		<thead>
+			<tr>
 			<th style="width:4%;"></th>
 			<th style="width:20%;">TableName</th>
 			<th style="width:20%;">TableName（JP）</th>
 			<th style="width:16%;">create</th>
 			<th style="width:16%;">update</th>
 			<th style="width:16%;">log</th>
-			<th style="width:8%;">
-				
+			<th style="width:8%;">	
 			</th>
-		</tr>
-	</thead>
-</table>
-<div style="height: 360px; overflow-y:scroll;">
-<form method="post" action="./codegen/goat" name="cg">
-<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
-	<tbody>
-		{{ range $i, $t := .tables }}
-		{{ if eq $t.DelFlg 1 }}
-		<tr class="has-background-grey">
-		{{ else }}
-		<tr>
-		{{ end }}
+			</tr>
+		</thead>
+	</table>
+
+	<div style="height: 360px; overflow-y:scroll;">
+	<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
+		<tbody>
+			{{ range $i, $t := .tables }}
+			{{ if eq $t.DelFlg 1 }}
+			<tr class="has-background-grey">
+			{{ else }}
+			<tr>
+			{{ end }}
 			<td style="width:4%;">{{$i}}</td>
 			<td style="width:20%;">{{$t.TableName}}</td>
 			<td style="width:20%;">{{$t.TableNameLogical}}</td>
-			
 			<td style="width:16%; font-size: 0.8em;">
 				{{$t.CreateAt}}
 			</td>
@@ -51,28 +51,29 @@
 			<td style="width:8%;" class="py-1">
 				<input type="checkbox" name="table_id" value="{{$t.TableId}}">
 			</td>
-		</tr>
-		{{ end }}
-	</tbody>
-</table>
+			</tr>
+			{{ end }}
+		</tbody>
+	</table>
+	</div>
 </div>
-</div>
+
 <div class="level">
-<div class="level-left">
-<a href="./tables">Back to Tables.</a>
-</div>
-<div class="level-right">
-<div class="select">
-<select id="db_type">
-	<option value="sqlite3">SQLite3</option>
-	<option value="postgresql">PostgreSQL</option>
-</select>
-</div>
-<input type="button" class="button is-info" value="CG DDL" id="cg-ddl">
-<input type="button" class="button is-danger" value="CG GOAT" id="cg-goat">
+	<div class="level-left">
+		<a href="./tables">Back to Tables.</a>
+	</div>
+	<div class="level-right">
+		<div class="select">
+			<select id="db_type">
+				<option value="sqlite3">SQLite3</option>
+				<option value="postgresql">PostgreSQL</option>
+			</select>
+		</div>
+		<input type="button" class="button is-info" value="CG DDL" id="cg-ddl">
+		<input type="button" class="button is-danger" value="CG GOAT" id="cg-goat">
+	</div>
 </div>
 </form>
-</div>
 </main>
 <script type="text/javascript" src="/js/codegen.js"></script>
 {{template "footer"}}

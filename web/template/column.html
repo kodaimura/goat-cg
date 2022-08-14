@@ -7,10 +7,10 @@
 		<div class="column is-3">
 			<label class="label">ColumnName</label>
 			<input type="text" name="column_name" class="input is-danger"
-			value="{{.column.ColumnName}}" required>
+			value="{{.column.ColumnName}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
-        	This field is required
-      		</p>
+				This field is required. [a-z0-9_]{1,}.
+			</p>
 		</div>
 		<div class="column is-3">
 			<label class="label">ColumnName（JP）</label>
@@ -21,55 +21,55 @@
 		<div class="column is-2">
 			<label class="label">DataType</label>
 			<div class="control">
-  			<div class="select">
-    		<select name="data_type_cls" value="{{.column.DataTypeCls}}">
-    			{{ if eq .column.DataTypeCls "10" }}
-    			<option value="10" selected>TEXT</option>
-    			{{ else if eq .column.DataTypeCls "11"}}
-    			<option value="11" selected>VARCHAR</option>
-    			{{ else if eq .column.DataTypeCls "12"}}
-    			<option value="12" selected>CHAR</option>
-    			{{ else if eq .column.DataTypeCls "20"}}
-    			<option value="20" selected>INTEGER</option>
-    			{{ else if eq .column.DataTypeCls "30"}}
-    			<option value="30" selected>NUMERIC</option>
-    			{{ else if eq .column.DataTypeCls "40"}}
-    			<option value="40" selected>TIMESTAMP</option>
-    			{{ else if eq .column.DataTypeCls "41"}}
-    			<option value="41" selected>DATE</option>
-    			{{ else if eq .column.DataTypeCls "50"}}
-    			<option value="50" selected>BLOB</option>
-    			{{ else if eq .column.DataTypeCls "01"}}
-    			<option value="01" selected>*SERIAL*</option>    			
-    			{{ end }}
-    			<option value="10">TEXT</option>
-      			<option value="11">VARCHAR</option>
-      			<option value="12">CHAR</option>
-      			<option value="20">INTEGER</option>
-      			<option value="30">NUMERIC</option>
-      			<option value="40">TIMESTAMP</option>
-      			<option value="41">DATE</option>
-      			<option value="50">BLOB</option>
-      			<option value="01">**SERIAL**</option>
-    		</select>
-  			</div>
+			<div class="select">
+				<select name="data_type_cls" value="{{.column.DataTypeCls}}">
+					{{ if eq .column.DataTypeCls "10" }}
+					<option value="10" selected>TEXT</option>
+					{{ else if eq .column.DataTypeCls "11"}}
+					<option value="11" selected>VARCHAR</option>
+					{{ else if eq .column.DataTypeCls "12"}}
+					<option value="12" selected>CHAR</option>
+					{{ else if eq .column.DataTypeCls "20"}}
+					<option value="20" selected>INTEGER</option>
+					{{ else if eq .column.DataTypeCls "30"}}
+					<option value="30" selected>NUMERIC</option>
+					{{ else if eq .column.DataTypeCls "40"}}
+					<option value="40" selected>TIMESTAMP</option>
+					{{ else if eq .column.DataTypeCls "41"}}
+					<option value="41" selected>DATE</option>
+					{{ else if eq .column.DataTypeCls "50"}}
+					<option value="50" selected>BLOB</option>
+					{{ else if eq .column.DataTypeCls "01"}}
+					<option value="01" selected>*SERIAL*</option>    			
+					{{ end }}
+					<option value="10">TEXT</option>
+					<option value="11">VARCHAR</option>
+					<option value="12">CHAR</option>
+					<option value="20">INTEGER</option>
+					<option value="30">NUMERIC</option>
+					<option value="40">TIMESTAMP</option>
+					<option value="41">DATE</option>
+					<option value="50">BLOB</option>
+					<option value="01">**SERIAL**</option>
+				</select>
+			</div>
 			</div>
 		</div>
 		<div class="column is-1">
 			<label class="label">Precision</label>
-			<input type="number" name="precision" class="input is-success"
+			<input type="number" name="precision" class="input is-success" 
 			value="{{.column.Precision}}">
 			<p class="help is-success">
-        	numeric(<b>P</b>,-) / [var]char(<b>N</b>)
-      		</p>
+				numeric(<b>P</b>,-) / [var]char(<b>N</b>)
+			</p>
 		</div>
 		<div class="column is-1">
 			<label class="label">Scale</label>
 			<input type="number" name="scale" class="input is-success"
 			value="{{.column.Scale}}">
 			<p class="help is-success">
-        	numeric(-, <b>S</b>)
-      		</p>
+				numeric(-, <b>S</b>)
+			</p>
 		</div>
 		<div class="column is-1"></div>
 		<div class="column is-1">
@@ -78,6 +78,7 @@
 			value="{{.column.DefaultValue}}">
 		</div>
 	</div>
+
 	<div class="columns is-gapless">
 		<div class="column is-1">
 			{{ if eq .column.NotNullFlg 1 }}
@@ -104,6 +105,7 @@
 			<label class="checkboxl" for="p_k_f">Primary Key</label>
 		</div>
 	</div>
+
 	{{ if ne .column.ColumnId nil }}
 	<div class="columns">
 		<div class="column">
@@ -127,7 +129,7 @@
 {{ end }}
 
 <div class="mt-5">
-<a href="../columns">Back to Columns</a>
+	<a href="../columns">Back to Columns</a>
 </div>
 </main>
 {{template "footer"}}
