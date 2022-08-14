@@ -42,7 +42,7 @@ document.getElementById("cg-goat").addEventListener("click", (e) => {
 	})
 	.then(filepath => {
 		let alink = document.createElement('a');
-    	alink.download = "test.sql";
+    	alink.download = filepath.substring(5);
     	alink.href = filepath;
     	alink.click();
     	return false;

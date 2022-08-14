@@ -47,7 +47,7 @@ type CodegenPostBody struct {
 
 //POST /:project_cd/codegen/goat
 func (ctr *codegenController) codegenGOAT(c *gin.Context) {
-    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    ctr.urlServ.CheckProjectCdAndGetProjectId(c)
 
     pb := &CodegenPostBody{} 
     c.BindJSON(&pb)
@@ -58,15 +58,15 @@ func (ctr *codegenController) codegenGOAT(c *gin.Context) {
         c.String(200, "error.txt")
     }
 
-    fpath, _ := ctr.cgServ.CodeGenerateGoat(projectId, pb.DbType, tableIds)
+    fpath := ctr.cgServ.CodeGenerateGoat(pb.DbType, tableIds)
 
-    c.String(200, fpath)
+    c.String(200, fpath[1:])
 }
 
 
 //POST /:project_cd/codegen/ddl
 func (ctr *codegenController) codegenDDL(c *gin.Context) {
-    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    ctr.urlServ.CheckProjectCdAndGetProjectId(c)
 
     pb := &CodegenPostBody{} 
     c.BindJSON(&pb)
@@ -77,7 +77,7 @@ func (ctr *codegenController) codegenDDL(c *gin.Context) {
         c.String(200, "error.txt")
     }
 
-    fpath, _ := ctr.cgServ.CodeGenerateDdl(projectId, pb.DbType, tableIds)
+    fpath := ctr.cgServ.CodeGenerateDdl(pb.DbType, tableIds)
 
-    c.String(200, fpath)
+    c.String(200, fpath[1:])
 }

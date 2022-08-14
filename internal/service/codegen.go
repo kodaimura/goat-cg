@@ -2,9 +2,10 @@ package service
 
 import (
 	"os"
+	"time"
 	"strconv"
 	"strings"
-	"time"
+	"os/exec"
 
 	"goat-cg/pkg/utils"
 	"goat-cg/internal/shared/constant"
@@ -15,8 +16,8 @@ import (
 
 
 type CodegenService interface {
-	CodeGenerateGoat(projectId int, dbType string, tableIds []int) (string, int)
-	CodeGenerateDdl(projectId int, dbType string, tableIds []int) (string, int)
+	CodeGenerateGoat(dbType string, tableIds []int) string
+	CodeGenerateDdl(dbType string, tableIds []int) string
 }
 
 
@@ -33,35 +34,91 @@ func NewCodegenService() CodegenService {
 }
 
 
-func (serv *codegenService) CodeGenerateGoat(
-	projectId int, 
-	dbType string,
-	tableIds []int, 
-) (string, int){
-	return "test.txt", 1
+var dataTypeMapSqlite3 = map[string]string {
+	constant.DATA_TYPE_CLS_SERIAL: "INTEGER AUTOINCREMENT",
+	constant.DATA_TYPE_CLS_TEXT: "TEXT",
+	constant.DATA_TYPE_CLS_VARCHAR: "TEXT",
+	constant.DATA_TYPE_CLS_CHAR: "TEXT",
+	constant.DATA_TYPE_CLS_INTEGER: "INTEGER",
+	constant.DATA_TYPE_CLS_NUMERIC: "NUMERIC",
+	constant.DATA_TYPE_CLS_TIMESTAMP: "TEXT",
+	constant.DATA_TYPE_CLS_DATE: "TEXT",
+	constant.DATA_TYPE_CLS_BLOB: "BLOB",
+}
+
+var dataTypeMapPostgresql = map[string]string{
+	constant.DATA_TYPE_CLS_SERIAL: "SERIAL",
+	constant.DATA_TYPE_CLS_TEXT: "TEXT",
+	constant.DATA_TYPE_CLS_VARCHAR: "VARCHAR",
+	constant.DATA_TYPE_CLS_CHAR: "CHAR",
+	constant.DATA_TYPE_CLS_INTEGER: "INTEGER",
+	constant.DATA_TYPE_CLS_NUMERIC: "NUMERIC",
+	constant.DATA_TYPE_CLS_TIMESTAMP: "TIMESTAMP",
+	constant.DATA_TYPE_CLS_DATE: "DATE",
+	constant.DATA_TYPE_CLS_BLOB: "BLOB",
+}
+
+var dbDataTypeGoTypeMap = map[string]string{
+	constant.DATA_TYPE_CLS_SERIAL: "int",
+	constant.DATA_TYPE_CLS_TEXT: "string",
+	constant.DATA_TYPE_CLS_VARCHAR: "string",
+	constant.DATA_TYPE_CLS_CHAR: "string",
+	constant.DATA_TYPE_CLS_INTEGER: "int",
+	constant.DATA_TYPE_CLS_NUMERIC: "float64",
+	constant.DATA_TYPE_CLS_TIMESTAMP: "string",
+	constant.DATA_TYPE_CLS_DATE: "string",
+	constant.DATA_TYPE_CLS_BLOB: "string",
 }
 
 
-func (serv *codegenService) CodeGenerateDdl(
-	projectId int, 
-	dbType string,
-	tableIds []int, 
-) (string, int){
-	ddl := serv.generateDdlCreateTables(dbType, tableIds)
-	ddl += serv.generateDdlCreateTriggers(dbType, tableIds)
+func (serv *codegenService) writeFile(path, content string) {
+	f, err := os.Create(path)
+	defer f.Close()
 
-    fn := "ddl-" + time.Now().Format("2006-01-02-15-04-05") + 
-    "-" +utils.RandomString(7) + ".sql"
-
-	f, err := os.Create("tmp/" + fn)
 	if err != nil {
 		logger.LogError(err.Error())
 	}
-	if _, err = f.Write([]byte(ddl)); err != nil {
+	if _, err = f.Write([]byte(content)); err != nil {
+		logger.LogError(err.Error())
+	}
+}
+
+
+func (serv *codegenService) CodeGenerateDdl(dbType string, tableIds []int) string {
+	path := "./tmp/ddl-" + time.Now().Format("2006-01-02-15-04-05") + 
+    "-" + utils.RandomString(7) + ".sql"
+
+	serv.generateDdlSource(dbType, tableIds, path)
+
+	return path
+}
+
+
+func (serv *codegenService) CodeGenerateGoat(dbType string, tableIds []int) string {
+	path := "./tmp/goat-" + time.Now().Format("2006-01-02-15-04-05") + 
+    "-" + utils.RandomString(7)
+
+	serv.generateGoatSource(dbType, tableIds, path)
+
+	err := exec.Command("zip", "-r", path + ".zip", path).Run() 
+
+	if err != nil {
 		logger.LogError(err.Error())
 	}
 
-	return "/tmp/" + fn, 1
+	return path + ".zip"
+}
+
+
+/* ############################################## */
+/* ############## generateDdlSource ############# */
+/* ############################################## */
+
+func (serv *codegenService) generateDdlSource(dbType string, tableIds []int, path string) {
+	ddl := serv.generateDdlCreateTables(dbType, tableIds) + 
+	serv.generateDdlCreateTriggers(dbType, tableIds)
+
+    serv.writeFile(path, ddl)
 }
 
 
@@ -128,30 +185,6 @@ func (serv *codegenService) generateDdlColumn(dbType string, col entity.Column) 
 	return strings.TrimRight(ddl, " ")
 }
 
-
-var dataTypeMapSqlite3 = map[string]string {
-	constant.DATA_TYPE_CLS_SERIAL: "INTEGER AUTOINCREMENT",
-	constant.DATA_TYPE_CLS_TEXT: "TEXT",
-	constant.DATA_TYPE_CLS_VARCHAR: "TEXT",
-	constant.DATA_TYPE_CLS_CHAR: "TEXT",
-	constant.DATA_TYPE_CLS_INTEGER: "INTEGER",
-	constant.DATA_TYPE_CLS_NUMERIC: "NUMERIC",
-	constant.DATA_TYPE_CLS_TIMESTAMP: "TEXT",
-	constant.DATA_TYPE_CLS_DATE: "TEXT",
-	constant.DATA_TYPE_CLS_BLOB: "BLOB",
-}
-
-var dataTypeMapPostgresql = map[string]string{
-	constant.DATA_TYPE_CLS_SERIAL: "SERIAL",
-	constant.DATA_TYPE_CLS_TEXT: "TEXT",
-	constant.DATA_TYPE_CLS_VARCHAR: "VARCHAR",
-	constant.DATA_TYPE_CLS_CHAR: "CHAR",
-	constant.DATA_TYPE_CLS_INTEGER: "INTEGER",
-	constant.DATA_TYPE_CLS_NUMERIC: "NUMERIC",
-	constant.DATA_TYPE_CLS_TIMESTAMP: "TIMESTAMP",
-	constant.DATA_TYPE_CLS_DATE: "DATE",
-	constant.DATA_TYPE_CLS_BLOB: "BLOB",
-}
 
 func (serv *codegenService) generateDdlColumnDataType(dbType string, col entity.Column) string {
 	ddl := ""
@@ -297,4 +330,95 @@ func (serv *codegenService) generateDdlTrigger(dbType string, tid int) string {
 	}
 
 	return ""
+}
+
+
+/* ############################################## */
+/* ############# generateGoatSource ############# */
+/* ############################################## */
+
+func (serv *codegenService) generateGoatSource(dbType string, tableIds []int, path string) {
+	mePath := path + "/model/entity"
+	if err := os.MkdirAll(mePath, 0777); err != nil {
+		logger.LogError(err.Error())
+	}
+
+	mrPath := path + "/model/repository"
+	if err := os.MkdirAll(mrPath, 0777); err != nil {
+		logger.LogError(err.Error())
+	}
+
+	for _, tid := range tableIds {
+		table, err := serv.tRep.Select(tid)
+		if err != nil {
+			logger.LogError(err.Error())
+			break
+		}
+
+		columns, err := serv.cRep.SelectByTableId(tid)
+		if err != nil {
+			logger.LogError(err.Error())
+			break
+		}
+
+		serv.generateGoatEntitySource(table.TableName, columns, mePath)
+		serv.generateGoatRepositorySource(dbType, table.TableName, columns, mrPath)
+		//serv.generateGoatController(tableName, cPath)
+		//serv.generateGoatService(tableName, sPath)
+	}	
+}
+
+// (user) => user.go  (user_name) => user-name.go
+func (serv *codegenService) tableNameToFileName(tableName string) string {
+	n := strings.ToLower(tableName)
+	n = strings.Replace(n, "_", "-", -1)
+	return n + ".go"
+}
+
+
+// (user) => User  (user_name) => UserName
+func (serv *codegenService) snakeToCamelCase(tableName string) string {
+	n := strings.ToLower(tableName)
+	ls := strings.Split(n, "_")
+	for i, s := range ls {
+		ls[i] = strings.ToUpper(s[0:1]) + s[1:]
+	}
+	return strings.Join(ls, "")
+}
+
+
+func (serv *codegenService) generateGoatEntitySource(
+	tableName string, columns []entity.Column, path string,
+) {
+	entityName := serv.snakeToCamelCase(tableName)
+	path += "/" + entityName + ".go"
+	entity := serv.generateGoatEntity(entityName, columns)
+	serv.writeFile(path, entity)
+}
+
+
+func (serv *codegenService) generateGoatEntity(
+	entityName string, columns []entity.Column,
+) string {
+	entity := "package entity\n\n\n" +
+	"type " + entityName + " struct {\n"
+
+	for _, col := range columns {
+		entity += "\t" + serv.snakeToCamelCase(col.ColumnName) + " " +
+		dbDataTypeGoTypeMap[col.DataTypeCls] + " " +
+		"`db:\"" + strings.ToLower(col.ColumnName) + "\" " +
+		"json:\"" + strings.ToLower(col.ColumnName) + "\"`\n"
+	}
+
+	return entity + "}"
+}
+
+
+func (serv *codegenService) generateGoatRepositorySource(
+	tableName string, columns []entity.Column, path string,
+) {
+	entityName := serv.snakeToCamelCase(tableName)
+	path += "/" + entityName + ".go"
+	entity := serv.generateGoatEntity(entityName, columns)
+	serv.writeFile(path, entity)
 }
