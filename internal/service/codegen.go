@@ -36,6 +36,37 @@ func NewCodegenService() CodegenService {
 }
 
 
+// CodeGenerateDdl generate ddl(create table) source 
+// and return file path.
+// param dbType: "sqlite3" or "postgresql" 
+func (serv *codegenService) CodeGenerateDdl(dbType string, tableIds []int) string {
+	path := "./tmp/ddl-" + time.Now().Format("2006-01-02-15-04-05") + 
+    	"-" + utils.RandomString(7) + ".sql"
+
+	serv.cgDdlSource(dbType, tableIds, path)
+
+	return path
+}
+
+
+// CodeGenerateGoat generate programs(entity, repository for goat) 
+// and return zip path .
+// param dbType: "sqlite3" or "postgresql" 
+func (serv *codegenService) CodeGenerateGoat(dbType string, tableIds []int) string {
+	path := "./tmp/goat-" + time.Now().Format("2006-01-02-15-04-05") + 
+    	"-" + utils.RandomString(7)
+
+	serv.cgGoatSource(dbType, tableIds, path)
+
+	if err := exec.Command("zip", "-r", path + ".zip", path).Run(); err != nil {
+		logger.LogError(err.Error())
+	}
+
+	return path + ".zip"
+}
+
+
+//dataTypeMapSqlite3 map DataTypeCls and sqlite3 data types.
 var dataTypeMapSqlite3 = map[string]string {
 	constant.DATA_TYPE_CLS_SERIAL: "INTEGER AUTOINCREMENT",
 	constant.DATA_TYPE_CLS_TEXT: "TEXT",
@@ -48,6 +79,7 @@ var dataTypeMapSqlite3 = map[string]string {
 	constant.DATA_TYPE_CLS_BLOB: "BLOB",
 }
 
+//dataTypeMapPostgresql map DataTypeCls and postgresql data types.
 var dataTypeMapPostgresql = map[string]string{
 	constant.DATA_TYPE_CLS_SERIAL: "SERIAL",
 	constant.DATA_TYPE_CLS_TEXT: "TEXT",
@@ -60,6 +92,7 @@ var dataTypeMapPostgresql = map[string]string{
 	constant.DATA_TYPE_CLS_BLOB: "BLOB",
 }
 
+//dbDataTypeGoTypeMap map DataTypeCls and Golang types.
 var dbDataTypeGoTypeMap = map[string]string{
 	constant.DATA_TYPE_CLS_SERIAL: "int",
 	constant.DATA_TYPE_CLS_TEXT: "string",
@@ -86,268 +119,282 @@ func (serv *codegenService) writeFile(path, content string) {
 }
 
 
-func (serv *codegenService) CodeGenerateDdl(dbType string, tableIds []int) string {
-	path := "./tmp/ddl-" + time.Now().Format("2006-01-02-15-04-05") + 
-    	"-" + utils.RandomString(7) + ".sql"
+func (serv *codegenService) extractPrimaryKeys(columns []entity.Column) []entity.Column {
+	var ret []entity.Column
 
-	serv.generateDdlSource(dbType, tableIds, path)
-
-	return path
-}
-
-
-func (serv *codegenService) CodeGenerateGoat(dbType string, tableIds []int) string {
-	path := "./tmp/goat-" + time.Now().Format("2006-01-02-15-04-05") + 
-    	"-" + utils.RandomString(7)
-
-	serv.generateGoatSource(dbType, tableIds, path)
-
-	err := exec.Command("zip", "-r", path + ".zip", path).Run() 
-
-	if err != nil {
-		logger.LogError(err.Error())
+	for _, col := range columns {
+		if col.PrimaryKeyFlg == constant.FLG_ON {
+			ret = append(ret, col)
+		}
 	}
 
-	return path + ".zip"
+	return ret
 }
 
 
-/* ############################################## */
-/* ############## generateDdlSource ############# */
-/* ############################################## */
+///////////////////////
+/// CodeGenerateDdl ///
+///////////////////////
 
-func (serv *codegenService) generateDdlSource(dbType string, tableIds []int, path string) {
-	ddl := serv.generateDdlCreateTables(dbType, tableIds) + 
-	serv.generateDdlCreateTriggers(dbType, tableIds)
+// cgDdlSource generate ddl(create table) source.
+// main processing of CodeGenerateDdl.
+func (serv *codegenService) cgDdlSource(dbType string, tableIds []int, path string) {
+	s := serv.cgDdlCreateTables(dbType, tableIds) + "\n" +
+		serv.cgDdlCreateTriggers(dbType, tableIds)
 
-    serv.writeFile(path, ddl)
+    serv.writeFile(path, s)
 }
 
 
-func (serv *codegenService) generateDdlCreateTables(dbType string, tableIds []int) string {
-	ddl := ""
-
+func (serv *codegenService) cgDdlCreateTables(dbType string, tableIds []int) string {
+	s := ""
 	for _, tid := range tableIds {
-		ddl += serv.generateDdlTable(dbType, tid) + "\n\n"
+		s += serv.cgDdlCreateTable(dbType, tid) + "\n\n"
 	}
 
-	return ddl
+	return s
 }
 
 
-func (serv *codegenService) generateDdlTable(dbType string, tid int) string {
+func (serv *codegenService) cgDdlCreateTable(dbType string, tid int) string {
+	s := ""
 	table, err := serv.tRep.Select(tid)
 
 	if err != nil {
 		logger.LogError(err.Error())
+		return s
 	}
 
-	ddl := "CREATE TABLE IF NOT EXISTS " + table.TableName + " (\n"
-	ddl += serv.generateDdlColumns(dbType, tid)
-	ddl += "\n);"
+	s += "CREATE TABLE IF NOT EXISTS " + table.TableName + " (\n" +
+		serv.cgDdlColumns(dbType, tid) + "\n);"
 
-	return ddl
+	return s
 }
 
 
-func (serv *codegenService) generateDdlColumns(dbType string, tid int) string {
+func (serv *codegenService) cgDdlColumns(dbType string, tid int) string {
+	s := ""
 	columns, err := serv.cRep.SelectByTableId(tid)
 
 	if err != nil {
 		logger.LogError(err.Error())
+		return s
 	}
-
-	ddl := ""
-	for _, col := range columns {
-		ddl += "\t" + serv.generateDdlColumn(dbType, col) + ",\n"
-	}
-
-	ddl += serv.generateDdlCommonColumns(dbType)
-
-	pk := serv.generateDdlPrymaryKey(dbType, columns)
-	if pk == "" {
-		ddl = strings.TrimRight(ddl, ",\n")
-	} else {
-		ddl += "\t" + pk
-	}
-
-	return ddl
-}
-
-
-func (serv *codegenService) generateDdlColumn(dbType string, col entity.Column) string {
-	ddl := col.ColumnName
-	ddl += " "
-	ddl += serv.generateDdlColumnDataType(dbType, col)
-	ddl += " "
-	ddl += serv.generateDdlColumnConstraints(dbType, col)
-	ddl = strings.TrimRight(ddl, " ")
-	ddl += " "
-	ddl += serv.generateDdlColumnDefault(dbType, col)
-	return strings.TrimRight(ddl, " ")
-}
-
-
-func (serv *codegenService) generateDdlColumnDataType(dbType string, col entity.Column) string {
-	ddl := ""
-
-	if dbType == "sqlite3" {
-		ddl = dataTypeMapSqlite3[col.DataTypeCls]
-
-	} else if dbType == "postgresql" {
-		ddl = dataTypeMapPostgresql[col.DataTypeCls]
-
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
-		col.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
-
-			if col.Precision != 0 {
-				ddl += "(" + strconv.Itoa(col.Precision) + ")"
-			}	
-		}
-
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
-			if col.Precision != 0 {
-				ddl += "(" + strconv.Itoa(col.Precision)
-				ddl += "," + strconv.Itoa(col.Scale) + ")"
-			}
-		}
-	}
-	return ddl
-}
-
-
-func (serv *codegenService) generateDdlColumnConstraints(dbType string, col entity.Column) string {
-	ddl := ""
-
-	if col.NotNullFlg == constant.FLG_ON {
-		ddl += "NOT NULL"
-	}
-
-	if col.UniqueFlg == constant.FLG_ON {
-		if ddl != "" {
-			ddl += " "
-		} 
-		ddl += "UNIQUE"
-	} 
-	
-	return ddl
-}
-
-
-func (serv *codegenService) generateDdlPrymaryKey(dbType string, columns []entity.Column) string {
-	ddl := "PRIMARY KEY("
-	pkc := 0
 
 	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			if pkc != 0 {
-				ddl += ", "
-			}
-			ddl += col.ColumnName
-			pkc++
-		}
+		s += serv.cgDdlColumn(dbType, col)
 	}
-	
-	if pkc == 0 {
-		ddl = ""
-	} else {
-		ddl += ")"
-	}
+	s += serv.cgDdlCommonColumns(dbType)
+	s += serv.cgDdlPrymaryKey(dbType, columns)
 
-	return ddl
+	return strings.TrimRight(s, ",\n")
 }
 
 
-func (serv *codegenService) generateDdlColumnDefault(dbType string, col entity.Column) string {
-	if col.DefaultValue != "" {
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC ||
-		col.DataTypeCls == constant.DATA_TYPE_CLS_INTEGER {
-			return "DEFAULT " + col.DefaultValue
-		} else {
-			return "DEFAULT '" + col.DefaultValue + "'"
-		}
-	}
-
-	return ""
-}
-
-
-func (serv *codegenService) generateDdlCommonColumns(dbType string) string {
+func (serv *codegenService) cgDdlCommonColumns(dbType string) string {
+	s := ""
 	if dbType == "sqlite3" {
-		return "\tcreate_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n" + 
+		s = "\tcreate_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n" + 
 			"\tupdate_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n"
 
 	} else if dbType == "postgresql" {
-		return "\tcreate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
+		s = "\tcreate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
 			"\tupdate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
 	}
 
-	return ""
+	return s
 }
 
 
+func (serv *codegenService) cgDdlPrymaryKey(dbType string, columns []entity.Column) string {
+	s := "" 
+	pkcols := serv.extractPrimaryKeys(columns)
 
-func (serv *codegenService) generateDdlCreateTriggers(dbType string, tableIds []int) string {
-	ddl := ""
-
-	ddl += serv.generateDdlFunction(dbType)
-
-	for _, tid := range tableIds {
-		ddl += serv.generateDdlTrigger(dbType, tid) + "\n\n"
+	for i, col := range pkcols {
+		if i == 0 {
+			s += "\tPRIMARY KEY("
+		} else {
+			s += ", "
+		}
+		s += col.ColumnName
+	}
+	
+	if s != "" {
+		s += "),\n"
 	}
 
-	return ddl
+	return s
 }
 
 
-func (serv *codegenService) generateDdlFunction(dbType string) string {
+func (serv *codegenService) cgDdlColumn(dbType string, col entity.Column) string {
+	s := "\t" + col.ColumnName + " " + serv.cgDdlColumnDataType(dbType, col)
+	if cts := serv.cgDdlColumnConstraints(col); cts != "" {
+		s += " " + cts
+	}
+	if dflt := serv.cgDdlColumnDefault(col); dflt != "" {
+		s += " " + dflt
+	}
+
+	return s + ",\n"
+}
+
+
+func (serv *codegenService) cgDdlColumnConstraints(col entity.Column) string {
+	s := ""
+	if col.NotNullFlg == constant.FLG_ON {
+		s += "NOT NULL "
+	}
+	if col.UniqueFlg == constant.FLG_ON {
+		s += "UNIQUE"
+	} 
+	
+	return strings.TrimRight(s, " ")
+}
+
+
+func (serv *codegenService) cgDdlColumnDefault(col entity.Column) string {
+	s := ""
+	if col.DefaultValue != "" {
+		if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC ||
+		col.DataTypeCls == constant.DATA_TYPE_CLS_INTEGER {
+			s = "DEFAULT " + col.DefaultValue
+		} else {
+			s = "DEFAULT '" + col.DefaultValue + "'"
+		}
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) cgDdlColumnDataType(dbType string, col entity.Column) string {
+	s := ""
+	if dbType == "sqlite3" {
+		s = dataTypeMapSqlite3[col.DataTypeCls]
+
+	} else if dbType == "postgresql" {
+		s = serv.cgDdlColumnDataTypePostgresql(col)
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) cgDdlColumnDataTypePostgresql(col entity.Column) string {
+	s := dataTypeMapPostgresql[col.DataTypeCls]
+
+	if col.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
+	col.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
+		if col.Precision != 0 {
+			s += "(" + strconv.Itoa(col.Precision) + ")"
+		}	
+	}
+	if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
+		if col.Precision != 0 {
+			s += "(" + strconv.Itoa(col.Precision) + "," + strconv.Itoa(col.Scale) + ")"
+		}
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) cgDdlCreateTriggers(dbType string, tableIds []int) string {
+	s := ""
 	if dbType == "postgresql" {
-		return "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
+		s = "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
 			"\tBEGIN\n\t\tnew.updated_at := ''now'';\n\t\treturn new;\n\tEND\n" + 
 			"' language 'plpgsql';\n\n"
 	}
 
-	return ""
+	for _, tid := range tableIds {
+		s = serv.cgDdlCreateTrigger(dbType, tid) + "\n\n"
+	}
+
+	return s
 }
 
 
-func (serv *codegenService) generateDdlTrigger(dbType string, tid int) string {
+func (serv *codegenService) cgDdlCreateTrigger(dbType string, tid int) string {
+	s := ""
 	table, err := serv.tRep.Select(tid)
 
 	if err != nil {
 		logger.LogError(err.Error())
+		return s
 	}
 
 	if dbType == "sqlite3" {
-		return "CREATE TRIGGER IF NOT EXISTS " + table.TableName + "_update_trg " + 
+		s = "CREATE TRIGGER IF NOT EXISTS " + table.TableName + "_update_trg " + 
 			"AFTER UPDATE ON " + table.TableName + 
 			"\nBEGIN\n\tUPDATE " + table.TableName + 
 			"\n\tSET update_at = DATETIME('now', 'localtime')\n" + 
 			"\n\tWHERE rowid == NEW.rowid;\nEND;"
 
 	} else if dbType == "postgresql" {
-		return "CREATE TRIGGER " + table.TableName + "_update_trg " + 
+		s = "CREATE TRIGGER " + table.TableName + "_update_trg " + 
 			"AFTER UPDATE ON " + table.TableName + " FOR EACH ROW" + 
 			"\n\texecute procedure set_update_time()" 
 	}
 
-	return ""
+	return s
 }
 
 
-/* ############################################## */
-/* ############# generateGoatSource ############# */
-/* ############################################## */
+////////////////////////
+/// CodeGenerateGoat ///
+////////////////////////
 
-func (serv *codegenService) generateGoatSource(dbType string, tableIds []int, path string) {
+// tableNameToFileName get file name from tabel name
+// user => user.go / user_name => user-name.go
+func (serv *codegenService) tableNameToFileName(tableName string) string {
+	n := strings.ToLower(tableName)
+	n = strings.Replace(n, "_", "-", -1)
+	return n + ".go"
+}
+
+
+// snakeToCamelCase
+// user => User / user_name => UserName
+func (serv *codegenService) snakeToCamelCase(snake string) string {
+	n := strings.ToLower(snake)
+	ls := strings.Split(n, "_")
+	for i, s := range ls {
+		ls[i] = strings.ToUpper(s[0:1]) + s[1:]
+	}
+	return strings.Join(ls, "")
+}
+
+
+// snakeToLowerCamelCase
+// user => user / user_name => userName
+func (serv *codegenService) snakeToLowerCamelCase(snake string) string {
+	n := strings.ToLower(snake)
+	ls := strings.Split(n, "_")
+	for i, s := range ls {
+		if i == 0 {
+	        continue
+	    }
+		ls[i] = strings.ToUpper(s[0:1]) + s[1:]
+	}
+	return strings.Join(ls, "")
+}
+
+
+// cgGoatSource generate programs(entity, repository for goat).
+// main processing of CodeGenerateGoat.
+func (serv *codegenService) cgGoatSource(dbType string, tableIds []int, path string) {
 	mePath := path + "/model/entity"
 	if err := os.MkdirAll(mePath, 0777); err != nil {
 		logger.LogError(err.Error())
+		return
 	}
 
 	mrPath := path + "/model/repository"
 	if err := os.MkdirAll(mrPath, 0777); err != nil {
 		logger.LogError(err.Error())
+		return
 	}
 
 	for _, tid := range tableIds {
@@ -363,154 +410,59 @@ func (serv *codegenService) generateGoatSource(dbType string, tableIds []int, pa
 			break
 		}
 
-		serv.generateGoatEntitySource(table.TableName, columns, mePath)
-		serv.generateGoatRepositorySource(dbType, table.TableName, columns, mrPath)
-		//serv.generateGoatController(tableName, cPath)
-		//serv.generateGoatService(tableName, sPath)
+		serv.cgGoatEntitySource(table.TableName, columns, mePath)
+		serv.cgGoatRepositorySource(dbType, table.TableName, columns, mrPath)
+		//serv.cgGoatController(tableName, cPath)
+		//serv.cgGoatService(tableName, sPath)
 	}	
 }
 
-// (user) => user.go  (user_name) => user-name.go
-func (serv *codegenService) tableNameToFileName(tableName string) string {
-	n := strings.ToLower(tableName)
-	n = strings.Replace(n, "_", "-", -1)
-	return n + ".go"
-}
 
+/////////////////////////////////
+/// CodeGenerateGoat (Entity) ///
+/////////////////////////////////
 
-// (user) => User  (user_name) => UserName
-func (serv *codegenService) snakeToCamelCase(snake string) string {
-	n := strings.ToLower(snake)
-	ls := strings.Split(n, "_")
-	for i, s := range ls {
-		ls[i] = strings.ToUpper(s[0:1]) + s[1:]
-	}
-	return strings.Join(ls, "")
-}
-
-
-// (user) => user  (user_name) => userName
-func (serv *codegenService) snakeToLowerCamelCase(snake string) string {
-	n := strings.ToLower(snake)
-	ls := strings.Split(n, "_")
-	for i, s := range ls {
-		if i == 0 {
-	        continue
-	    }
-		ls[i] = strings.ToUpper(s[0:1]) + s[1:]
-	}
-	return strings.Join(ls, "")
-}
-
-
-func (serv *codegenService) generateGoatEntitySource(
+// cgGoatEntitySource generate entity program for goat.
+func (serv *codegenService) cgGoatEntitySource(
 	tableName string, columns []entity.Column, path string,
 ) {
 	entityName := serv.snakeToCamelCase(tableName)
 	path += "/" + entityName + ".go"
-	entity := serv.generateGoatEntity(entityName, columns)
-	serv.writeFile(path, entity)
+	s := serv.cgGoatEntity(entityName, columns)
+	serv.writeFile(path, s)
 }
 
 
-func (serv *codegenService) generateGoatEntity(
+func (serv *codegenService) cgGoatEntity(
 	entityName string, columns []entity.Column,
 ) string {
-	entity := "package entity\n\n\n" +
-	"type " + entityName + " struct {\n"
+	s := "package entity\n\n\n"
 
+	s += "type " + entityName + " struct {\n"
 	for _, col := range columns {
-		entity += "\t" + serv.snakeToCamelCase(col.ColumnName) + " " +
+		s += "\t" + serv.snakeToCamelCase(col.ColumnName) + " " +
 			dbDataTypeGoTypeMap[col.DataTypeCls] + " " +
 			"`db:\"" + strings.ToLower(col.ColumnName) + "\" " +
 			"json:\"" + strings.ToLower(col.ColumnName) + "\"`\n"
 	}
+	s += "\tCreateAt string `db:\"create_at\" json:\"create_at\"`\n"
+	s += "\tUpdateAt string `db:\"update_at\" json:\"update_at\"`\n"
 
-	entity += "\tCreateAt string `db:\"create_at\" json:\"create_at\"`\n"
-	entity += "\tUpdateAt string `db:\"update_at\" json:\"update_at\"`\n"
-	return entity + "}"
+	return s + "}"
 }
 
 
-func (serv *codegenService) generateGoatRepositorySource(
-	dbType, tableName string, columns []entity.Column, path string,
-) {
-	path += "/" + serv.tableNameToFileName(tableName)
-	repository := serv.generateGoatRepository(dbType, tableName, columns)
-	serv.writeFile(path, repository)
-}
+/////////////////////////////////////
+/// CodeGenerateGoat (Repository) ///
+/////////////////////////////////////
 
-
-func (serv *codegenService) generateGoatRepository(
-	dbType, tableName string, columns []entity.Column,
-) string {
-	entityName := serv.snakeToCamelCase(tableName)
-	repoIName := entityName + "Repository" 
-	repoName := serv.snakeToLowerCamelCase(tableName) + "Repository" 
-
-	repository := "package repository\n\n\n" +
-		"import (\n" + 
-		"\t\"database/sql\"\n\n" +
-		"\t\"xxxxx/internal/core/db\"\n" +
-		"\t\"xxxxx/internal/model/entity\"\n)\n\n\n"
-	
-	repository += serv.generateGoatRepositoryInterface(tableName, entityName, repoIName, columns)
-
-	repository += "\n\n\n" +
-		"type " + repoName + " struct {\n" + "\tdb *sql.DB\n}" +
-		"\n\n\n" +
-		"func New" + repoIName + "() " + repoIName + " {\n" +
-		"\tdb := db.GetDB()\n" + 
-		"\treturn &" + repoName + "{db}\n}" +
-		"\n\n\n"
-
-	rep := serv.generateGoatRepositoryInsert(dbType, tableName, entityName, repoName, columns)
-	if rep != "" {
-		repository += rep + "\n\n\n"
-	} 
-
-
-	rep = serv.generateGoatRepositorySelect(dbType, tableName, entityName, repoName, columns)
-	if rep != "" {
-		repository += rep + "\n\n\n"
-	}
-
-	rep = serv.generateGoatRepositoryUpdate(dbType, tableName, entityName, repoName, columns)
-	if rep != "" {
-		repository += rep + "\n\n\n"
-	} 
-
-	rep = serv.generateGoatRepositoryDelete(dbType, tableName, entityName, repoName, columns)
-	repository += rep
-
-
-	return repository
-}
-
-
-func (serv *codegenService) getPrimaryKeys(
-	columns []entity.Column,
-) []entity.Column {
-	var pkcols []entity.Column
-
-	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			pkcols = append(pkcols, col)
-		}
-	}
-
-	return pkcols
-}
-
-/*
-tableName: user 
-
-columnName: user_id => id
-columnName: user_name => name
-columnName: age => age
-columnName: company_id => companyId
-columnName: user_second_name => secondName
-*/
+// columnNameToVariableName get shorten variable name from column name.
+// tableName: user
+// columnName: user_id => id
+// columnName: user_name => name
+// columnName: age => age
+// columnName: company_id => companyId
+// columnName: user_second_name => secondName
 func (serv *codegenService) columnNameToVariableName(
 	tableName, columnName string,
 ) string {
@@ -523,10 +475,9 @@ func (serv *codegenService) columnNameToVariableName(
 }
 
 
-/*
-entityName: User => u
-entityName: UserProject => up
-*/
+// entityNameToVariableName get shorten variable name from entity name.
+// entityName: User => u
+// entityName: UserProject => up
 func (serv *codegenService) entityNameToVariableName(
 	entityName string,
 ) string {
@@ -540,70 +491,142 @@ func (serv *codegenService) entityNameToVariableName(
 }
 
 
-func (serv *codegenService) generateGoatRepositoryInterface(
+// cgGoatRepositorySource generate repository program for goat.
+func (serv *codegenService) cgGoatRepositorySource(
+	dbType, tableName string, columns []entity.Column, path string,
+) {
+	path += "/" + serv.tableNameToFileName(tableName)
+	s := serv.cgGoatRepository(dbType, tableName, columns)
+	serv.writeFile(path, s)
+}
+
+
+func (serv *codegenService) cgGoatRepository(
+	dbType, tableName string, columns []entity.Column,
+) string {
+	// EntityName
+	en := serv.snakeToCamelCase(tableName)
+	// RepositoryInterfaceName
+	rin := en + "Repository"
+	// RepositoryName
+	rn := serv.snakeToLowerCamelCase(tableName) + "Repository" 
+
+	s := "package repository\n\n\n" +
+		"import (\n" + 
+		"\t\"database/sql\"\n\n" +
+		"\t\"xxxxx/internal/core/db\"\n" +
+		"\t\"xxxxx/internal/model/entity\"\n)\n\n\n"
+
+	s += serv.cgGoatRepositoryInterface(tableName, en, rin, columns)
+	
+	s += "\n\n\n" +
+		"type " + rn + " struct {\n" + "\tdb *sql.DB\n}" +
+		"\n\n\n" +
+		"func New" + rin + "() " + rin + " {\n" +
+		"\tdb := db.GetDB()\n" + 
+		"\treturn &" + rn + "{db}\n}" +
+		"\n\n\n"
+
+	rep := serv.cgGoatRepositoryInsert(dbType, tableName, en, rn, columns)
+	if rep != "" {
+		s += rep + "\n\n\n"
+	} 
+	rep = serv.cgGoatRepositorySelect(dbType, tableName, en, rn, columns)
+	if rep != "" {
+		s += rep + "\n\n\n"
+	}
+	rep = serv.cgGoatRepositoryUpdate(dbType, tableName, en, rn, columns)
+	if rep != "" {
+		s += rep + "\n\n\n"
+	} 
+	rep = serv.cgGoatRepositoryDelete(dbType, tableName, en, rn, columns)
+	s += rep
+
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositoryInterface(
 	tableName, entityName, repoIName string, columns []entity.Column,
 ) string {
-	ret := "type " + repoIName + " interface {\n"
+	s := "type " + repoIName + " interface {\n"
 
-	ret += "\t" + serv.generateGoatRepositoryInterfaceInsert(entityName) + "\n"
+	s += "\t" + serv.cgGoatRepositoryInterfaceInsert(entityName) + "\n"
 
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
+	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	if args != "" {
-		ret += "\t" + serv.generateGoatRepositoryInterfaceSelect(args, entityName) + "\n"
-		ret += "\t" + serv.generateGoatRepositoryInterfaceUpdate(args, entityName) + "\n"
-		ret += "\t" + serv.generateGoatRepositoryInterfaceDelete(args, entityName) + "\n"
+		s += "\t" + serv.cgGoatRepositoryInterfaceSelect(args, entityName) + "\n"
+		s += "\t" + serv.cgGoatRepositoryInterfaceUpdate(args, entityName) + "\n"
+		s += "\t" + serv.cgGoatRepositoryInterfaceDelete(args, entityName) + "\n"
 	}
 
-	return ret + "}"
+	return s + "}"
 }
 
-func (serv *codegenService) generateGoatRepositoryInterfaceCommonArgs(
+
+// cgGoatRepositoryInterfaceCommonArgs generate repository common args
+// from primary key columns.
+// pk: user_id, user_name => "userId int, userName string"
+// if tableName is "user" omit "user". => "id int, name string"
+func (serv *codegenService) cgGoatRepositoryInterfaceCommonArgs(
 	tableName string, columns []entity.Column,
 ) string {
-	pkcols := serv.getPrimaryKeys(columns)
+	s := ""
+	pkcols := serv.extractPrimaryKeys(columns)
 
-	args := ""
 	for i, col := range pkcols {
 		if i > 0 {
-			args += ", "
+			s += ", "
 		}
-		args += serv.columnNameToVariableName(tableName, col.ColumnName)
-		args += " " + dbDataTypeGoTypeMap[col.DataTypeCls]
+		s += serv.columnNameToVariableName(tableName, col.ColumnName)
+		s += " " + dbDataTypeGoTypeMap[col.DataTypeCls]
 	}
 
-	return args
+	return s
 }
 
 
-func (serv *codegenService) generateGoatRepositoryInterfaceInsert(
+// cgGoatRepositoryInterfaceInsert
+// return "Insert(x entity.Entity) error"
+func (serv *codegenService) cgGoatRepositoryInterfaceInsert(
 	entityName string,
 ) string {
 	return "Insert(" + serv.entityNameToVariableName(entityName) + 
 		" *entity." + entityName + ") error"
 }
 
-func (serv *codegenService) generateGoatRepositoryInterfaceSelect(
+
+// cgGoatRepositoryInterfaceSelect
+// return "Select(commonArgs) (entity.Entity, error)"
+func (serv *codegenService) cgGoatRepositoryInterfaceSelect(
 	commonArgs string, entityName string,
 ) string {
 	return "Select(" + commonArgs + ") (entity." + entityName + ", error)"
 }
 
 
-func (serv *codegenService) generateGoatRepositoryInterfaceUpdate(
+// cgGoatRepositoryInterfaceUpdate
+// return "Update(commonArgs, x entity.Entity) error"
+func (serv *codegenService) cgGoatRepositoryInterfaceUpdate(
 	commonArgs string, entityName string,
 ) string {
 	return "Update(" + commonArgs + ", " + serv.entityNameToVariableName(entityName) + 
 		" *entity." + entityName + ") error"
 }
 
-func (serv *codegenService) generateGoatRepositoryInterfaceDelete(
+
+// cgGoatRepositoryInterfaceDelete
+// return "Delete(commonArgs) error"
+func (serv *codegenService) cgGoatRepositoryInterfaceDelete(
 	commonArgs string, entityName string,
 ) string {
 	return "Delete(" + commonArgs + ") error"
 }
 
 
-func (serv *codegenService) generateGoatRepositoryInsert(
+// cgGoatRepositoryInsert generate repository function 'Insert'.
+// return "func (rep *repoName) Insert(x entity.Entity) error {...}"
+func (serv *codegenService) cgGoatRepositoryInsert(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
 	cols := []string{}
@@ -615,7 +638,7 @@ func (serv *codegenService) generateGoatRepositoryInsert(
 		if col.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
 			continue
 		}
-		c ++
+		c++
 
 		if dbType == "sqlite3" {
 			bvars = append(bvars, "?")
@@ -627,43 +650,41 @@ func (serv *codegenService) generateGoatRepositoryInsert(
 		bvals = append(bvals, serv.snakeToCamelCase(col.ColumnName))
 	}
 
-	ret := "func (rep *" + repoName + ") " +
-		serv.generateGoatRepositoryInterfaceInsert(entityName) + " {\n" +
+	s := "func (rep *" + repoName + ") " +
+		serv.cgGoatRepositoryInterfaceInsert(entityName) + " {\n" +
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`INSERT INTO " + tableName + " (\n"
 
 	for _, col := range cols {
-		ret += "\t\t\t" + col + ",\n"
+		s += "\t\t\t" + col + ",\n"
 	}
 
-	ret = strings.TrimRight(ret, ",\n")
-	ret += "\n\t\t ) VALUES("
+	s = strings.TrimRight(s, ",\n")
+	s += "\n\t\t ) VALUES("
 
 	for i, bvar := range bvars {
 		if i > 0 {
-			ret += ","
+			s += ","
 		} 
-		ret += bvar
+		s += bvar
 	}
 
-	ret += ")`,\n"
+	s += ")`,\n"
 
 	ev := serv.entityNameToVariableName(entityName)
 	for _, bval := range bvals {
-		ret += "\t\t" + ev + "." + bval + ",\n"
+		s += "\t\t" + ev + "." + bval + ",\n"
 	}
 
-	ret += "\t)\n\n\treturn err\n}"
-
-	return ret
+	return s + "\t)\n\n\treturn err\n}"
 }
 
-
-func (serv *codegenService) generateGoatRepositorySelect(
+// cgGoatRepositorySelect generate repository function 'Select'.
+// return "func (rep *repoName) Select(commonArgs) (entity.Entity, error) {...}"
+func (serv *codegenService) cgGoatRepositorySelect(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
-
+	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	//pkがない場合
 	if args == "" {
 		return ""
@@ -695,53 +716,51 @@ func (serv *codegenService) generateGoatRepositorySelect(
 	scans = append(scans, "CreateAt")
 	scans = append(scans, "UpdateAt")
 
-	ret := "func (rep *" + repoName + ") " +
-		serv.generateGoatRepositoryInterfaceSelect(args, entityName) + " {\n" +
+	s := "func (rep *" + repoName + ") " +
+		serv.cgGoatRepositoryInterfaceSelect(args, entityName) + " {\n" +
 		"\tvar ret entity." + entityName + "\n\n" +
 		"\terr := rep.db.QueryRow(\n" + 
 		"\t\t`SELECT\n"
 
 	for _, col := range cols {
-		ret += "\t\t\t" + col + ",\n"
+		s += "\t\t\t" + col + ",\n"
 	}
 
-	ret = strings.TrimRight(ret, ",\n")
-	ret += "\n\t\t FROM " + tableName + "\n" +
+	s = strings.TrimRight(s, ",\n")
+	s += "\n\t\t FROM " + tableName + "\n" +
 	"\t\t WHERE "
 
 	for i, cond := range conds {
 		if i == 0 {
-			ret += cond + "\n"
+			s += cond + "\n"
 		} else {
-			ret += "\t\t   AND " + cond + "\n"
+			s += "\t\t   AND " + cond + "\n"
 		}
 	}
 
-	ret = strings.TrimRight(ret, "\n")
-	ret += "`,\n"
+	s = strings.TrimRight(s, "\n")
+	s += "`,\n"
 
 	for _, bval := range bvals {
-		ret += "\t\t" + bval + ",\n"
+		s += "\t\t" + bval + ",\n"
 	}
 
-	ret += "\t).Scan(\n"
+	s += "\t).Scan(\n"
 
 	for _, scan := range scans {
-		ret += "\t\t&ret." + scan + ",\n"
+		s += "\t\t&ret." + scan + ",\n"
 	}
 
-	ret += "\t)\n\n\treturn ret, err\n}"	
-
-	return ret
-
+	return s + "\t)\n\n\treturn ret, err\n}"
 }
 
 
-func (serv *codegenService) generateGoatRepositoryUpdate(
+// cgGoatRepositoryUpdate generate repository function 'Update'.
+// return "func (rep *repoName) Update(commonArgs, x entity.Entity) error {...}"
+func (serv *codegenService) cgGoatRepositoryUpdate(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
-
+	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	//pkがない場合
 	if args == "" {
 		return ""
@@ -751,7 +770,6 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 	bsets := []string{}
 	conds := []string{}
 	bconds := []string{}
-
 
 	c := 0
 	for _, col := range columns {
@@ -781,51 +799,49 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 		}
 	}
 
-	ret := "func (rep *" + repoName + ") " +
-		serv.generateGoatRepositoryInterfaceUpdate(args, entityName) + " {\n" +
+	s := "func (rep *" + repoName + ") " +
+		serv.cgGoatRepositoryInterfaceUpdate(args, entityName) + " {\n" +
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`UPDATE " + tableName + "\n" +
 		"\t\t SET\n"
 
 	for _, set := range sets {
-		ret += "\t\t\t" + set + ",\n"
+		s += "\t\t\t" + set + ",\n"
 	}
 
-	ret = strings.TrimRight(ret, ",\n")
-	ret += "\n\t\t FROM " + tableName + "\n" +
+	s = strings.TrimRight(s, ",\n")
+	s += "\n\t\t FROM " + tableName + "\n" +
 	"\t\t WHERE "
 
 	for i, cond := range conds {
 		if i == 0 {
-			ret += cond + "\n"
+			s += cond + "\n"
 		} else {
-			ret += "\t\t   AND " + cond + "\n"
+			s += "\t\t   AND " + cond + "\n"
 		}
 	}
 
-	ret = strings.TrimRight(ret, "\n")
-	ret += "`,\n"
+	s = strings.TrimRight(s, "\n")
+	s += "`,\n"
 
 	ev := serv.entityNameToVariableName(entityName)
 	for _, bset := range bsets {
-		ret += "\t\t" + ev + "." + bset + ",\n"
+		s += "\t\t" + ev + "." + bset + ",\n"
 	}
 
 	for _, bcond := range bconds {
-		ret += "\t\t" + bcond + ",\n"
+		s += "\t\t" + bcond + ",\n"
 	}
 
-	ret += "\t)\n\n\treturn err\n}"	
-
-	return ret
+	return s + "\t)\n\n\treturn err\n}"	
 }
 
-
-func (serv *codegenService) generateGoatRepositoryDelete(
+// cgGoatRepositoryDelete generate repository function 'Delete'.
+// return "func (rep *repoName) Delete(commonArgs) error {...}"
+func (serv *codegenService) cgGoatRepositoryDelete(
 	dbType, tableName, entityName, repoName string, columns []entity.Column,
 ) string {
-	args := serv.generateGoatRepositoryInterfaceCommonArgs(tableName, columns)
-
+	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	//pkがない場合
 	if args == "" {
 		return ""
@@ -847,8 +863,8 @@ func (serv *codegenService) generateGoatRepositoryDelete(
 		}
 	}
 	
-	ret := "func (rep *" + repoName + ") " +
-		serv.generateGoatRepositoryInterfaceDelete(args, entityName) + " {\n" +
+	s := "func (rep *" + repoName + ") " +
+		serv.cgGoatRepositoryInterfaceDelete(args, entityName) + " {\n" +
 		"\tvar ret entity." + entityName + "\n\n" +
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`DELETE FROM " + tableName + "\n" +
@@ -856,21 +872,18 @@ func (serv *codegenService) generateGoatRepositoryDelete(
 
 	for i, cond := range conds {
 		if i == 0 {
-			ret += cond + "\n"
+			s += cond + "\n"
 		} else {
-			ret += "\t\t   AND " + cond + "\n"
+			s += "\t\t   AND " + cond + "\n"
 		}
 	}
 
-	ret = strings.TrimRight(ret, "\n")
-	ret += "`,\n"
+	s = strings.TrimRight(s, "\n")
+	s += "`,\n"
 
 	for _, bval := range bvals {
-		ret += "\t\t" + bval + ",\n"
+		s += "\t\t" + bval + ",\n"
 	}
 
-	ret += "\t)\n\n\treturn err\n}"	
-
-	return ret
-
+	return s + "\t)\n\n\treturn err\n}"	
 }
