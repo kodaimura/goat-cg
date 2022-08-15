@@ -34,11 +34,8 @@ func NewUrlCheckService() UrlCheckService {
 }
 
 
-/* 
-URLパラメータ/:project_cd がログインユーザの参加中のプロジェクトかチェック
-異常 -> Redirect
-正常 -> return ProjectId
-*/
+// CheckProjectCdAndGetProjectId check url parameter (/:project_cd).
+// if user is accessible to the project return projectId.
 func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
     c *gin.Context,
 ) int {
@@ -58,11 +55,8 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 }
 
 
-/* 
-URLパラメータ /:tableId がプロジェクト管理のテーブルかチェック
-異常 -> Redirect
-正常 -> return TableId
-*/
+// CheckTableIdAndGetTableId check url parameter (/:table_id).
+// if table related to the project return tableId.
 func (serv *urlCheckService) CheckTableIdAndGetTableId(
     c *gin.Context, 
     projectId int,
@@ -92,11 +86,8 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 }
 
 
-/* 
-URLパラメータ /:columnId がテーブルに紐づくカラムかチェック
-異常 -> Redirect
-正常 -> return ColumnId
-*/
+// CheckColumnIdAndGetColumnId check url parameter (/:column_id).
+// if column related to the table return columnId.
 func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
     c *gin.Context, 
     tableId int,

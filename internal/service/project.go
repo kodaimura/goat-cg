@@ -30,14 +30,13 @@ func NewProjectService() ProjectService {
 }
 
 
-/*
- * プロジェクトCDからプロジェクトID取得
- */
 /*----------------------------------------*/
 const GET_PROJECT_ID_NOT_FOUND_INT = -1
 // 正常時: プロジェクトID
 /*----------------------------------------*/
 
+// GetProjectId get projectId by userId and projectCd.
+// if not return -1.  
 func (serv *projectService) GetProjectId(
 	userId int, 
 	projectCd string,
@@ -52,9 +51,7 @@ func (serv *projectService) GetProjectId(
 }
 
 
-/*
- * プロジェクト一覧取得 (ユーザが参加しているもの)
- */
+// GetProjects get projects: the state user join.
 func (serv *projectService) GetProjects(
 	userId int,
 ) ([]entity.Project, error) {
@@ -70,9 +67,7 @@ func (serv *projectService) GetProjects(
 }
 
 
-/*
- * プロジェクト一覧取得 (ユーザが参加申請中のもの)
- */
+// GetProjects get projects: the state user are applying for joinrequest.
 func (serv *projectService) GetProjectsPendingApproval(
 	userId int,
 ) ([]entity.Project, error) {
@@ -88,9 +83,6 @@ func (serv *projectService) GetProjectsPendingApproval(
 }
 
 
-/*
- * プロジェクト一件取得
- */
 func (serv *projectService) GetProjectByCd(
 	projectCd string,
 ) entity.Project {
@@ -100,15 +92,13 @@ func (serv *projectService) GetProjectByCd(
 }
 
 
-/*
- * プロジェクト登録 (登録ユーザはプロジェクト参加となる)
- */
 /*----------------------------------------*/
 const CREATE_PROJECT_SUCCESS_INT = 0
 const CREATE_PROJECT_CONFLICT_INT = 1
 const CREATE_PROJECT_ERROR_INT = 2
 /*----------------------------------------*/
 
+// CreateProject create new Project.
 func (serv *projectService) CreateProject(
 	userId int, 
 	projectCd string, 

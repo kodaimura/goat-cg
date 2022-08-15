@@ -34,12 +34,8 @@ func NewColumnService() ColumnService {
 }
 
 
-/*
- * カラム一件取得
- */
-func (serv *columnService) GetColumn(
-	columnId int,
-) (entity.Column, error) {
+// GetColumn get Column record by columnId.
+func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
 	column, err := serv.cRep.Select(columnId)
 
 	if err != nil {
@@ -50,12 +46,8 @@ func (serv *columnService) GetColumn(
 }
 
 
-/*
- * カラム一覧取得 (テーブルIDに紐づく)
- */
-func (serv *columnService) GetColumns(
-	tableId int,
-) ([]entity.Column, error) {
+// GetColumn get Column records by tableId.
+func (serv *columnService) GetColumns(tableId int) ([]entity.Column, error) {
 	columns, err := serv.cRep.SelectByTableId(tableId)
 
 	if err != nil {
@@ -66,18 +58,14 @@ func (serv *columnService) GetColumns(
 }
 
 
-/*
- * カラム登録
- */
 /*----------------------------------------*/
 const CREATE_COLUMN_SUCCESS_INT = 0
 const CREATE_COLUMN_CONFLICT_INT = 1
 const CREATE_COLUMN_ERROR_INT = 2
 /*----------------------------------------*/
 
-func (serv *columnService) CreateColumn(
-	sin dto.ServInCreateColumn,
-) int {
+// CreateColumn create new Column record.
+func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) int {
 	_, err := serv.cRep.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
 	if err == nil {
 		return CREATE_COLUMN_CONFLICT_INT
@@ -97,18 +85,15 @@ func (serv *columnService) CreateColumn(
 }
 
 
-/*
- * カラム更新 (論理削除含む)
- */
 /*----------------------------------------*/
 const UPDATE_COLUMN_SUCCESS_INT = 0
 const UPDATE_COLUMN_CONFLICT_INT = 1
 const UPDATE_COLUMN_ERROR_INT = 2
 /*----------------------------------------*/
 
+// UpdateColumn update Column record by columnId.
 func (serv *columnService) UpdateColumn(
-	columnId int,
-	sin dto.ServInCreateColumn,
+	columnId int, sin dto.ServInCreateColumn,
 ) int {
 	col, err := serv.cRep.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
 	
@@ -130,14 +115,13 @@ func (serv *columnService) UpdateColumn(
 }
 
 
-/*
- * カラム削除 (物理削除)
- */
 /*----------------------------------------*/
 const DELETE_COLUMN_SUCCESS_INT = 0
 const DELETE_COLUMN_ERROR_INT = 1
 /*----------------------------------------*/
 
+// DeleteColumn delete Column record by columnId.
+// (physical delete)
 func (serv *columnService) DeleteColumn(columnId int) int {
 	col, err := serv.cRep.Select(columnId)
 
@@ -159,9 +143,6 @@ func (serv *columnService) DeleteColumn(columnId int) int {
 }
 
 
-/*
- * カラム登録・更新・削除に伴いログ更新
- */
 func (serv *columnService) updateTableLastLog(tableId int, action, columnName string) {
 	msg := fmt.Sprintf("%s: %s", action, columnName)
 

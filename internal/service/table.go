@@ -37,9 +37,7 @@ func NewTableService() TableService {
 }
 
 
-/*
- * テーブル一覧取得 (プロジェクトIDに紐づくもの)
- */
+// GetTables get tables by projeectId.
 func (serv *tableService) GetTables(
 	projectId int,
 ) ([]entity.Table, error) {
@@ -53,6 +51,7 @@ func (serv *tableService) GetTables(
 }
 
 
+// GetTable get table by tableId.
 func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
 	table, err := serv.tRep.Select(tableId)
 
@@ -64,15 +63,13 @@ func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
 }
 
 
-/*
- * テーブル登録
- */
 /*----------------------------------------*/
 const CREATE_TABLE_SUCCESS_INT = 0
 const CREATE_TABLE_CONFLICT_INT = 1
 const CREATE_TABLE_ERROR_INT = 2
 /*----------------------------------------*/
 
+// CreateTable create new Table.
 func (serv *tableService) CreateTable(
 	projectId, userId int,
 	tableName, tableNameLogical string, 
@@ -100,15 +97,14 @@ func (serv *tableService) CreateTable(
 }
 
 
-/*
- * テーブル更新 (論理削除含む)
- */
 /*----------------------------------------*/
 const UPDATE_TABLE_SUCCESS_INT = 0
 const UPDATE_TABLE_CONFLICT_INT = 1
 const UPDATE_TABLE_ERROR_INT = 2
 /*----------------------------------------*/
 
+// UpdateTable update Table by tableId.
+// contains logical delete. 
 func (serv *tableService) UpdateTable(
 	projectId, tableId, userId int,
 	tableName, tableNameLogical string, 
@@ -136,14 +132,13 @@ func (serv *tableService) UpdateTable(
 }
 
 
-/*
- * テーブル削除 (物理削除)
- */
 /*----------------------------------------*/
 const DELETE_TABLE_SUCCESS_INT = 0
 const DELETE_TABLE_ERROR_INT = 1
 /*----------------------------------------*/
 
+// DeleteTable delete Table by tableId.
+// (physical delete)
 func (serv *tableService) DeleteTable(tableId int) int {
 	err := serv.tRep.Delete(tableId)
 
