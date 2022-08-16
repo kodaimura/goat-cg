@@ -24,7 +24,8 @@
 			<label class="label">DataType</label>
 			<div class="control">
 			<div class="select">
-				<select name="data_type_cls" value="{{.column.DataTypeCls}}">
+				<select name="data_type_cls" id="data_type_cls" 
+				value="{{.column.DataTypeCls}}">
 					{{ if eq .column.DataTypeCls "10" }}
 					<option value="10" selected>TEXT</option>
 					{{ else if eq .column.DataTypeCls "11"}}
@@ -60,7 +61,7 @@
 		<div class="column is-1">
 			<label class="label">Precision</label>
 			<input type="number" name="precision" class="input is-success" 
-			value="{{.column.Precision}}">
+			value="{{.column.Precision}}" id="precision" disabled min="0">
 			<p class="help is-success">
 				numeric(<b>P</b>,-) / [var]char(<b>N</b>)
 			</p>
@@ -68,7 +69,7 @@
 		<div class="column is-1">
 			<label class="label">Scale</label>
 			<input type="number" name="scale" class="input is-success"
-			value="{{.column.Scale}}">
+			value="{{.column.Scale}}" id="scale" disabled min="0">
 			<p class="help is-success">
 				numeric(-, <b>S</b>)
 			</p>
@@ -128,11 +129,19 @@
 
 {{ if eq .column.DelFlg 1 }}
 {{template "modal-del" .}}
-<script type="text/javascript" src="/js/column.js"></script>
+<script type="text/javascript">
+	document.getElementById("modal-del-button").addEventListener("click", (e)=>{
+		fetch("", {method: "DELETE"})
+		.then(data => {
+			window.location = "../columns"
+		})
+	})
+</script>
 {{ end }}
 
 <div class="mt-5">
 	<a href="../columns">Back to Columns</a>
 </div>
+<script type="text/javascript" src="/js/column.js"></script>
 </main>
 {{template "footer"}}
