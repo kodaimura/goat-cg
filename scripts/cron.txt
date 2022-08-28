@@ -1,1 +1,1 @@
-0 3 * * * * rm -rf [tmpフォルダのパス]
+0 3 * * * rm -rf /var/www/goat-cg/tmp/*
