@@ -75,7 +75,7 @@ func (rep *columnRepository) Select(id int) (entity.Column, error) {
 		&ret.AlignSeq,
 		&ret.DelFlg,
 		&ret.CreateUserId,
-		&ret.CreateUserId,
+		&ret.UpdateUserId,
 		&ret.CreateAt,
 		&ret.UpdateAt,
 	)
@@ -219,7 +219,7 @@ func (rep *columnRepository) SelectByNameAndTableId(
 		&ret.AlignSeq,
 		&ret.DelFlg,
 		&ret.CreateUserId,
-		&ret.CreateUserId,
+		&ret.UpdateUserId,
 		&ret.CreateAt,
 		&ret.UpdateAt,
 	)
@@ -281,7 +281,7 @@ func (rep *columnRepository) SelectByTableId(tableId int) ([]entity.Column, erro
 			&c.AlignSeq,
 			&c.DelFlg,
 			&c.CreateUserId,
-			&c.CreateUserId,
+			&c.UpdateUserId,
 			&c.CreateAt,
 			&c.UpdateAt,
 		)

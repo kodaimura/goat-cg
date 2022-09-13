@@ -76,6 +76,12 @@ BEGIN
 	SELECT * FROM table_def WHERE table_id == NEW.table_id;
 END;
 
+CREATE TRIGGER IF NOT EXISTS trg_table_def_del AFTER DELETE ON table_def
+BEGIN
+	DELETE FROM table_def_log
+	WHERE table_id == OLD.table_id;
+END;
+
 
 CREATE TABLE IF NOT EXISTS table_def_log (
 	table_id INTEGER,
@@ -127,6 +133,11 @@ BEGIN
 	SELECT * FROM column_def WHERE column_id == NEW.column_id;
 END;
 
+CREATE TRIGGER IF NOT EXISTS trg_column_def_del AFTER DELETE ON column_def
+BEGIN
+	DELETE FROM column_def_log
+	WHERE column_id == OLD.column_id;
+END;
 
 CREATE TABLE IF NOT EXISTS column_def_log (
 	column_id INTEGER,

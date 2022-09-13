@@ -18,6 +18,12 @@
 			<label class="label">カラム名（JP）</label>
 			<input type="text" name="column_name_logical" class="input" value="{{.column.ColumnNameLogical}}">
 		</div>
+		<div class="column is-1"></div>
+		<div class="column is-1">
+			<label class="label">カラム順</label>
+			<input type="number" name="align_seq" class="input is-success" 
+			value="{{.column.AlignSeq}}" min="0">
+		</div>
 	</div>
 	<div class="columns is-gapless">
 		<div class="column is-2">

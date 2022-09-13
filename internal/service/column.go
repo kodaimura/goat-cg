@@ -5,6 +5,7 @@ import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
 	"goat-cg/internal/model/repository"
+	"goat-cg/internal/model/query"
 )
 
 
@@ -14,19 +15,22 @@ type ColumnService interface {
 	CreateColumn(in dto.ServInCreateColumn) int
 	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
 	DeleteColumn(columnId int) int
+	GetColumnLog(columnId int) ([]dto.QueOutColumnLog, error)
 }
 
 
 type columnService struct {
 	cRep repository.ColumnRepository
 	tRep repository.TableRepository
+	cQue query.ColumnQuery
 }
 
 
 func NewColumnService() ColumnService {
 	cRep := repository.NewColumnRepository()
 	tRep := repository.NewTableRepository()
-	return &columnService{cRep, tRep}
+	cQue := query.NewColumnQuery()
+	return &columnService{cRep, tRep, cQue}
 }
 
 
@@ -130,4 +134,16 @@ func (serv *columnService) DeleteColumn(columnId int) int {
 	}
 
 	return DELETE_COLUMN_SUCCESS_INT
+}
+
+
+// GetColumnLog get Column chenge log.
+func (serv *columnService) GetColumnLog(columnId int) ([]dto.QueOutColumnLog, error) {
+	columnLog, err := serv.cQue.QueryColumnLog(columnId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+	}
+
+	return columnLog, err
 }

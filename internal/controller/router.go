@@ -66,6 +66,7 @@ func SetRouter(r *gin.Engine) {
                 aptt.GET("/columns/:column_id", cc.updateColumnPage)
                 aptt.POST("/columns/:column_id", cc.updateColumn)
                 aptt.DELETE("/columns/:column_id", cc.deleteColumn)
+                aptt.GET("/columns/:column_id/log", cc.columnLogPage)
             }
         }
     }

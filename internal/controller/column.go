@@ -164,3 +164,19 @@ func (ctr *columnController) deleteColumn(c *gin.Context) {
     c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
 
 }
+
+
+//GET /:project_cd/tables/:table_id/columns/:column_id/log
+func (ctr *columnController) columnLogPage(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+    columnId := ctr.urlServ.CheckColumnIdAndGetColumnId(c, tableId)
+
+    columnLog, _ := ctr.cServ.GetColumnLog(columnId)
+
+    c.HTML(200, "columnlog.html", gin.H{
+        "commons": constant.Commons,
+        "project_cd" : c.Param("project_cd"),
+        "columnlog": columnLog,
+    })
+}
