@@ -47,15 +47,17 @@ func (rep *columnRepository) Select(id int) (entity.Column, error) {
 			unique_flg,
 			default_value,
 			remark,
+			align_seq,
+			del_flg,
 			create_user_id,
 			update_user_id,
-			del_flg,
 			create_at,
 			update_at
 		 FROM
-		 	columns
+		 	column_def
 		 WHERE
-		 	column_id = ?`,
+		 	column_id = ?
+		 ORDER BY align_seq`,
 		 id,
 	).Scan(
 		&ret.ColumnId,
@@ -70,9 +72,10 @@ func (rep *columnRepository) Select(id int) (entity.Column, error) {
 		&ret.UniqueFlg,
 		&ret.DefaultValue,
 		&ret.Remark,
-		&ret.CreateUserId,
-		&ret.CreateUserId,
+		&ret.AlignSeq,
 		&ret.DelFlg,
+		&ret.CreateUserId,
+		&ret.CreateUserId,
 		&ret.CreateAt,
 		&ret.UpdateAt,
 	)
@@ -83,7 +86,7 @@ func (rep *columnRepository) Select(id int) (entity.Column, error) {
 
 func (rep *columnRepository) Insert(c *entity.Column) error {
 	_, err := rep.db.Exec(
-		`INSERT INTO columns (
+		`INSERT INTO column_def (
 			table_id, 
 			column_name,
 			column_name_logical,
@@ -95,10 +98,11 @@ func (rep *columnRepository) Insert(c *entity.Column) error {
 			unique_flg,
 			default_value,
 			remark,
+			align_seq,
+			del_flg,
 			create_user_id,
-			update_user_id,
-			del_flg
-		 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+			update_user_id
+		 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		c.TableId,
 		c.ColumnName, 
 		c.ColumnNameLogical,
@@ -110,9 +114,10 @@ func (rep *columnRepository) Insert(c *entity.Column) error {
 		c.UniqueFlg,
 		c.DefaultValue,
 		c.Remark,
-		c.CreateUserId,
-		c.CreateUserId,
+		c.AlignSeq,
 		c.DelFlg,
+		c.CreateUserId,
+		c.CreateUserId,
 	)
 	return err
 }
@@ -120,7 +125,7 @@ func (rep *columnRepository) Insert(c *entity.Column) error {
 
 func (rep *columnRepository) Update(id int, c *entity.Column) error {
 	_, err := rep.db.Exec(
-		`UPDATE columns
+		`UPDATE column_def
 		 SET 
 			column_name = ?,
 			column_name_logical = ?,
@@ -132,8 +137,9 @@ func (rep *columnRepository) Update(id int, c *entity.Column) error {
 			unique_flg = ?,
 			default_value = ?,
 			remark = ?,
-			update_user_id = ?,
-			del_flg = ?
+			align_seq = ?,
+			del_flg = ?,
+			update_user_id = ?
 		 WHERE column_id = ?`,
 		c.ColumnName, 
 		c.ColumnNameLogical,
@@ -145,8 +151,9 @@ func (rep *columnRepository) Update(id int, c *entity.Column) error {
 		c.UniqueFlg,
 		c.DefaultValue,
 		c.Remark,
-		c.UpdateUserId,
+		c.AlignSeq,
 		c.DelFlg,
+		c.UpdateUserId,
 		id,
 	)
 	return err
@@ -155,7 +162,7 @@ func (rep *columnRepository) Update(id int, c *entity.Column) error {
 
 func (rep *columnRepository) Delete(id int) error {
 	_, err := rep.db.Exec(
-		`DELETE FROM columns WHERE column_id = ?`, 
+		`DELETE FROM column_def WHERE column_id = ?`, 
 		id,
 	)
 
@@ -182,16 +189,18 @@ func (rep *columnRepository) SelectByNameAndTableId(
 			unique_flg,
 			default_value,
 			remark,
+			align_seq,
+			del_flg,
 			create_user_id,
 			update_user_id,
-			del_flg,
 			create_at,
 			update_at
 		 FROM
-		 	columns
+		 	column_def
 		 WHERE
 		 	table_id = ?
-		 AND column_name = ?`,
+		 AND column_name = ?
+		 ORDER BY align_seq`,
 		 tableId,
 		 name,
 	).Scan(
@@ -207,9 +216,10 @@ func (rep *columnRepository) SelectByNameAndTableId(
 		&ret.UniqueFlg,
 		&ret.DefaultValue,
 		&ret.Remark,
-		&ret.CreateUserId,
-		&ret.CreateUserId,
+		&ret.AlignSeq,
 		&ret.DelFlg,
+		&ret.CreateUserId,
+		&ret.CreateUserId,
 		&ret.CreateAt,
 		&ret.UpdateAt,
 	)
@@ -235,15 +245,17 @@ func (rep *columnRepository) SelectByTableId(tableId int) ([]entity.Column, erro
 			unique_flg,
 			default_value,
 			remark,
+			align_seq,
+			del_flg,
 			create_user_id,
 			update_user_id,
-			del_flg,
 			create_at,
 			update_at
 		 FROM
-		 	columns
+		 	column_def
 		 WHERE
-		 	table_id = ?`,
+		 	table_id = ?
+		 ORDER BY align_seq`,
 		 tableId,
 	)
 
@@ -266,9 +278,10 @@ func (rep *columnRepository) SelectByTableId(tableId int) ([]entity.Column, erro
 			&c.UniqueFlg,
 			&c.DefaultValue,
 			&c.Remark,
-			&c.CreateUserId,
-			&c.CreateUserId,
+			&c.AlignSeq,
 			&c.DelFlg,
+			&c.CreateUserId,
+			&c.CreateUserId,
 			&c.CreateAt,
 			&c.UpdateAt,
 		)
@@ -284,7 +297,7 @@ func (rep *columnRepository) SelectByTableId(tableId int) ([]entity.Column, erro
 
 func (rep *columnRepository) DeleteByTableId(tableId int) error {
 	_, err := rep.db.Exec(
-		`DELETE FROM columns WHERE table_id = ?`, 
+		`DELETE FROM column_def WHERE table_id = ?`, 
 		tableId,
 	)
 

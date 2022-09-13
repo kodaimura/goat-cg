@@ -10,7 +10,7 @@ import (
 )
 
 
-type UserProjectService interface {
+type ProjectUserService interface {
 	JoinRequest(userId, projectId int) int
 	CancelJoinRequest(userId, projectId int) int
 	PermitJoinRequest(userId, projectId int) int
@@ -18,16 +18,16 @@ type UserProjectService interface {
 }
 
 
-type userProjectService struct {
-	upRep repository.UserProjectRepository
-	upQue query.UserProjectQuery
+type projectUserService struct {
+	upRep repository.ProjectUserRepository
+	upQue query.ProjectUserQuery
 }
 
 
-func NewUserProjectService() UserProjectService {
-	upRep := repository.NewUserProjectRepository()
-	upQue := query.NewUserProjectQuery()
-	return &userProjectService{upRep, upQue}
+func NewProjectUserService() ProjectUserService {
+	upRep := repository.NewProjectUserRepository()
+	upQue := query.NewProjectUserQuery()
+	return &projectUserService{upRep, upQue}
 }
 
 
@@ -38,7 +38,7 @@ const JOIN_REQUEST_ERROR_INT = 2
 /*----------------------------------------*/
 
 // JoinRequest
-func (serv *userProjectService) JoinRequest(
+func (serv *projectUserService) JoinRequest(
 	userId int, projectId int,
 ) int {
 	up0, err := serv.upRep.Select(userId, projectId)
@@ -47,7 +47,7 @@ func (serv *userProjectService) JoinRequest(
 		return JOIN_REQUEST_ALREADY_INT
 	} 
 
-	var up entity.UserProject
+	var up entity.ProjectUser
 	up.UserId = userId
 	up.ProjectId = projectId
 	up.StateCls = constant.STATE_CLS_REQUEST
@@ -71,7 +71,7 @@ const CANCEL_JOIN_REQUEST_ERROR_INT= 1
 /*----------------------------------------*/
 
 // CancelJoinRequest
-func (serv *userProjectService) CancelJoinRequest(
+func (serv *projectUserService) CancelJoinRequest(
 	userId int, projectId int,
 ) int {
 	err := serv.upRep.Delete(userId, projectId)
@@ -92,11 +92,11 @@ const PERMIT_JOIN_REQUEST_ERROR_INT= 1
 /*----------------------------------------*/
 
 // PermitJoinRequest
-func (serv *userProjectService) PermitJoinRequest(
+func (serv *projectUserService) PermitJoinRequest(
 	userId int, projectId int,
 ) int {
 
-	var up entity.UserProject
+	var up entity.ProjectUser
 	up.UserId = userId
 	up.ProjectId = projectId
 	up.StateCls = constant.STATE_CLS_JOIN
@@ -116,7 +116,7 @@ func (serv *userProjectService) PermitJoinRequest(
 
 // GetJoinRequests get requests to join project.
 // that login user have the authority to permit.
-func (serv *userProjectService) GetJoinRequests(
+func (serv *projectUserService) GetJoinRequests(
 	userId int,
 ) ([]dto.QueOutJoinRequest, error) {
 	jrs, err := serv.upQue.QueryJoinRequests(userId)

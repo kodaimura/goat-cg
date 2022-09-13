@@ -35,7 +35,7 @@ func NewProjectRepository() ProjectRepository {
 
 func (rep *projectRepository) Insert(p *entity.Project) error {
 	_, err := rep.db.Exec(
-		`INSERT INTO projects (
+		`INSERT INTO project (
 			project_cd, 
 			project_name
 		 ) VALUES(?,?)`,
@@ -48,7 +48,7 @@ func (rep *projectRepository) Insert(p *entity.Project) error {
 
 func (rep *projectRepository) Update(id int, p *entity.Project) error {
 	_, err := rep.db.Exec(
-		`UPDATE projects 
+		`UPDATE project 
 		 SET project_name = ? 
 		 WHERE project_id = ?`,
 		p.ProjectName, 
@@ -67,7 +67,7 @@ func (rep *projectRepository) SelectByCd(cd string) (entity.Project, error) {
 			project_name,
 			create_at
 		 FROM 
-		 	projects
+		 	project
 		 WHERE 
 		 	project_cd = ?`, 
 		 cd,
@@ -93,12 +93,12 @@ func (rep *projectRepository) SelectByUserIdAndStateCls(
 			p.project_name,
 			p.create_at
 		 FROM 
-		 	projects p,
-		 	users_projects up
+		 	project p,
+		 	project_user pu
 		 WHERE 
-		 	p.project_id = up.project_id
-		 AND up.user_id = ?
-		 AND up.state_cls = ?`, 
+		 	p.project_id = pu.project_id
+		 AND pu.user_id = ?
+		 AND pu.state_cls = ?`, 
 		 userId,
 		 state,
 	)
@@ -136,13 +136,13 @@ func (rep *projectRepository) SelectByCdAndUserId(
 			p.project_id,
 			p.project_name
 		 FROM 
-		 	projects p,
-		 	users_projects up
+		 	project p,
+		 	project_user pu
 		 WHERE 
-		 	p.project_id = up.project_id
+		 	p.project_id = pu.project_id
 		 AND p.project_cd = ?
-		 AND up.user_id = ?
-		 AND up.state_cls = ?`, 
+		 AND pu.user_id = ?
+		 AND pu.state_cls = ?`, 
 		 cd,
 		 userId,
 		 constant.STATE_CLS_JOIN,

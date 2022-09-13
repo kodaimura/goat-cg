@@ -140,3 +140,37 @@ func (rep *userRepository) SelectByName(name string) (entity.User, error) {
 
 	return ret, err
 }
+
+
+func (rep *userRepository) SelectAll(id int) ([]entity.User, error) {
+	var ret []entity.User
+
+	rows, err := rep.db.Query(
+		`SELECT 
+			user_id, 
+			user_name, 
+			create_at, 
+			update_at 
+		 FROM users`,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		u := entity.User{}
+		err = rows.Scan(
+			&u.UserId, 
+			&u.UserName,
+			&u.CreateAt, 
+			&u.UpdateAt,
+		)
+		if err != nil {
+			break
+		}
+		ret = append(ret, u)
+	}
+
+	return ret, err
+}

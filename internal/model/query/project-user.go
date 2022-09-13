@@ -9,23 +9,23 @@ import (
 )
 
 
-type UserProjectQuery interface {
+type ProjectUserQuery interface {
 	QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error)
 }
 
 
-type userProjectQuery struct {
+type projectUserQuery struct {
 	db *sql.DB
 }
 
 
-func NewUserProjectQuery() UserProjectQuery {
+func NewProjectUserQuery() ProjectUserQuery {
 	db := db.GetDB()
-	return &userProjectQuery{db}
+	return &projectUserQuery{db}
 }
 
 
-func (que *userProjectQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error){
+func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error){
 
 	var ret []dto.QueOutJoinRequest
 	rows, err := que.db.Query(
@@ -35,18 +35,18 @@ func (que *userProjectQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 			p.project_id,
 			p.project_cd,
 			p.project_name,
-			up2.update_at
+			pu2.update_at
 		 FROM 
-		 	users_projects up1,
-		 	users_projects up2,
+		 	project_user pu1,
+		 	project_user pu2,
 		 	users u,
-		 	projects p
-		 WHERE up1.user_id = ?
-		  AND up1.role_cls in (?, ?)
-		  AND up2.project_id = up1.project_id
-		  AND up2.state_cls = ?
-		  AND u.user_id = up2.user_id
-		  AND p.project_id = up2.project_id `, 
+		 	project p
+		 WHERE pu1.user_id = ?
+		  AND pu1.role_cls in (?, ?)
+		  AND pu2.project_id = pu1.project_id
+		  AND pu2.state_cls = ?
+		  AND u.user_id = pu2.user_id
+		  AND p.project_id = pu2.project_id `, 
 		 userId,
 		 constant.ROLE_CLS_ADMIN,
 		 constant.ROLE_CLS_OWNER,

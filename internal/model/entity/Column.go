@@ -14,9 +14,10 @@ type Column struct {
 	UniqueFlg int `db:"unique_flg" json:"unique_flg"`
 	DefaultValue string `db: "default_value" json:"default_value"`
 	Remark string `db:"remark" json:"remark"`
+	AlignSeq int `db:"align_seq" json:"align_seq"`
+	DelFlg int `db:"del_flg" json:"del_flg"`
 	CreateUserId int `db:"create_user_id" json:"create_user_id"`
 	UpdateUserId int `db:"update_user_id" json:"update_user_id"`
-	DelFlg int `db:"del_flg" json:"del_flg"`
 	CreateAt string `db:"create_at" json:"create_at"`
 	UpdateAt string `db:"update_at" json:"update_at"`
 }

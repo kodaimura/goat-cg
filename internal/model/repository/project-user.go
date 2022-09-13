@@ -8,26 +8,26 @@ import (
 )
 
 
-type UserProjectRepository interface {
-	Select(userId, projectId int) (entity.UserProject, error)
-    Upsert(up *entity.UserProject) error
+type ProjectUserRepository interface {
+	Select(userId, projectId int) (entity.ProjectUser, error)
+    Upsert(up *entity.ProjectUser) error
     Delete(userId, projectId int) error
 }
 
 
-type userProjectRepository struct {
+type projectUserRepository struct {
 	db *sql.DB
 }
 
 
-func NewUserProjectRepository() UserProjectRepository {
+func NewProjectUserRepository() ProjectUserRepository {
 	db := db.GetDB()
-	return &userProjectRepository{db}
+	return &projectUserRepository{db}
 }
 
 
-func (rep *userProjectRepository) Select(userId, projectId int) (entity.UserProject, error) {
-	var ret entity.UserProject
+func (rep *projectUserRepository) Select(userId, projectId int) (entity.ProjectUser, error) {
+	var ret entity.ProjectUser
 
 	err := rep.db.QueryRow(
 		`SELECT
@@ -35,7 +35,7 @@ func (rep *userProjectRepository) Select(userId, projectId int) (entity.UserProj
 			project_id, 
 			state_cls, 
 			role_cls
-		 FROM users_projects
+		 FROM project_user
 		 WHERE user_id = ?
 		  AND project_id = ?`,
 		 userId,
@@ -51,9 +51,9 @@ func (rep *userProjectRepository) Select(userId, projectId int) (entity.UserProj
 }
 
 
-func (rep *userProjectRepository) Upsert(up *entity.UserProject) error {
+func (rep *projectUserRepository) Upsert(up *entity.ProjectUser) error {
 	_, err := rep.db.Exec(
-		`REPLACE INTO users_projects (
+		`REPLACE INTO project_user (
 			user_id, 
 			project_id, 
 			state_cls, 
@@ -70,9 +70,9 @@ func (rep *userProjectRepository) Upsert(up *entity.UserProject) error {
 }
 
 
-func (rep *userProjectRepository) Delete(userId, projectId int) error {
+func (rep *projectUserRepository) Delete(userId, projectId int) error {
 	_, err := rep.db.Exec(
-		`DELETE FROM users_projects
+		`DELETE FROM project_user
 		 WHERE 
 		 	user_id = ?
 		 AND project_id = ?`, 

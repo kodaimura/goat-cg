@@ -17,6 +17,7 @@ type ServInCreateColumn struct {
 	UniqueFlg int
 	DefaultValue string
 	Remark string
+	AlignSeq int
 	CreateUserId int
 	UpdateUserId int
 	DelFlg int
@@ -37,9 +38,10 @@ func (d ServInCreateColumn) ToColumn() entity.Column {
 	c.UniqueFlg = d.UniqueFlg
 	c.DefaultValue = d.DefaultValue
 	c.Remark = d.Remark
+	c.AlignSeq = d.AlignSeq
+	c.DelFlg = d.DelFlg
 	c.CreateUserId = d.CreateUserId
 	c.UpdateUserId = d.UpdateUserId
-	c.DelFlg = d.DelFlg
 
 	return c
 }

@@ -477,7 +477,7 @@ func (serv *codegenService) columnNameToVariableName(
 
 // entityNameToVariableName get shorten variable name from entity name.
 // entityName: User => u
-// entityName: UserProject => up
+// entityName: ProjectUser => up
 func (serv *codegenService) entityNameToVariableName(
 	entityName string,
 ) string {

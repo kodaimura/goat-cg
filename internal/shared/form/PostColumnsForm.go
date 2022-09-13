@@ -17,6 +17,7 @@ type PostColumnsForm struct {
 	UniqueFlg int `form:"unique_flg"`
 	DefaultValue string `form:"default_value"`
 	Remark string `form:"remark"`
+	AlignSeq int `form:"align_seq"`
 	DelFlg int `form:"del_flg"`
 }
 
@@ -38,9 +39,10 @@ func (f PostColumnsForm) ToServInCreateColumn(
 	ret.UniqueFlg = f.UniqueFlg
 	ret.DefaultValue = f.DefaultValue
 	ret.Remark = f.Remark
+	ret.AlignSeq = f.AlignSeq
+	ret.DelFlg = f.DelFlg
 	ret.CreateUserId = userId
 	ret.UpdateUserId = userId
-	ret.DelFlg = f.DelFlg
 
 	return ret
 }

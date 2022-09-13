@@ -18,7 +18,6 @@ type TableRepository interface {
     SelectByProjectId(projectId int) ([]entity.Table, error)
     SelectByNameAndProjectId(name string, projectId int) (entity.Table, error)
     UpdateDelFlg(id, delFlg int) error
-    UpdateLastLog(id int, msg string) error
 }
 
 
@@ -42,11 +41,11 @@ func (rep *tableRepository) Select(tableId int) (entity.Table, error){
 			table_id,
 			table_name,
 			table_name_logical,
+			del_flg,
 			create_user_id,
-			update_user_id,
-			del_flg
+			update_user_id
 		 FROM 
-		 	tables
+		 	table_def
 		 WHERE 
 		 	table_id = ?`,
 		 tableId,
@@ -55,9 +54,9 @@ func (rep *tableRepository) Select(tableId int) (entity.Table, error){
 		&ret.TableId, 
 		&ret.TableName,
 		&ret.TableNameLogical,
+		&ret.DelFlg,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
-		&ret.DelFlg,
 	)
 
 	return ret, err
@@ -66,41 +65,37 @@ func (rep *tableRepository) Select(tableId int) (entity.Table, error){
 
 func (rep *tableRepository) Insert(t *entity.Table) error {
 	_, err := rep.db.Exec(
-		`INSERT INTO tables (
+		`INSERT INTO table_def (
 			project_id, 
 			table_name,
 			table_name_logical,
+			del_flg,
 			create_user_id,
-			update_user_id,
-			last_log,
-			del_flg
-		 ) VALUES(?,?,?,?,?,?,?)`,
+			update_user_id
+		 ) VALUES(?,?,?,?,?,?)`,
 		t.ProjectId, 
 		t.TableName,
 		t.TableNameLogical,
-		t.CreateUserId,
-		t.CreateUserId,
-		"create",
 		constant.FLG_OFF,
+		t.CreateUserId,
+		t.CreateUserId,
 	)
 	return err
 }
 
 func (rep *tableRepository) Update(id int, t *entity.Table) error {
 	_, err := rep.db.Exec(
-		`UPDATE tables
+		`UPDATE table_def
 		 SET 
 		 	table_name = ?,
 		 	table_name_logical = ?,
-		 	update_user_id = ?,
-		 	last_log = ?,
-		 	del_flg = ?
+		 	del_flg = ?,
+		 	update_user_id = ?
 		 WHERE table_id= ?`,
 		t.TableName,
 		t.TableNameLogical,
-		t.UpdateUserId,
-		"update",
 		t.DelFlg,
+		t.UpdateUserId,
 		id,
 	)
 	return err
@@ -109,7 +104,7 @@ func (rep *tableRepository) Update(id int, t *entity.Table) error {
 
 func (rep *tableRepository) Delete(id int) error {
 	_, err := rep.db.Exec(
-		`DELETE FROM tables WHERE table_id = ?`, 
+		`DELETE FROM table_def WHERE table_id = ?`, 
 		id,
 	)
 
@@ -128,11 +123,11 @@ func (rep *tableRepository) SelectByNameAndProjectId(
 			table_id,
 			table_name,
 			table_name_logical,
+			del_flg,
 			create_user_id,
-			update_user_id,
-			del_flg
+			update_user_id
 		 FROM 
-		 	tables
+		 	table_def
 		 WHERE project_id = ?
 		   AND table_name = ?`,
 		 projectId,
@@ -142,9 +137,9 @@ func (rep *tableRepository) SelectByNameAndProjectId(
 		&ret.TableId, 
 		&ret.TableName,
 		&ret.TableNameLogical,
+		&ret.DelFlg,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
-		&ret.DelFlg,
 	)
 
 	return ret, err
@@ -159,14 +154,13 @@ func (rep *tableRepository) SelectByProjectId(projectId int) ([]entity.Table, er
 			table_id,
 			table_name,
 			table_name_logical,
+			del_flg,
 			create_user_id,
 			update_user_id,
-			del_flg,
-			last_log,
 			create_at,
 			update_at
 		 FROM 
-		 	tables
+		 	table_def
 		 WHERE 
 		 	project_id = ?`, 
 		 projectId,
@@ -182,10 +176,9 @@ func (rep *tableRepository) SelectByProjectId(projectId int) ([]entity.Table, er
 			&t.TableId, 
 			&t.TableName,
 			&t.TableNameLogical,
+			&t.DelFlg,
 			&t.CreateUserId,
 			&t.UpdateUserId,
-			&t.DelFlg,
-			&t.LastLog,
 			&t.CreateAt,
 			&t.UpdateAt,
 		)
@@ -201,22 +194,10 @@ func (rep *tableRepository) SelectByProjectId(projectId int) ([]entity.Table, er
 
 func (rep *tableRepository) UpdateDelFlg(id, delFlg int) error {
 	_, err := rep.db.Exec(
-		`UPDATE tables 
+		`UPDATE table_def 
 		 SET del_flg = ?
 		 WHERE table_id = ?`,
 		delFlg,
-		id,
-	)
-	return err
-}
-
-
-func (rep *tableRepository) UpdateLastLog(id int, msg string) error {
-	_, err := rep.db.Exec(
-		`UPDATE tables 
-		 SET last_log = ?
-		 WHERE table_id = ?`,
-		msg,
 		id,
 	)
 	return err

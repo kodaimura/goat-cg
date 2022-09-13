@@ -1,7 +1,7 @@
 package entity
 
 
-type UserProject struct {
+type ProjectUser struct {
 	UserId int `db:"user_id" json:"user_id"`
 	ProjectId int `db:"project_id" json:"project_id"`
 	StateCls string `db:"state_cls" json:"state_cls"`

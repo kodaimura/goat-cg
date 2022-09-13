@@ -16,6 +16,9 @@ type UserService interface {
 	Login(username, password string) int
 	GenerateJWT(userId int) string
 	GetProfile(userId int) (entity.User, error)
+	ChangeUsername(userId int, username string) int
+	ChangePassword(userId int, password string) int
+	DeleteUser(userId int) int
 }
 
 
@@ -119,4 +122,62 @@ func (serv *userService) GetProfile(userId int) (entity.User, error) {
 	}
 
 	return user, err
+}
+
+
+// ChangeUsername() Return value
+/*----------------------------------------*/
+const CHANGE_USERNAME_SUCCESS_INT = 0
+const CHANGE_USERNAME_FAILURE_INT = 1
+/*----------------------------------------*/
+func (serv *userService) ChangeUsername(userId int, username string) int {
+	err := serv.uRep.UpdateName(userId, username)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return CHANGE_USERNAME_FAILURE_INT
+	}
+
+	return CHANGE_USERNAME_SUCCESS_INT
+}
+
+
+// ChangePassword() Return value
+/*----------------------------------------*/
+const CHANGE_PASSWORD_SUCCESS_INT = 0
+const CHANGE_PASSWORD_FAILURE_INT = 1
+/*----------------------------------------*/
+func (serv *userService) ChangePassword(userId int, password string) int {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return CHANGE_PASSWORD_FAILURE_INT
+	}
+
+	err = serv.uRep.UpdatePassword(userId, string(hashed))
+	
+	if err != nil {
+		logger.LogError(err.Error())
+		return CHANGE_PASSWORD_FAILURE_INT
+	}
+
+	return CHANGE_PASSWORD_SUCCESS_INT
+}
+
+
+// DeleteUser() Return value
+/*----------------------------------------*/
+const DELETE_USER_SUCCESS_INT = 0
+const DELETE_USER_FAILURE_INT = 1
+/*----------------------------------------*/
+func (serv *userService) DeleteUser(userId int) int {
+	err := serv.uRep.Delete(userId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+		return DELETE_USER_FAILURE_INT
+	}
+
+	return DELETE_USER_SUCCESS_INT
 }

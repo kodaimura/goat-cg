@@ -19,13 +19,13 @@ type ProjectService interface {
 
 type projectService struct {
 	pRep repository.ProjectRepository
-	upRep repository.UserProjectRepository
+	upRep repository.ProjectUserRepository
 }
 
 
 func NewProjectService() ProjectService {
 	pRep := repository.NewProjectRepository()
-	upRep := repository.NewUserProjectRepository()
+	upRep := repository.NewProjectUserRepository()
 	return &projectService{pRep, upRep}
 }
 
@@ -126,7 +126,7 @@ func (serv *projectService) CreateProject(
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	var up entity.UserProject
+	var up entity.ProjectUser
 	up.UserId = userId
 	up.ProjectId = project.ProjectId
 	up.StateCls = constant.STATE_CLS_JOIN

@@ -9,24 +9,29 @@ import (
 
 func SetRouter(r *gin.Engine) {
     uc := newUserController()
+
+    //render HTML or redirect
     r.GET("/signup", uc.signupPage)
     r.GET("/login", uc.loginPage)
     r.GET("/logout", uc.logout)
-
     r.POST("/signup", uc.signup)
     r.POST("/login", uc.login)
 
+    //render HTML or redirect (Authorized request)
     a := r.Group("/", jwt.JwtAuthMiddleware())
     {
         rc := newRootController()
+        
         a.GET("/", rc.indexPage)
 
         pc := newProjectController()
+
         a.GET("/projects", pc.projectsPage)
         a.GET("/projects/new", pc.createProjectPage)
         a.POST("/projects", pc.createProject)
 
-        upc := newUserProjectController()
+        upc := newProjectUserController()
+
         a.GET("/projects/requests", upc.requestsPage)
         a.POST("/projects/requests/join", upc.joinRequest)
         a.POST("/projects/requests/cancel", upc.cancelJoinRequest)
@@ -36,6 +41,7 @@ func SetRouter(r *gin.Engine) {
         ap := a.Group("/:project_cd")
         {
             tc := newTableController()
+
             ap.GET("/tables", tc.tablesPage)
             ap.GET("/tables/new", tc.createTablePage)
             ap.POST("/tables/new", tc.createTable)
@@ -45,6 +51,7 @@ func SetRouter(r *gin.Engine) {
 
 
             cgc := newCodegenController()
+
             ap.GET("/codegen", cgc.codegenPage)
             ap.POST("/codegen/goat", cgc.codegenGOAT)
             ap.POST("/codegen/ddl", cgc.codegenDDL)
@@ -52,6 +59,7 @@ func SetRouter(r *gin.Engine) {
             aptt := ap.Group("/tables/:table_id")
             {
                 cc := newColumnController()
+
                 aptt.GET("/columns", cc.columnsPage)
                 aptt.GET("/columns/new", cc.createColumnPage)
                 aptt.POST("/columns/new", cc.createColumn)
@@ -62,8 +70,25 @@ func SetRouter(r *gin.Engine) {
         }
     }
 
-    api := r.Group("/api", jwt.JwtAuthMiddleware())
+    //response JSON
+    api := r.Group("/api")
     {
-        api.GET("/profile", uc.getProfile)
+        uac := newUserApiController()
+
+        api.POST("/signup", uac.signup)
+        api.POST("/login", uac.login)
+        api.GET("/logout", uac.logout)
+
+
+        //response JSON (Authorized request)
+        a := api.Group("/", jwt.JwtAuthApiMiddleware())
+        {
+            a.GET("/profile", uac.getProfile)
+            a.PUT("/username", uac.changeUsername)
+            a.POST("/username", uac.changeUsername)
+            a.PUT("/password", uac.changePassword)
+            a.POST("/password", uac.changePassword)
+            a.DELETE("/account", uac.deleteUser)
+        }
     }
 }

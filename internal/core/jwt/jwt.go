@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	jwtpackage "github.com/golang-jwt/jwt/v4"
@@ -43,48 +44,6 @@ func encodeJWT(payload JwtPayload) (string, error) {
 }
 
 
-func JwtAuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		pl, err := jwtAuth(c)
-
-		if err != nil {
-			c.Redirect(303, "/login")
-			c.Abort()
-			return
-		}
-		c.Set(CONTEXT_KEY_PAYLOAD, pl)
-		c.Next()
-	}
-}
-
-
-func JwtApiAuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		pl, err := jwtAuth(c)
-
-		if err != nil {
-			c.JSON(401, gin.H{"error": err.Error()})
-			c.Abort()
-			return
-		}
-		c.Set(CONTEXT_KEY_PAYLOAD, pl)
-		c.Next()
-	}
-}
-
-
-func jwtAuth(c *gin.Context) (JwtPayload, error) {
-	encoded, _ := c.Cookie(COOKIE_KEY_JWT)
-	token, err := decodeJWT(encoded)
-
-	if err != nil {
-		return JwtPayload{}, err
-	}
-
-	return getPayload(token)
-}
-
-
 func decodeJWT(encoded string) (*jwtpackage.Token, error) {
 	cf := config.GetConfig()
 	token, err := jwtpackage.Parse(encoded, func(token *jwtpackage.Token) (interface{}, error) {
@@ -98,6 +57,50 @@ func decodeJWT(encoded string) (*jwtpackage.Token, error) {
 } 
 
 
+func JwtAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		jwtStr, _ := extractTokenFromCookie(c)
+		pl, err := jwtAuth(jwtStr)
+
+		if err != nil {
+			c.Redirect(303, "/login")
+			c.Abort()
+			return
+		}
+		c.Set(CONTEXT_KEY_PAYLOAD, pl)
+		c.Next()
+	}
+}
+
+
+func JwtAuthApiMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//jwtStr, _ := extractTokenFromRequestHeader(c)
+		jwtStr, _ := extractTokenFromCookie(c)
+		pl, err := jwtAuth(jwtStr)
+
+		if err != nil {
+			c.JSON(401, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		c.Set(CONTEXT_KEY_PAYLOAD, pl)
+		c.Next()
+	}
+}
+
+
+func jwtAuth(jwtStr string) (JwtPayload, error) {
+	token, err := decodeJWT(jwtStr)
+
+	if err != nil {
+		return JwtPayload{}, err
+	}
+
+	return getPayload(token)
+}
+
+
 func getPayload(token *jwtpackage.Token) (JwtPayload, error) {
 	var pl JwtPayload
 
@@ -108,4 +111,20 @@ func getPayload(token *jwtpackage.Token) (JwtPayload, error) {
 	}
 
 	return pl, err
+}
+
+
+func extractTokenFromCookie (c *gin.Context) (string, error) {
+	return c.Cookie(COOKIE_KEY_JWT)
+} 
+
+
+func extractTokenFromRequestHeader (c *gin.Context) (string, error) {
+	tokenString := c.Request.Header.Get("Authorization")
+	if tokenString == "" {
+		return "", errors.New("Hint: Authorization")
+	}else if strings.Index(tokenString, "Bearer ") != 0 {
+		return "", errors.New("Hint: Bearer")
+	}
+	return strings.TrimSpace(tokenString[7:]), nil
 }

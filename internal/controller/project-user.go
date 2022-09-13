@@ -10,21 +10,21 @@ import (
 )
 
 
-type userProjectController struct {
-    upServ service.UserProjectService
+type projectUserController struct {
+    upServ service.ProjectUserService
     pServ service.ProjectService
 }
 
 
-func newUserProjectController() *userProjectController {
-    upServ := service.NewUserProjectService()
+func newProjectUserController() *projectUserController {
+    upServ := service.NewProjectUserService()
     pServ := service.NewProjectService()
-    return &userProjectController{upServ, pServ}
+    return &projectUserController{upServ, pServ}
 }
 
 
 //POST /projects/requests/join
-func (ctr *userProjectController) joinRequest(c *gin.Context) {
+func (ctr *projectUserController) joinRequest(c *gin.Context) {
     userId := jwt.GetUserId(c)
     p := ctr.pServ.GetProjectByCd(c.PostForm("project_cd"))
 
@@ -35,7 +35,7 @@ func (ctr *userProjectController) joinRequest(c *gin.Context) {
 
 
 //POST /projects/requests/cancel
-func (ctr *userProjectController) cancelJoinRequest(c *gin.Context) {
+func (ctr *projectUserController) cancelJoinRequest(c *gin.Context) {
     userId := jwt.GetUserId(c)
     p := ctr.pServ.GetProjectByCd(c.PostForm("project_cd"))
 
@@ -46,7 +46,7 @@ func (ctr *userProjectController) cancelJoinRequest(c *gin.Context) {
 
 
 //POST /projects/requests/permit
-func (ctr *userProjectController) permitJoinRequest(c *gin.Context) {
+func (ctr *projectUserController) permitJoinRequest(c *gin.Context) {
     userId := jwt.GetUserId(c)
     targetUserId, err := strconv.Atoi(c.PostForm("user_id"))
     projectId := ctr.pServ.GetProjectId(userId, c.PostForm("project_cd"))
@@ -60,7 +60,7 @@ func (ctr *userProjectController) permitJoinRequest(c *gin.Context) {
 
 
 //GET /projects/requests
-func (ctr *userProjectController) requestsPage(c *gin.Context) {
+func (ctr *projectUserController) requestsPage(c *gin.Context) {
     userId := jwt.GetUserId(c)
 
     joinrequests, _ := ctr.upServ.GetJoinRequests(userId)

@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
@@ -16,8 +14,6 @@ type ColumnService interface {
 	CreateColumn(in dto.ServInCreateColumn) int
 	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
 	DeleteColumn(columnId int) int
-
-	updateTableLastLog(tableId int, action, columnName string)
 }
 
 
@@ -79,8 +75,6 @@ func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) int {
 		return CREATE_COLUMN_ERROR_INT
 	}
 
-	serv.updateTableLastLog(sin.TableId, "create", sin.ColumnName)
-
 	return CREATE_COLUMN_SUCCESS_INT
 }
 
@@ -109,8 +103,6 @@ func (serv *columnService) UpdateColumn(
 		return UPDATE_COLUMN_ERROR_INT
 	}
 
-	serv.updateTableLastLog(sin.TableId, "update", sin.ColumnName)
-
 	return UPDATE_COLUMN_SUCCESS_INT
 }
 
@@ -123,7 +115,7 @@ const DELETE_COLUMN_ERROR_INT = 1
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
 func (serv *columnService) DeleteColumn(columnId int) int {
-	col, err := serv.cRep.Select(columnId)
+	_, err := serv.cRep.Select(columnId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -137,18 +129,5 @@ func (serv *columnService) DeleteColumn(columnId int) int {
 		return DELETE_COLUMN_ERROR_INT
 	}
 
-	serv.updateTableLastLog(col.TableId, "delete", col.ColumnName)
-
 	return DELETE_COLUMN_SUCCESS_INT
-}
-
-
-func (serv *columnService) updateTableLastLog(tableId int, action, columnName string) {
-	msg := fmt.Sprintf("%s: %s", action, columnName)
-
-	err := serv.tRep.UpdateLastLog(tableId, msg)
-
-	if err != nil {
-		logger.LogError(err.Error())
-	}
 }
