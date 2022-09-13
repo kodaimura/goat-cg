@@ -1,48 +1,53 @@
 {{define "header"}}
-<!DOCTYPE html>
-<html class="has-background-grey-lighter">
-<head>
-	<meta charset="utf-8">
-	<meta name=”description“ content=““ />
-	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-	<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
-	<link rel="stylesheet" href="/css/style.css">
-	<title>{{.commons.appname}}</title>
-</head>
-<body>
+{{template "head" .}}
 <header class="navbar is-dark mb-3">
 	<div class="navbar-brand">
 		<a class="navbar-item" href="/projects">GOAT-CG</a>
+		<a role="button" class="navbar-burger" data-target="navbarBurgers" aria-expanded="false">
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+		</a>
 	</div>
-	<div class="navbar-item has-text-info">
-		<em>{{.project_cd}}</em>
-	</div>
-
-	<div class="navbar-end">
-		<div class="navbar-item has-dropdown is-hoverable ">
-			<a class="navbar-link"></a>
-			<div class="navbar-dropdown is-right">
-				<a class="navbar-item" href="/projects/new">
-					Create new project.
+	<div id="navbarBurgers" class="navbar-menu">
+		<div class="navbar-start">
+			{{ if ne .project_cd nil }}
+			<div class="navbar-item has-text-info">
+				<em>{{.project_cd}}</em>
+			</div>
+			{{ end }}
+			<div class="navbar-item">
+				<a href="/projects">
+				プロジェクト一覧
 				</a>
-				<a class="navbar-item" href="/projects">
-					Change project.
+			</div>
+			{{ if eq .project_cd nil }}
+			<div class="navbar-item">
+				<a href="/projects/new">
+				プロジェクト作成
 				</a>
-				<hr class="navbar-divider">
-				<a class="navbar-item" href="/projects/requests">
-					Manage members.
+			</div>
+			<div class="navbar-item">
+				<a href="/projects/requests">
+				メンバー管理
 				</a>
-				{{ if ne .project_cd nil }}
-				<hr class="navbar-divider has-text-link">
-				<a class="navbar-item" href="/{{.project_cd}}/codegen">
-					Code Generate.
+			</div>
+			{{ else }}
+			<div class="navbar-item">
+				<a href="/{{.project_cd}}/tables">
+				テーブル一覧
 				</a>
-				{{ end }}
-				<hr class="navbar-divider">
-				<a href="/logout" class="navbar-item">
-					Logout
+			</div>
+			<div class="navbar-item">
+				<a href="/{{.project_cd}}/codegen">
+				自動生成
 				</a>
+			</div>
+			{{ end }}
+		</div>
+		<div class="navbar-end">
+			<div class="navbar-item">
+				<a class="button is-link is-small" href="/logout">ログアウト</a>
 			</div>
 		</div>
 	</div>

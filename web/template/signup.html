@@ -1,40 +1,60 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<title>{{.commons.appname}}: signup</title>
-	<link rel="stylesheet" href="/css/login_signup.css">
-	<script type="text/javascript" src="/js/signup.js"></script>
-</head>
-<body>
-	<div class="wrapper">
-	<h2>Create an account</h2>
-	<div class="form-wrapper">
-		<div class="error" id="error">
-			{{.error}}
+{{template "head" .}}
+<header class="navbar is-dark mb-3">
+	<div class="navbar-brand">
+		<a class="navbar-item" href="/">CodeGen</a>
+		<a role="button" class="navbar-burger" data-target="navbarBurgers">
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+		</a>
+	</div>
+	<div id="navbarBurgers" class="navbar-menu">
+		<div class="navbar-end">
+			<div class="navbar-item">
+				<a class="button is-small is-link" href="/login">ログイン</a>
+			</div>
 		</div>
-		<form method="POST" onsubmit="return checkPassword();">
-			<div class="form-item">
-				<label for="user_name">UserName</label>
-				<input type="text" name="user_name" required="required">
-			</div>
-			<div class="form-item">
-				<label for="password">Password</label>
-				<input type="password" id="pw1" name="password" required="required">
-			</div>
-			<div class="form-item">
-				<label for="password">Password (for confirmation)</label>
-				<input type="password" id="pw2" required="required">
-			</div>
-			<div class="button-wrapper">
-				<input type="submit" id="signup" value="Create"></input>
-			</div>
-		</form>
 	</div>
-	<div class="form-footer">
-		<p><a href="login">Sign in to {{.commons.appname}}</a></p>
-	</div>
-	</div>
-</body>
-</html>
+</header>
+
+<script type="text/javascript" src="/js/signup.js"></script>
+<div class="columns is-centered mt-6">
+<div class="column is-half box px-5 pb-5">
+<div class="mb-3 mt-1">
+<p class="">Create a new account.</p>
+</div>
+<form method="post" onsubmit="return checkPassword();">
+<span class="has-text-danger" id="error"></span>
+<div class="field">
+	<p class="control has-icons-left">
+	<input class="input" type="text" name="user_name" placeholder="Name" required="required">
+	<span class="icon is-small is-left">
+	<i class="fas fa-user"></i>
+	</span>
+	</p>
+</div>
+<div class="field">
+	<p class="control has-icons-left">
+	<input class="input" type="password" name="password" id="pw1" placeholder="Password" required="required">
+	<span class="icon is-small is-left">
+	<i class="fas fa-lock"></i>
+	</span>
+	</p>
+</div>
+<div class="field">
+	<p class="control has-icons-left">
+	<input class="input" type="password" id="pw2" placeholder="Password Confirm" required="required">
+	<span class="icon is-small is-left">
+	<i class="fas fa-lock"></i>
+	</span>
+	</p>
+</div>
+<div class="field">
+	<p class="control">
+	<input class="button is-info" type="submit" id="signup" value="Signup">
+	</p>
+</div>
+</form>
+</div>
+</div>
+{{template "footer"}}

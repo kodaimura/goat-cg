@@ -3,17 +3,17 @@
 <form method="GET" action="/projects" class="mb-4 mt-3">
 	<div class="columns is-gapless">
 		<div class="column is-3">
-			<input type="text" name="project_cd" class="input" placeholder="ProjectCD">
+			<input type="text" name="project_cd" class="input" placeholder="プロジェクトCD">
 		</div>
 		<div class="column">
-			<input type="submit" value="Search" class="button is-success">
+			<input type="submit" value="プロジェクト検索" class="button is-success">
 		</div>
 	</div>
 </form>
 
 {{ if ne .project.ProjectId 0 }}
 <div class="mb-4">
-	<span class="has-text-grey">Search result.</span>
+	<span class="has-text-grey">検索結果</span>
 	<li>
 	{{.project.ProjectCd}}
 	{{.project.ProjectName}}
@@ -29,7 +29,7 @@
 {{ $l := len .projects2 }}
 {{ if ne $l 0 }}
 <div class="mb-4">
-	<span class="has-text-grey">Pending approval.</span>
+	<span class="has-text-grey">申請中プロジェクト</span>
 	{{ range .projects2 }}
 	<li>
 	{{.ProjectCd}}
@@ -45,7 +45,7 @@
 {{ end }}
 
 <div>
-	<span class="is-size-5">Accessible projects.</span>
+	<span class="is-size-5">プロジェクト一覧</span>
 	<div style="height: 360px; overflow-y:scroll;">
 	<table class="table is-striped">
 		<tbody>
@@ -56,7 +56,7 @@
 			<td style="width:30%;">{{.ProjectName}}</td>
 			<td style="width:30%;">{{.CreateAt}}</td>
 			<td style="width:10%;">
-				<a class="button is-small is-link" href="/{{.ProjectCd}}/tables">START</a>
+				<a class="button is-small is-link" href="/{{.ProjectCd}}/tables">開始</a>
 			</td>
 		</tr>
 		{{ end }}

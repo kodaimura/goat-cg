@@ -2,9 +2,9 @@
 <main>
 <h1 class="title">
 {{ if eq .table_id nil }}
-Create Table
+テーブル作成
 {{ else }}
-Edit Table
+テーブル編集
 {{ end }}
 </h1>
 <div class="box has-background-light">
@@ -12,7 +12,7 @@ Edit Table
 <form method="post">
 	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">TableName</label>
+			<label class="label">テーブル名</label>
 			<input type="text" name="table_name" class="input is-danger" 
 			value="{{.table_name}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
@@ -20,7 +20,7 @@ Edit Table
 			</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">TableName（JP）</label>
+			<label class="label">テーブル名（JP）</label>
 			<input type="text" name="table_name_logical" class="input" value="{{.table_name_logical}}">
 		</div>
 	</div>
@@ -28,17 +28,17 @@ Edit Table
 	{{ if ne .table_id nil }}
 	<div class="columns">
 		<div class="column">
-			<label class="label has-text-grey">Soft Delete</label>
+			<label class="label has-text-grey">論理削除</label>
 			{{ if eq .del_flg 1 }}
 			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
 			{{ else }}
 			<input type="checkbox" name="del_flg" value="1" id="del_flg">
 			{{ end }}
-			<label class="checkbox has-text-grey" for="del_flg">Soft Delete</label>
+			<label class="checkbox has-text-grey" for="del_flg">論理削除</label>
 		</div>
 	</div>
 	{{ end }}
-	<input type="submit" value="Register" class="button is-dark">
+	<input type="submit" value="登録" class="button is-dark">
 </form>
 </div>
 {{ if eq .del_flg 1 }}
@@ -47,7 +47,7 @@ Edit Table
 {{ end }}
 
 <div class="mt-5">
-	<a href="../tables">Back to Table list.</a>
+	<a href="../tables">テーブル一覧</a>
 </div>
 </main>
 {{template "footer"}}

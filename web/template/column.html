@@ -7,7 +7,7 @@
 <form method="post">
 	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">ColumnName</label>
+			<label class="label">カラム名</label>
 			<input type="text" name="column_name" class="input is-danger"
 			value="{{.column.ColumnName}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
@@ -15,13 +15,13 @@
 			</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">ColumnName（JP）</label>
+			<label class="label">カラム名（JP）</label>
 			<input type="text" name="column_name_logical" class="input" value="{{.column.ColumnNameLogical}}">
 		</div>
 	</div>
 	<div class="columns is-gapless">
 		<div class="column is-2">
-			<label class="label">DataType</label>
+			<label class="label">データ型</label>
 			<div class="control">
 			<div class="select">
 				<select name="data_type_cls" id="data_type_cls" 
@@ -59,7 +59,7 @@
 			</div>
 		</div>
 		<div class="column is-1">
-			<label class="label">Precision</label>
+			<label class="label">全体桁</label>
 			<input type="number" name="precision" class="input is-success" 
 			value="{{.column.Precision}}" id="precision" disabled min="0">
 			<p class="help is-success">
@@ -67,7 +67,7 @@
 			</p>
 		</div>
 		<div class="column is-1">
-			<label class="label">Scale</label>
+			<label class="label">少数桁</label>
 			<input type="number" name="scale" class="input is-success"
 			value="{{.column.Scale}}" id="scale" disabled min="0">
 			<p class="help is-success">
@@ -76,7 +76,7 @@
 		</div>
 		<div class="column is-1"></div>
 		<div class="column is-1">
-			<label class="label">Default</label>
+			<label class="label">デフォルト値</label>
 			<input type="text" name="default_value" class="input"
 			value="{{.column.DefaultValue}}">
 		</div>
@@ -112,18 +112,18 @@
 	{{ if ne .column.ColumnId nil }}
 	<div class="columns">
 		<div class="column">
-			<label class="label has-text-grey">Soft Delete</label>
+			<label class="label has-text-grey">論理削除</label>
 			{{ if eq .column.DelFlg 1 }}
 			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
 			{{ else }}
 			<input type="checkbox" name="del_flg" value="1" id="del_flg">
 			{{ end }}
-			<label class="checkbox has-text-grey" for="del_flg">Soft Delete</label>
+			<label class="checkbox has-text-grey" for="del_flg">論理削除</label>
 		</div>
 	</div>
 	{{ end }}
 
-	<input type="submit" value="Register" class="button is-dark">
+	<input type="submit" value="登録" class="button is-dark">
 </form>
 </div>
 
@@ -140,7 +140,7 @@
 {{ end }}
 
 <div class="mt-5">
-	<a href="../columns">Back to Columns</a>
+	<a href="../columns">カラム一覧</a>
 </div>
 <script type="text/javascript" src="/js/column.js"></script>
 </main>

@@ -1,5 +1,5 @@
-document.getElementById("data_type_cls").addEventListener("change", (e)=>{
-	switch (e.target.value) {
+const setInputControl = (dataTypeCls) => {
+	switch (dataTypeCls) {
 		case "11":
 		case "12":
 			document.getElementById("precision").disabled = false
@@ -17,4 +17,13 @@ document.getElementById("data_type_cls").addEventListener("change", (e)=>{
 			document.getElementById("scale").value = 0
 			break;
 	}
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+	setInputControl(document.getElementById("data_type_cls").value)
+})
+
+document.getElementById("data_type_cls").addEventListener("change", (e) => {
+	setInputControl(e.target.value)
 })

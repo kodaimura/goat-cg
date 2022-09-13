@@ -1,26 +1,25 @@
 {{template "header" .}}
 <main>
-<h1 class="title">Tables</h1>
+<h1 class="title">テーブル一覧</h1>
 <a href="tables/new" class="material-icons is-pulled-right"
 style="font-size: 40px;">
 add
 </a>
-<div class="box has-background-light">
+<div class="box has-background-light" style="height: 450px; overflow-y:scroll;">
 <table class="table is-fullwidth is-hoverable mb-1 has-background-light">
   	<thead>
 		<tr>
-			<th style="width:4%;"></th>
-			<th style="width:20%;">TableName</th>
-			<th style="width:20%;">TableName（JP）</th>
-			<th style="width:14%;">create</th>
-			<th style="width:14%;">update</th>
-			<th style="width:15%;">log</th>
-			<th style="width:5%;"></th>
-			<th style="width:8%;"></th>
+			<th style="min-width:50px;"></th>
+			<th style="min-width:240px;">テーブル名</th>
+			<th style="min-width:240px;">テーブル名（JP）</th>
+			<th style="min-width:150px;">登録</th>
+			<th style="min-width:150px;">更新</th>
+			<th style="min-width:100px;">ログ</th>
+			<th style="min-width:70px;"></th>
+			<th style="min-width:100px;"></th>
 		</tr>
 	</thead>
 </table>
-<div style="height: 360px; overflow-y:scroll;">
 <table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
 	<tbody>
 		{{ range $i, $t := .tables }}
@@ -29,25 +28,25 @@ add
 		{{ else }}
 		<tr>
 		{{ end }}
-			<td style="width:4%;">{{$i}}</td>
-			<td style="width:20%;">{{$t.TableName}}</td>
-			<td style="width:20%;">{{$t.TableNameLogical}}</td>
+			<td style="min-width:50px;">{{$i}}</td>
+			<td style="min-width:240px;">{{$t.TableName}}</td>
+			<td style="min-width:240px;">{{$t.TableNameLogical}}</td>
 			
-			<td style="width:14%; font-size: 0.8em;">
+			<td style="min-width:150px; font-size: 0.8em;">
 				{{$t.CreateAt}}
 			</td>
-			<td style="width:14%; font-size: 0.8em;">
+			<td style="min-width:150px; font-size: 0.8em;">
 				{{$t.UpdateAt}}
 			</td>
-			<td style="width:15%; font-size: 0.8em;">
+			<td style="min-width:100px; font-size: 0.8em;">
 			</td>
-			<td style="width:5%;" class="py-1">
+			<td style="min-width:70px;" class="py-1">
 				<a href="./tables/{{$t.TableId}}"
-				class="button is-small is-info is-rounded is-outlined">edit</a>
+				class="button is-small is-info is-rounded is-outlined">編集</a>
 			</td>
-			<td style="width:8%;" class="py-1">
+			<td style="min-width:100px;" class="py-1">
 				<a href="./tables/{{$t.TableId}}/columns" 
-				class="button is-small is-link">columns</a>
+				class="button is-small is-link">カラム一覧</a>
 			</td>
 		</tr>
 		
@@ -55,7 +54,5 @@ add
 	</tbody>
 </table>
 </div>
-</div>
-<a href="/projects">Back to Projects.</a>
 </main>
 {{template "footer"}}

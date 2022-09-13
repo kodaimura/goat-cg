@@ -4,25 +4,23 @@
 <a href="columns/new" class="material-icons is-pulled-right" style="font-size: 40px;">
 add
 </a>
-<div class="box has-background-light">
+<div class="box has-background-light" style="height: 450px; overflow-y:scroll;">
 	<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
 		<thead>
 			<tr>
-			<th style="width:4%;"></th>
-			<th style="width:20%;">ColumnName</th>
-			<th style="width:20%;">ColumnName（JP）</th>
-			<th style="width:15%;">Type</th>
-			<th style="width:6%;">dflt</th>	
-			<th style="width:4%;">PK</th>
-			<th style="width:4%;">NN</th>
-			<th style="width:4%;">UQ</th>
-			<th style="width:18%;">update</th>
-			<th style="width:5%;"></th>
+			<th style="min-width:50px;"></th>
+			<th style="min-width:240px;">カラム名</th>
+			<th style="min-width:240px;">カラム名（JP）</th>
+			<th style="min-width:140px;">型</th>
+			<th style="min-width:110px;">デフォ値</th>	
+			<th style="min-width:50px;">PK</th>
+			<th style="min-width:50px;">NN</th>
+			<th style="min-width:50px;">UQ</th>
+			<th style="min-width:150px;">更新</th>
+			<th style="min-width:70px;"></th>
 			</tr>
 		</thead>
 	</table>
-
-	<div style="height: 360px; overflow-y:scroll;">
 	<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
 		<tbody>
 			{{ range $i, $c := .columns }}
@@ -31,10 +29,10 @@ add
 			{{ else }}
 			<tr>
 			{{ end }}
-			<td style="width:4%;">{{$i}}</td>
-			<td style="width:20%;">{{$c.ColumnName}}</td>
-			<td style="width:20%;">{{$c.ColumnNameLogical}}</td>
-			<td style="width:15%;">
+			<td style="min-width:50px;">{{$i}}</td>
+			<td style="min-width:240px;">{{$c.ColumnName}}</td>
+			<td style="min-width:240px;">{{$c.ColumnNameLogical}}</td>
+			<td style="min-width:140px;">
 			{{ if eq $c.DataTypeCls "10" }}
 			TEXT
 			{{ else if eq $c.DataTypeCls "11"}}
@@ -63,36 +61,33 @@ add
 				{{ end }}
 			{{ end }}
 			</td>
-			<td style="width:6%;">{{$c.DefaultValue}}</td>
-			<td style="width: 4%;">
+			<td style="min-width:110px;">{{$c.DefaultValue}}</td>
+			<td style="min-width:50px;">
 			{{ if eq $c.PrimaryKeyFlg 1 }}
 			○
 			{{ end }}
 			</td>
-			<td style="width:4%;">
+			<td style="min-width:50px">
 			{{ if eq $c.NotNullFlg 1 }}
 			○
 			{{ end }}
 			</td>
-			<td style="width:4%;">
+			<td style="min-width:50px">
 			{{ if eq $c.UniqueFlg 1 }}
 			○
 			{{ end }}
 			</td>
-			<td style="width:18%; font-size: 0.8em">
+			<td style="min-width:150px; font-size: 0.8em">
 			{{.UpdateAt}}
 			</td>
-			<td style="width:5%;" class="py-1">
+			<td style="min-width:70px;" class="py-1">
 				<a href="./columns/{{$c.ColumnId}}" 
-				class="button is-small is-info is-rounded is-outlined">edit</a>
+				class="button is-small is-info is-rounded is-outlined">編集</a>
 			</td>
 			</tr>
 			{{ end }}
 		</tbody>
 	</table>
-	</div>
 </div>
-
-<a href="../../tables">Back to Tables.</a>
 </main>
 {{template "footer"}}

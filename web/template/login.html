@@ -1,35 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<title>{{.commons.appname}}: login</title>
-	<link rel="stylesheet" href="/css/login_signup.css">
-</head>
-<body>
-	<div class="wrapper">
-	<h2>Sign in to {{.commons.appname}}</h2>
-	<div class="form-wrapper">
-		<div class="error">
-		{{.error}}
+{{template "head" .}}
+<header class="navbar is-dark mb-3">
+	<div class="navbar-brand">
+		<a class="navbar-item" href="/">CodeGen</a>
+		<a role="button" class="navbar-burger" data-target="navbarBurgers">
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+		</a>
+	</div>
+	<div id="navbarBurgers" class="navbar-menu">
+		<div class="navbar-end">
+			<div class="navbar-item">
+				<a class="button is-small is-link" href="/signup">サインアップ</a>
+			</div>
 		</div>
-		<form method="POST">
-			<div class="form-item">
-				<label for="user_name">UserName</label>
-				<input type="text" name="user_name" required="required">
-			</div>
-			<div class="form-item">
-				<label for="password">Password</label>
-				<input type="password" name="password" required="required">
-			</div>
-			<div class="button-wrapper">
-				<input type="submit" id="signin" value="Sign In"></input>
-			</div>
-		</form>
 	</div>
-	<div class="form-footer">
-		<p><a href="signup">Create an account</a></p>
-	</div>
-	</div>
-</body>
-</html>
+</header>
+<script type="text/javascript">
+
+</script>
+
+<div class="columns is-centered mt-6">
+<div class="column is-half box px-5 pb-5">
+<div class="mb-3 mt-1">
+Sign in to your account.
+</div>
+<form method="post">
+<span class="has-text-danger"></span>
+<div class="field">
+	<p class="control has-icons-left">
+	<input class="input" type="text" name="user_name" placeholder="Name">
+	<span class="icon is-small is-left">
+	<i class="fas fa-user"></i>
+	</span>
+	</p>
+</div>
+<div class="field">
+	<p class="control has-icons-left">
+	<input class="input" type="password" name="password" placeholder="Password">
+	<span class="icon is-small is-left">
+	<i class="fas fa-lock"></i>
+	</span>
+	</p>
+</div>
+<div class="field">
+	<p class="control">
+	<button class="button is-success">
+	Login
+	</button>
+	</p>
+</div>
+</form>
+</div>
+</div>
+{{template "footer" .}}
