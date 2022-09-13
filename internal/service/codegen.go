@@ -68,7 +68,7 @@ func (serv *codegenService) CodeGenerateGoat(dbType string, tableIds []int) stri
 
 //dataTypeMapSqlite3 map DataTypeCls and sqlite3 data types.
 var dataTypeMapSqlite3 = map[string]string {
-	constant.DATA_TYPE_CLS_SERIAL: "INTEGER AUTOINCREMENT",
+	constant.DATA_TYPE_CLS_SERIAL: "INTEGER PRIMARY KEY AUTOINCREMENT",
 	constant.DATA_TYPE_CLS_TEXT: "TEXT",
 	constant.DATA_TYPE_CLS_VARCHAR: "TEXT",
 	constant.DATA_TYPE_CLS_CHAR: "TEXT",
@@ -327,15 +327,15 @@ func (serv *codegenService) cgDdlCreateTrigger(dbType string, tid int) string {
 
 	if dbType == "sqlite3" {
 		s = "CREATE TRIGGER IF NOT EXISTS " + table.TableName + "_update_trg " + 
-			"AFTER UPDATE ON " + table.TableName + 
-			"\nBEGIN\n\tUPDATE " + table.TableName + 
-			"\n\tSET update_at = DATETIME('now', 'localtime')\n" + 
-			"\n\tWHERE rowid == NEW.rowid;\nEND;"
+			"AFTER UPDATE ON " + table.TableName + "\n" +
+			"BEGIN\n\tUPDATE " + table.TableName + "\n" +
+			"\tSET update_at = DATETIME('now', 'localtime')\n" + 
+			"\tWHERE rowid == NEW.rowid;\nEND;"
 
 	} else if dbType == "postgresql" {
-		s = "CREATE TRIGGER " + table.TableName + "_update_trg " + 
-			"AFTER UPDATE ON " + table.TableName + " FOR EACH ROW" + 
-			"\n\texecute procedure set_update_time()" 
+		s = "CREATE TRIGGER trg_" + table.TableName + "_upd " + 
+			"AFTER UPDATE ON " + table.TableName + " FOR EACH ROW\n" + 
+			"\texecute procedure set_update_time()" 
 	}
 
 	return s
@@ -865,7 +865,6 @@ func (serv *codegenService) cgGoatRepositoryDelete(
 	
 	s := "func (rep *" + repoName + ") " +
 		serv.cgGoatRepositoryInterfaceDelete(args, entityName) + " {\n" +
-		"\tvar ret entity." + entityName + "\n\n" +
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`DELETE FROM " + tableName + "\n" +
 		"\t\t WHERE "

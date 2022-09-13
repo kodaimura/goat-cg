@@ -65,15 +65,12 @@ BEGIN
     UPDATE table_def
     	SET update_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
-END;
 
-CREATE TRIGGER IF NOT EXISTS trg_table_def_ins_regist_log AFTER INSERT ON table_def
-BEGIN
-	INSERT INTO table_def_log
+    INSERT INTO table_def_log
 	SELECT * FROM table_def WHERE table_id == NEW.table_id;
 END;
 
-CREATE TRIGGER IF NOT EXISTS trg_table_def_upd_regist_log AFTER UPDATE ON table_def
+CREATE TRIGGER IF NOT EXISTS trg_table_def_ins AFTER INSERT ON table_def
 BEGIN
 	INSERT INTO table_def_log
 	SELECT * FROM table_def WHERE table_id == NEW.table_id;
@@ -119,15 +116,12 @@ BEGIN
     UPDATE column_def
     SET update_at = DATETIME('now', 'localtime') 
     WHERE rowid == NEW.rowid;
-END;
 
-CREATE TRIGGER IF NOT EXISTS trg_column_def_ins_regist_log AFTER INSERT ON column_def
-BEGIN
-	INSERT INTO column_def_log
+    INSERT INTO column_def_log
 	SELECT * FROM column_def WHERE column_id == NEW.column_id;
 END;
 
-CREATE TRIGGER IF NOT EXISTS trg_column_def_upd_regist_log AFTER UPDATE ON column_def
+CREATE TRIGGER IF NOT EXISTS trg_column_def_ins AFTER INSERT ON column_def
 BEGIN
 	INSERT INTO column_def_log
 	SELECT * FROM column_def WHERE column_id == NEW.column_id;
