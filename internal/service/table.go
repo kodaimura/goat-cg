@@ -1,9 +1,11 @@
 package service
 
 import (
+	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
 	"goat-cg/internal/model/repository"
+	"goat-cg/internal/model/query"
 )
 
 
@@ -20,20 +22,23 @@ type TableService interface {
 		delFlg int,
 	) int
 	DeleteTable(tableId int) int 
+	GetTableLog(tableId int) ([]dto.QueOutTableLog, error)
 }
 
 
 type tableService struct {
 	tRep repository.TableRepository
 	cRep repository.ColumnRepository
+	tQue query.TableQuery
 }
 
 
 func NewTableService() TableService {
 	tRep := repository.NewTableRepository()
 	cRep := repository.NewColumnRepository()
+	tQue := query.NewTableQuery()
 
-	return &tableService{tRep, cRep}
+	return &tableService{tRep, cRep, tQue}
 }
 
 
@@ -155,4 +160,16 @@ func (serv *tableService) DeleteTable(tableId int) int {
 	}
 
 	return DELETE_TABLE_SUCCESS_INT
+}
+
+
+// GetTableLog get Table chenge log.
+func (serv *tableService) GetTableLog(tableId int) ([]dto.QueOutTableLog, error) {
+	tableLog, err := serv.tQue.QueryTableLog(tableId)
+
+	if err != nil {
+		logger.LogError(err.Error())
+	}
+
+	return tableLog, err
 }

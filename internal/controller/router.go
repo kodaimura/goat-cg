@@ -48,6 +48,7 @@ func SetRouter(r *gin.Engine) {
             ap.GET("/tables/:table_id", tc.updateTablePage)
             ap.POST("/tables/:table_id", tc.updateTable)
             ap.DELETE("/tables/:table_id", tc.deleteTable)
+            ap.GET("/tables/:table_id/log", tc.tableLogPage)
 
 
             cgc := newCodegenController()

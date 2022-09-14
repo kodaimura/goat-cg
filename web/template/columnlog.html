@@ -6,13 +6,14 @@
 		<thead>
 			<tr>
 			<th style="min-width:50px;">順</th>
-			<th style="min-width:240px;">カラム名</th>
-			<th style="min-width:240px;">カラム名（JP）</th>
+			<th style="min-width:200px;">カラム名</th>
+			<th style="min-width:200px;">カラム名（JP）</th>
 			<th style="min-width:140px;">型</th>
 			<th style="min-width:110px;">デフォ値</th>	
 			<th style="min-width:50px;">PK</th>
 			<th style="min-width:50px;">NN</th>
 			<th style="min-width:50px;">UQ</th>
+			<th style="min-width:60px;">削除</th>
 			<th style="min-width:150px;">更新日</th>
 			<th style="min-width:150px;">更新者</th>
 			</tr>
@@ -21,14 +22,10 @@
 	<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
 		<tbody>
 			{{ range $i, $c := .columnlog }}
-			{{ if eq $c.DelFlg 1 }}
-			<tr class="has-background-grey">
-			{{ else }}
 			<tr>
-			{{ end }}
 			<td style="min-width:50px;">{{$c.AlignSeq}}</td>
-			<td style="min-width:240px;">{{$c.ColumnName}}</td>
-			<td style="min-width:240px;">{{$c.ColumnNameLogical}}</td>
+			<td style="min-width:200px;">{{$c.ColumnName}}</td>
+			<td style="min-width:200px;">{{$c.ColumnNameLogical}}</td>
 			<td style="min-width:140px;">
 			{{ if eq $c.DataTypeCls "10" }}
 			TEXT
@@ -74,11 +71,16 @@
 			○
 			{{ end }}
 			</td>
+			<td style="min-width:60px">
+			{{ if eq $c.DelFlg 1 }}
+			○
+			{{ end }}
+			</td>
 			<td style="min-width:150px; font-size: 0.8em">
-			{{.UpdateAt}}
+			{{$c.UpdateAt}}
 			</td>
 			<td style="min-width:150px;">
-			{{.UpdateUserName}}
+			{{$c.UpdateUserName}}
 			</td>
 			</tr>
 			{{ end }}

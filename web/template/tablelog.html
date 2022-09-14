@@ -1,0 +1,50 @@
+{{template "header" .}}
+<main>
+<h1 class="title">テーブル更新履歴</h1>
+<div class="box has-background-light" style="height: 450px; overflow-y:scroll;">
+<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
+  	<thead>
+		<tr>
+			<th style="min-width:50px;"></th>
+			<th style="min-width:200px;">テーブル名</th>
+			<th style="min-width:200px;">テーブル名（JP）</th>
+			<th style="min-width:60px;">削除</th>
+			<th style="min-width:150px;">登録日</th>
+			<th style="min-width:150px;">登録者</th>
+			<th style="min-width:150px;">更新日</th>
+			<th style="min-width:150px;">更新者</th>
+		</tr>
+	</thead>
+</table>
+<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
+	<tbody>
+		{{ range $i, $t := .tablelog }}
+		<tr>
+			<td style="min-width:50px;">{{$i}}</td>
+			<td style="min-width:200px;">{{$t.TableName}}</td>
+			<td style="min-width:200px;">{{$t.TableNameLogical}}</td>
+			<td style="min-width:60px">
+			{{ if eq $t.DelFlg 1 }}
+			○
+			{{ end }}
+			</td>
+			<td style="min-width:150px; font-size: 0.8em;">
+			{{$t.CreateAt}}
+			</td>
+			<td style="min-width:150px;">
+			{{$t.CreateUserName}}
+			</td>
+			<td style="min-width:150px; font-size: 0.8em">
+			{{$t.UpdateAt}}
+			</td>
+			<td style="min-width:150px;">
+			{{$t.UpdateUserName}}
+			</td>
+		</tr>
+		
+		{{ end }}
+	</tbody>
+</table>
+</div>
+</main>
+{{template "footer"}}

@@ -153,3 +153,18 @@ func (ctr *tableController) deleteTable(c *gin.Context) {
     c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
 
 }
+
+
+//GET /:project_cd/tables/:table_id/log
+func (ctr *tableController) tableLogPage(c *gin.Context) {
+    projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+    tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+
+    tableLog, _ := ctr.tServ.GetTableLog(tableId)
+
+    c.HTML(200, "tablelog.html", gin.H{
+        "commons": constant.Commons,
+        "project_cd" : c.Param("project_cd"),
+        "tablelog": tableLog,
+    })
+}

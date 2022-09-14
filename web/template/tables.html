@@ -10,11 +10,10 @@ add
   	<thead>
 		<tr>
 			<th style="min-width:50px;"></th>
-			<th style="min-width:240px;">テーブル名</th>
-			<th style="min-width:240px;">テーブル名（JP）</th>
-			<th style="min-width:150px;">登録</th>
-			<th style="min-width:150px;">更新</th>
-			<th style="min-width:100px;">ログ</th>
+			<th style="min-width:200px;">テーブル名</th>
+			<th style="min-width:200px;">テーブル名（JP）</th>
+			<th style="min-width:180px;">登録日</th>
+			<th style="min-width:180px;">更新日</th>
 			<th style="min-width:70px;"></th>
 			<th style="min-width:100px;"></th>
 		</tr>
@@ -29,16 +28,14 @@ add
 		<tr>
 		{{ end }}
 			<td style="min-width:50px;">{{$i}}</td>
-			<td style="min-width:240px;">{{$t.TableName}}</td>
-			<td style="min-width:240px;">{{$t.TableNameLogical}}</td>
+			<td style="min-width:200px;">{{$t.TableName}}</td>
+			<td style="min-width:200px;">{{$t.TableNameLogical}}</td>
 			
-			<td style="min-width:150px; font-size: 0.8em;">
-				{{$t.CreateAt}}
+			<td style="min-width:180px;">
+				<a href="./tables/{{$t.TableId}}/log">{{$t.CreateAt}}</a>
 			</td>
-			<td style="min-width:150px; font-size: 0.8em;">
-				{{$t.UpdateAt}}
-			</td>
-			<td style="min-width:100px; font-size: 0.8em;">
+			<td style="min-width:180px;">
+				<a href="./tables/{{$t.TableId}}/log">{{$t.UpdateAt}}</a>
 			</td>
 			<td style="min-width:70px;" class="py-1">
 				<a href="./tables/{{$t.TableId}}"
