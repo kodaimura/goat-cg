@@ -367,6 +367,14 @@ func (serv *codegenService) snakeToCamelCase(snake string) string {
 }
 
 
+func (serv *codegenService) tableNameToEntityName(tableName string) string {
+	return serv.snakeToCamelCase(tableName)
+}
+
+func (serv *codegenService) columnNameToFieldName(columnName string) string {
+	return serv.snakeToCamelCase(columnName)
+}
+
 // snakeToLowerCamelCase
 // user => user / user_name => userName
 func (serv *codegenService) snakeToLowerCamelCase(snake string) string {
@@ -426,7 +434,7 @@ func (serv *codegenService) cgGoatSource(dbType string, tableIds []int, path str
 func (serv *codegenService) cgGoatEntitySource(
 	tableName string, columns []entity.Column, path string,
 ) {
-	entityName := serv.snakeToCamelCase(tableName)
+	entityName := serv.tableNameToEntityName(tableName)
 	path += "/" + entityName + ".go"
 	s := serv.cgGoatEntity(entityName, columns)
 	serv.writeFile(path, s)
@@ -440,7 +448,7 @@ func (serv *codegenService) cgGoatEntity(
 
 	s += "type " + entityName + " struct {\n"
 	for _, col := range columns {
-		s += "\t" + serv.snakeToCamelCase(col.ColumnName) + " " +
+		s += "\t" + serv.columnNameToFieldName(col.ColumnName) + " " +
 			dbDataTypeGoTypeMap[col.DataTypeCls] + " " +
 			"`db:\"" + strings.ToLower(col.ColumnName) + "\" " +
 			"json:\"" + strings.ToLower(col.ColumnName) + "\"`\n"
@@ -504,12 +512,10 @@ func (serv *codegenService) cgGoatRepositorySource(
 func (serv *codegenService) cgGoatRepository(
 	dbType, tableName string, columns []entity.Column,
 ) string {
-	// EntityName
-	en := serv.snakeToCamelCase(tableName)
 	// RepositoryInterfaceName
-	rin := en + "Repository"
+	repoIName := serv.tableNameToEntityName(tableName) + "Repository"
 	// RepositoryName
-	rn := serv.snakeToLowerCamelCase(tableName) + "Repository" 
+	repoName := serv.snakeToLowerCamelCase(tableName) + "Repository" 
 
 	s := "package repository\n\n\n" +
 		"import (\n" + 
@@ -517,29 +523,29 @@ func (serv *codegenService) cgGoatRepository(
 		"\t\"xxxxx/internal/core/db\"\n" +
 		"\t\"xxxxx/internal/model/entity\"\n)\n\n\n"
 
-	s += serv.cgGoatRepositoryInterface(tableName, en, rin, columns)
+	s += serv.cgGoatRepositoryInterface(tableName, repoIName, columns)
 	
 	s += "\n\n\n" +
-		"type " + rn + " struct {\n" + "\tdb *sql.DB\n}" +
+		"type " + repoName + " struct {\n" + "\tdb *sql.DB\n}" +
 		"\n\n\n" +
-		"func New" + rin + "() " + rin + " {\n" +
+		"func New" + repoIName + "() " + repoIName + " {\n" +
 		"\tdb := db.GetDB()\n" + 
-		"\treturn &" + rn + "{db}\n}" +
+		"\treturn &" + repoName + "{db}\n}" +
 		"\n\n\n"
 
-	rep := serv.cgGoatRepositoryInsert(dbType, tableName, en, rn, columns)
+	rep := serv.cgGoatRepositoryInsert(dbType, tableName, repoName, columns)
 	if rep != "" {
 		s += rep + "\n\n\n"
 	} 
-	rep = serv.cgGoatRepositorySelect(dbType, tableName, en, rn, columns)
+	rep = serv.cgGoatRepositorySelect(dbType, tableName, repoName, columns)
 	if rep != "" {
 		s += rep + "\n\n\n"
 	}
-	rep = serv.cgGoatRepositoryUpdate(dbType, tableName, en, rn, columns)
+	rep = serv.cgGoatRepositoryUpdate(dbType, tableName, repoName, columns)
 	if rep != "" {
 		s += rep + "\n\n\n"
 	} 
-	rep = serv.cgGoatRepositoryDelete(dbType, tableName, en, rn, columns)
+	rep = serv.cgGoatRepositoryDelete(dbType, tableName, repoName, columns)
 	s += rep
 
 	return s
@@ -547,17 +553,17 @@ func (serv *codegenService) cgGoatRepository(
 
 
 func (serv *codegenService) cgGoatRepositoryInterface(
-	tableName, entityName, repoIName string, columns []entity.Column,
+	tableName, repoIName string, columns []entity.Column,
 ) string {
 	s := "type " + repoIName + " interface {\n"
 
-	s += "\t" + serv.cgGoatRepositoryInterfaceInsert(entityName) + "\n"
+	s += "\t" + serv.cgGoatRepositoryInterfaceInsert(tableName) + "\n"
 
 	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	if args != "" {
-		s += "\t" + serv.cgGoatRepositoryInterfaceSelect(args, entityName) + "\n"
-		s += "\t" + serv.cgGoatRepositoryInterfaceUpdate(args, entityName) + "\n"
-		s += "\t" + serv.cgGoatRepositoryInterfaceDelete(args, entityName) + "\n"
+		s += "\t" + serv.cgGoatRepositoryInterfaceSelect(args, tableName) + "\n"
+		s += "\t" + serv.cgGoatRepositoryInterfaceUpdate(args, tableName) + "\n"
+		s += "\t" + serv.cgGoatRepositoryInterfaceDelete(args) + "\n"
 	}
 
 	return s + "}"
@@ -589,8 +595,9 @@ func (serv *codegenService) cgGoatRepositoryInterfaceCommonArgs(
 // cgGoatRepositoryInterfaceInsert
 // return "Insert(x entity.Entity) error"
 func (serv *codegenService) cgGoatRepositoryInterfaceInsert(
-	entityName string,
+	tableName string,
 ) string {
+	entityName := serv.tableNameToEntityName(tableName)
 	return "Insert(" + serv.entityNameToVariableName(entityName) + 
 		" *entity." + entityName + ") error"
 }
@@ -599,8 +606,9 @@ func (serv *codegenService) cgGoatRepositoryInterfaceInsert(
 // cgGoatRepositoryInterfaceSelect
 // return "Select(commonArgs) (entity.Entity, error)"
 func (serv *codegenService) cgGoatRepositoryInterfaceSelect(
-	commonArgs string, entityName string,
+	commonArgs string, tableName string,
 ) string {
+	entityName := serv.tableNameToEntityName(tableName)
 	return "Select(" + commonArgs + ") (entity." + entityName + ", error)"
 }
 
@@ -608,8 +616,9 @@ func (serv *codegenService) cgGoatRepositoryInterfaceSelect(
 // cgGoatRepositoryInterfaceUpdate
 // return "Update(commonArgs, x entity.Entity) error"
 func (serv *codegenService) cgGoatRepositoryInterfaceUpdate(
-	commonArgs string, entityName string,
+	commonArgs string, tableName string,
 ) string {
+	entityName := serv.tableNameToEntityName(tableName)
 	return "Update(" + commonArgs + ", " + serv.entityNameToVariableName(entityName) + 
 		" *entity." + entityName + ") error"
 }
@@ -618,7 +627,7 @@ func (serv *codegenService) cgGoatRepositoryInterfaceUpdate(
 // cgGoatRepositoryInterfaceDelete
 // return "Delete(commonArgs) error"
 func (serv *codegenService) cgGoatRepositoryInterfaceDelete(
-	commonArgs string, entityName string,
+	commonArgs string,
 ) string {
 	return "Delete(" + commonArgs + ") error"
 }
@@ -627,62 +636,29 @@ func (serv *codegenService) cgGoatRepositoryInterfaceDelete(
 // cgGoatRepositoryInsert generate repository function 'Insert'.
 // return "func (rep *repoName) Insert(x entity.Entity) error {...}"
 func (serv *codegenService) cgGoatRepositoryInsert(
-	dbType, tableName, entityName, repoName string, columns []entity.Column,
+	dbType, tableName, repoName string, columns []entity.Column,
 ) string {
-	cols := []string{}
-	bvars := []string{}
-	bvals := []string{}
-
-	c := 0
-	for _, col := range columns {
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
-			continue
-		}
-		c++
-
-		if dbType == "sqlite3" {
-			bvars = append(bvars, "?")
-		} else if dbType == "postgresql" {
-			bvars = append(bvars, "$" + strconv.Itoa(c))
-		}
-		
-		cols = append(cols, col.ColumnName)
-		bvals = append(bvals, serv.snakeToCamelCase(col.ColumnName))
-	}
+	bindCount := 0
 
 	s := "func (rep *" + repoName + ") " +
-		serv.cgGoatRepositoryInterfaceInsert(entityName) + " {\n" +
+		serv.cgGoatRepositoryInterfaceInsert(tableName) + " {\n" +
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`INSERT INTO " + tableName + " (\n"
-
-	for _, col := range cols {
-		s += "\t\t\t" + col + ",\n"
-	}
-
-	s = strings.TrimRight(s, ",\n")
+	s += serv.cgGoatRepositorySqlInsertCols(columns)
 	s += "\n\t\t ) VALUES("
-
-	for i, bvar := range bvars {
-		if i > 0 {
-			s += ","
-		} 
-		s += bvar
-	}
-
+	s += serv.cgGoatRepositorySqlInsertBindVars(dbType, &bindCount, columns)
 	s += ")`,\n"
+	s += serv.cgGoatRepositorySqlColsBindVals(tableName, columns)
+	s += "\t)\n\n\treturn err\n}"
 
-	ev := serv.entityNameToVariableName(entityName)
-	for _, bval := range bvals {
-		s += "\t\t" + ev + "." + bval + ",\n"
-	}
-
-	return s + "\t)\n\n\treturn err\n}"
+	return s
 }
+
 
 // cgGoatRepositorySelect generate repository function 'Select'.
 // return "func (rep *repoName) Select(commonArgs) (entity.Entity, error) {...}"
 func (serv *codegenService) cgGoatRepositorySelect(
-	dbType, tableName, entityName, repoName string, columns []entity.Column,
+	dbType, tableName, repoName string, columns []entity.Column,
 ) string {
 	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	//pkがない場合
@@ -690,75 +666,30 @@ func (serv *codegenService) cgGoatRepositorySelect(
 		return ""
 	}
 
-	cols := []string{}
-	conds := []string{}
-	bvals := []string{}
-	scans := []string{}
-
-	pkc := 0
-	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			pkc++
-			if dbType == "sqlite3" {
-				conds = append(conds, col.ColumnName + " = ?")
-			} else if dbType == "postgresql" {
-				conds = append(conds, col.ColumnName + " = $" + strconv.Itoa(pkc))
-			}
-			bvals = append(bvals, serv.columnNameToVariableName(tableName, col.ColumnName))
-		}
-
-		cols = append(cols, col.ColumnName)
-		scans = append(scans, serv.snakeToCamelCase(col.ColumnName))
-	}
-
-	cols = append(cols, "create_at")
-	cols = append(cols, "update_at")
-	scans = append(scans, "CreateAt")
-	scans = append(scans, "UpdateAt")
+	bindCount := 0
 
 	s := "func (rep *" + repoName + ") " +
-		serv.cgGoatRepositoryInterfaceSelect(args, entityName) + " {\n" +
-		"\tvar ret entity." + entityName + "\n\n" +
+		serv.cgGoatRepositoryInterfaceSelect(args, tableName) + " {\n" +
+		"\tvar ret entity." + serv.tableNameToEntityName(tableName) + "\n\n" +
 		"\terr := rep.db.QueryRow(\n" + 
 		"\t\t`SELECT\n"
-
-	for _, col := range cols {
-		s += "\t\t\t" + col + ",\n"
-	}
-
-	s = strings.TrimRight(s, ",\n")
-	s += "\n\t\t FROM " + tableName + "\n" +
-	"\t\t WHERE "
-
-	for i, cond := range conds {
-		if i == 0 {
-			s += cond + "\n"
-		} else {
-			s += "\t\t   AND " + cond + "\n"
-		}
-	}
-
-	s = strings.TrimRight(s, "\n")
+	s += serv.cgGoatRepositorySqlSelectCols(columns)
+	s += "\n\t\t FROM " + tableName + "\n"
+	s += serv.cgGoatRepositorySqlWhere(dbType, columns, &bindCount)
 	s += "`,\n"
-
-	for _, bval := range bvals {
-		s += "\t\t" + bval + ",\n"
-	}
-
+	s += serv.cgGoatRepositorySqlWhereBindVals(tableName, columns)
 	s += "\t).Scan(\n"
+	s += serv.cgGoatRepositorySqlSelectScanVars(columns)
+	s +=  "\t)\n\n\treturn ret, err\n}"
 
-	for _, scan := range scans {
-		s += "\t\t&ret." + scan + ",\n"
-	}
-
-	return s + "\t)\n\n\treturn ret, err\n}"
+	return s
 }
 
 
 // cgGoatRepositoryUpdate generate repository function 'Update'.
 // return "func (rep *repoName) Update(commonArgs, x entity.Entity) error {...}"
 func (serv *codegenService) cgGoatRepositoryUpdate(
-	dbType, tableName, entityName, repoName string, columns []entity.Column,
+	dbType, tableName, repoName string, columns []entity.Column,
 ) string {
 	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	//pkがない場合
@@ -766,80 +697,29 @@ func (serv *codegenService) cgGoatRepositoryUpdate(
 		return ""
 	}
 
-	sets := []string{}
-	bsets := []string{}
-	conds := []string{}
-	bconds := []string{}
-
-	c := 0
-	for _, col := range columns {
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
-			continue
-		}
-		c ++
-
-		if dbType == "sqlite3" {
-			sets = append(sets, col.ColumnName + " = ?")
-		} else if dbType == "postgresql" {
-			sets = append(sets, col.ColumnName + " = $" + strconv.Itoa(c))
-		}
-
-		bsets = append(bsets, serv.snakeToCamelCase(col.ColumnName))
-	}
-
-	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			c++
-			if dbType == "sqlite3" {
-				conds = append(conds, col.ColumnName + " = ?")
-			} else if dbType == "postgresql" {
-				conds = append(conds, col.ColumnName + " = $" + strconv.Itoa(c))
-			}
-			bconds = append(bconds, serv.columnNameToVariableName(tableName, col.ColumnName))
-		}
-	}
+	bindCount := 0
 
 	s := "func (rep *" + repoName + ") " +
-		serv.cgGoatRepositoryInterfaceUpdate(args, entityName) + " {\n" +
+		serv.cgGoatRepositoryInterfaceUpdate(args, tableName) + " {\n" +
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`UPDATE " + tableName + "\n" +
 		"\t\t SET\n"
-
-	for _, set := range sets {
-		s += "\t\t\t" + set + ",\n"
-	}
-
-	s = strings.TrimRight(s, ",\n")
+	s += serv.cgGoatRepositorySqlUpdateSet(dbType, &bindCount, columns)
 	s += "\n\t\t FROM " + tableName + "\n" +
-	"\t\t WHERE "
-
-	for i, cond := range conds {
-		if i == 0 {
-			s += cond + "\n"
-		} else {
-			s += "\t\t   AND " + cond + "\n"
-		}
-	}
-
-	s = strings.TrimRight(s, "\n")
+	serv.cgGoatRepositorySqlWhere(dbType, columns, &bindCount)
 	s += "`,\n"
+	s += serv.cgGoatRepositorySqlColsBindVals(tableName, columns)
+	s += serv.cgGoatRepositorySqlWhereBindVals(tableName, columns)
+	s += "\t)\n\n\treturn err\n}"
 
-	ev := serv.entityNameToVariableName(entityName)
-	for _, bset := range bsets {
-		s += "\t\t" + ev + "." + bset + ",\n"
-	}
-
-	for _, bcond := range bconds {
-		s += "\t\t" + bcond + ",\n"
-	}
-
-	return s + "\t)\n\n\treturn err\n}"	
+	return s
 }
+
 
 // cgGoatRepositoryDelete generate repository function 'Delete'.
 // return "func (rep *repoName) Delete(commonArgs) error {...}"
 func (serv *codegenService) cgGoatRepositoryDelete(
-	dbType, tableName, entityName, repoName string, columns []entity.Column,
+	dbType, tableName, repoName string, columns []entity.Column,
 ) string {
 	args := serv.cgGoatRepositoryInterfaceCommonArgs(tableName, columns)
 	//pkがない場合
@@ -847,42 +727,153 @@ func (serv *codegenService) cgGoatRepositoryDelete(
 		return ""
 	}
 
-	conds := []string{}
-	bvals := []string{}
-
-	pkc := 0
-	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			pkc++
-			if dbType == "sqlite3" {
-				conds = append(conds, col.ColumnName + " = ?")
-			} else if dbType == "postgresql" {
-				conds = append(conds, col.ColumnName + " = $" + strconv.Itoa(pkc))
-			}
-			bvals = append(bvals, serv.columnNameToVariableName(tableName, col.ColumnName))
-		}
-	}
+	bindCount := 0
 	
 	s := "func (rep *" + repoName + ") " +
-		serv.cgGoatRepositoryInterfaceDelete(args, entityName) + " {\n" +
+		serv.cgGoatRepositoryInterfaceDelete(args) + " {\n" +
 		"\t_, err := rep.db.Exec(\n" + 
-		"\t\t`DELETE FROM " + tableName + "\n" +
-		"\t\t WHERE "
+		"\t\t`DELETE FROM " + tableName + "\n"
+	s += serv.cgGoatRepositorySqlWhere(dbType, columns, &bindCount)
+	s += "`,\n"
+	s += serv.cgGoatRepositorySqlWhereBindVals(tableName, columns)
+	s += "\t)\n\n\treturn err\n}"
 
-	for i, cond := range conds {
-		if i == 0 {
-			s += cond + "\n"
-		} else {
-			s += "\t\t   AND " + cond + "\n"
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlWhere(
+	dbType string, columns []entity.Column, bindCount *int,
+) string {
+	s := "\t\t WHERE "
+
+	c := 0
+	for _, col := range columns {
+		if col.PrimaryKeyFlg == constant.FLG_ON {
+			if c != 0 {
+				s += "\t\t   AND "
+			}
+			s += col.ColumnName + " = " + 
+			serv.cgGoatRepositorySqlBindVar(dbType, bindCount) + "\n"
 		}
 	}
 
-	s = strings.TrimRight(s, "\n")
-	s += "`,\n"
+	return strings.TrimRight(s, ",\n")
+}
 
-	for _, bval := range bvals {
-		s += "\t\t" + bval + ",\n"
+
+func (serv *codegenService) cgGoatRepositorySqlBindVar(
+	dbType string, bindCount *int,
+) string {
+	s := ""
+	if dbType == "sqlite3" {
+		s = "?"
+	} else if dbType == "postgresql" {
+		*bindCount++
+		s = "$" + strconv.Itoa(*bindCount)
 	}
 
-	return s + "\t)\n\n\treturn err\n}"	
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlWhereBindVals(
+	tableName string, columns []entity.Column,
+) string {
+	s := ""
+	for _, col := range columns {
+		if col.PrimaryKeyFlg == constant.FLG_ON {
+			s += "\t\t" + serv.columnNameToVariableName(tableName, col.ColumnName) + ",\n"
+		}
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlColsBindVals(
+	tableName string, columns []entity.Column,
+) string {
+	s := ""
+	entityName := serv.tableNameToEntityName(tableName)
+	ev := serv.entityNameToVariableName(entityName)
+	for _, col := range columns {
+		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			s += "\t\t" + ev + "." + serv.columnNameToFieldName(col.ColumnName) + ",\n"
+		}
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlInsertCols(
+	columns []entity.Column,
+) string {
+	s := ""
+	for _, col := range columns {
+		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			s += "\t\t\t" + col.ColumnName + ",\n"
+		}	
+	}
+
+	return strings.TrimRight(s, ",\n")
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlInsertBindVars(
+	dbType string, bindCount *int, columns []entity.Column,
+) string {
+	s := ""
+	for _, col := range columns {
+		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			s += serv.cgGoatRepositorySqlBindVar(dbType, bindCount) + ","
+		}	
+	}
+
+	return strings.TrimRight(s, ",")
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlSelectCols(
+	columns []entity.Column,
+) string {
+	s := ""
+	for _, col := range columns {
+		s += "\t\t\t" + col.ColumnName + ",\n"
+	}
+	s += "\t\t\t" + "create_at" + ",\n"
+	s += "\t\t\t" + "update_at"
+
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlSelectScanVars(
+	columns []entity.Column,
+) string {
+	s := ""
+	for _, col := range columns {
+		s += "\t\t&ret." + serv.columnNameToFieldName(col.ColumnName) + ",\n"
+	}
+
+	s += "\t\t&ret." + "CreateAt" + ",\n"
+	s += "\t\t&ret." + "UpdateAt" + ",\n"
+
+	return s
+}
+
+
+func (serv *codegenService) cgGoatRepositorySqlUpdateSet(
+	dbType string, bindCount *int, columns []entity.Column,
+) string {
+	s := ""
+	for _, col := range columns {
+		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			s += "\t\t\t" + col.ColumnName + " = " + 
+			serv.cgGoatRepositorySqlBindVar(dbType, bindCount) + ",\n"
+		}
+	}
+
+	return strings.TrimRight(s, ",\n")
 }
