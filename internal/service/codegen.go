@@ -443,6 +443,7 @@ func (serv *codegenService) cgGoatEntitySource(
 }
 
 
+// cgGoatEntity is the main processing of cgGoatEntitySource 
 func (serv *codegenService) cgGoatEntity(
 	entityName string, columns []entity.Column,
 ) string {
@@ -511,6 +512,7 @@ func (serv *codegenService) cgGoatRepositorySource(
 }
 
 
+// cgGoatRepository is the main processing of cgGoatRepositorySource 
 func (serv *codegenService) cgGoatRepository(
 	dbType, tableName string, columns []entity.Column,
 ) string {
@@ -544,6 +546,8 @@ func (serv *codegenService) cgGoatRepository(
 }
 
 
+// cgGoatRepositoryInterface
+// return "type *Repository interface { ... }"
 func (serv *codegenService) cgGoatRepositoryInterface(
 	tableName, repoIName string, columns []entity.Column,
 ) string {
