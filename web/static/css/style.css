@@ -1,6 +1,13 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 
+body {
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 40px;
+}
+
+
 footer {
     position: absolute;
     bottom: 0;
@@ -8,6 +15,6 @@ footer {
 
 
 main {
-    margin-left: 80px;
-    margin-right: 80px;
+    margin-left: 40px;
+    margin-right: 40px;
 }

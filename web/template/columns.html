@@ -1,11 +1,8 @@
 {{template "header" .}}
 <main>
 <h1 class="title">{{ .table.TableName }}</h1>
-<a href="columns/new" class="material-icons is-pulled-right" style="font-size: 40px;">
-add
-</a>
-<div class="box has-background-light" style="height: 450px; overflow-y:scroll;">
-	<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
+<div style="height: 450px; overflow-y:scroll;">
+	<table class="table is-fullwidth mb-1 is-narrow has-background-info-light">
 		<thead>
 			<tr>
 			<th style="min-width:50px;">順</th>
@@ -17,7 +14,9 @@ add
 			<th style="min-width:50px;">NN</th>
 			<th style="min-width:50px;">UQ</th>
 			<th style="min-width:180px;">更新日</th>
-			<th style="min-width:70px;"></th>
+			<th style="min-width:110px;">
+				<a href="columns/new" class="button is-small">追加</a>
+			</th>
 			</tr>
 		</thead>
 	</table>
@@ -78,11 +77,11 @@ add
 			{{ end }}
 			</td>
 			<td style="min-width:180px;">
-			<a href="./columns/{{$c.ColumnId}}/log">{{.UpdateAt}}</a>
+			<a href="./columns/{{$c.ColumnId}}/log" class="has-text-info">{{.UpdateAt}}</a>
 			</td>
-			<td style="min-width:70px;" class="py-1">
+			<td style="min-width:110px;" class="py-1">
 				<a href="./columns/{{$c.ColumnId}}" 
-				class="button is-small is-info is-rounded is-outlined">編集</a>
+				class="button is-small">編集</a>
 			</td>
 			</tr>
 			{{ end }}

@@ -12,21 +12,19 @@
 
 <form method="post" action="./codegen/goat" name="cg">
 <div class="box has-background-light">
-	<table class="table is-fullwidth is-hoverable mb-1 has-background-light">
+	<div style="height: 360px; overflow-y:scroll;">
+	<table class="table is-fullwidth mb-1 has-background-light is-narrow">
 		<thead>
 			<tr>
-			<th style="width:4%;"></th>
-			<th style="width:20%;">テーブル名</th>
-			<th style="width:20%;">テーブル名（JP）</th>
-			<th style="width:16%;">登録</th>
-			<th style="width:16%;">更新</th>
-			<th style="width:16%;">ログ</th>
-			<th style="width:8%;"></th>
+			<th style="min-width:50px;"></th>
+			<th style="min-width:200px;">テーブル名</th>
+			<th style="min-width:200px;">テーブル名（JP）</th>
+			<th style="min-width:180px;">登録日</th>
+			<th style="min-width:180px;">更新日</th>
+			<th style="min-width:100px;"></th>
 			</tr>
 		</thead>
 	</table>
-
-	<div style="height: 360px; overflow-y:scroll;">
 	<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
 		<tbody>
 			{{ range $i, $t := .tables }}
@@ -35,18 +33,12 @@
 			{{ else }}
 			<tr>
 			{{ end }}
-			<td style="width:4%;">{{$i}}</td>
-			<td style="width:20%;">{{$t.TableName}}</td>
-			<td style="width:20%;">{{$t.TableNameLogical}}</td>
-			<td style="width:16%; font-size: 0.8em;">
-				{{$t.CreateAt}}
-			</td>
-			<td style="width:16%; font-size: 0.8em;">
-				{{$t.UpdateAt}}
-			</td>
-			<td style="width:16%; font-size: 0.8em;">
-			</td>
-			<td style="width:8%;" class="py-1">
+			<td style="min-width:50px;">{{$i}}</td>
+			<td style="min-width:200px;">{{$t.TableName}}</td>
+			<td style="min-width:200px;">{{$t.TableNameLogical}}</td>
+			<td style="min-width:180px;">{{$t.CreateAt}}</td>
+			<td style="min-width:180px;">{{$t.UpdateAt}}</td>
+			<td style="min-width:100px" class="py-1">
 				<input type="checkbox" name="table_id" value="{{$t.TableId}}">
 			</td>
 			</tr>
@@ -58,9 +50,6 @@
 
 <div class="level">
 	<div class="level-left">
-		<a href="./tables">テーブル一覧</a>
-	</div>
-	<div class="level-right">
 		<div class="select">
 			<select id="db_type">
 				<option value="sqlite3">SQLite3</option>

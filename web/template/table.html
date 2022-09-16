@@ -28,7 +28,6 @@
 	{{ if ne .table_id nil }}
 	<div class="columns">
 		<div class="column">
-			<label class="label has-text-grey">論理削除</label>
 			{{ if eq .del_flg 1 }}
 			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
 			{{ else }}
