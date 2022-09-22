@@ -50,11 +50,11 @@ func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
 			cl.create_at,
 			cl.update_at
 		 FROM
-		 	column_def_log cl
-		 	LEFT OUTER JOIN users u1 ON cl.create_user_id = u1.user_id
-		 	LEFT OUTER JOIN users u2 ON cl.update_user_id = u2.user_id
+			 column_def_log cl
+			 LEFT OUTER JOIN users u1 ON cl.create_user_id = u1.user_id
+			 LEFT OUTER JOIN users u2 ON cl.update_user_id = u2.user_id
 		 WHERE 
-		 	cl.column_id = ?
+			 cl.column_id = ?
 		 ORDER BY cl.update_at`,
 		 id,
 	)

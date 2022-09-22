@@ -1,11 +1,11 @@
 package config
 
 import (
-    "os"
-    "log"
-    "fmt"
+	"os"
+	"log"
+	"fmt"
 
-    "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 )
 
 

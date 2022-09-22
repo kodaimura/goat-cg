@@ -1,32 +1,32 @@
 package server
 
 import (
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 
-    "goat-cg/config"
-    "goat-cg/internal/core/logger"
-    "goat-cg/internal/controller"
+	"goat-cg/config"
+	"goat-cg/internal/core/logger"
+	"goat-cg/internal/controller"
 )
 
 func Run() {
-    cf := config.GetConfig()
-    logger.SetAccessLogger()
-    r := router()
-    r.Run(":" + cf.AppPort)
+	cf := config.GetConfig()
+	logger.SetAccessLogger()
+	r := router()
+	r.Run(":" + cf.AppPort)
 }
 
 func router() *gin.Engine {
-    r := gin.Default()
-    
-    //TEMPLATE
-    r.LoadHTMLGlob("web/template/*.html")
+	r := gin.Default()
+	
+	//TEMPLATE
+	r.LoadHTMLGlob("web/template/*.html")
 
-    //STATIC
-    r.Static("/css", "web/static/css")
-    r.Static("/js", "web/static/js")
-    r.Static("/tmp", "./tmp")
+	//STATIC
+	r.Static("/css", "web/static/css")
+	r.Static("/js", "web/static/js")
+	r.Static("/tmp", "./tmp")
 
-    controller.SetRouter(r)
+	controller.SetRouter(r)
 
-    return r
+	return r
 }

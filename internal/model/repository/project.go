@@ -11,14 +11,14 @@ import (
 
 type ProjectRepository interface {
 	Insert(p *entity.Project) error
-    Update(id int, p *entity.Project) error
+	Update(id int, p *entity.Project) error
 
-    SelectByCd(cd string) (entity.Project, error)
-    SelectByUserIdAndStateCls(
-    	userId int, state string,
-    ) ([]entity.Project, error)
-    SelectByCdAndUserId(cd string, userId int) (entity.Project, error)
-    
+	SelectByCd(cd string) (entity.Project, error)
+	SelectByUserIdAndStateCls(
+		userId int, state string,
+	) ([]entity.Project, error)
+	SelectByCdAndUserId(cd string, userId int) (entity.Project, error)
+	
 }
 
 
@@ -67,9 +67,9 @@ func (rep *projectRepository) SelectByCd(cd string) (entity.Project, error) {
 			project_name,
 			create_at
 		 FROM 
-		 	project
+			 project
 		 WHERE 
-		 	project_cd = ?`, 
+			 project_cd = ?`, 
 		 cd,
 	).Scan(
 		&ret.ProjectId, 
@@ -93,10 +93,10 @@ func (rep *projectRepository) SelectByUserIdAndStateCls(
 			p.project_name,
 			p.create_at
 		 FROM 
-		 	project p,
-		 	project_user pu
+			 project p,
+			 project_user pu
 		 WHERE 
-		 	p.project_id = pu.project_id
+			 p.project_id = pu.project_id
 		 AND pu.user_id = ?
 		 AND pu.state_cls = ?`, 
 		 userId,
@@ -136,10 +136,10 @@ func (rep *projectRepository) SelectByCdAndUserId(
 			p.project_id,
 			p.project_name
 		 FROM 
-		 	project p,
-		 	project_user pu
+			 project p,
+			 project_user pu
 		 WHERE 
-		 	p.project_id = pu.project_id
+			 p.project_id = pu.project_id
 		 AND p.project_cd = ?
 		 AND pu.user_id = ?
 		 AND pu.state_cls = ?`, 

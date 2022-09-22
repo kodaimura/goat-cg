@@ -12,12 +12,12 @@ import (
 type TableRepository interface {
 	Select(id int) (entity.Table, error)
 	Insert(t *entity.Table) error
-    Update(id int, t *entity.Table) error
-    Delete(id int) error
+	Update(id int, t *entity.Table) error
+	Delete(id int) error
 
-    SelectByProjectId(projectId int) ([]entity.Table, error)
-    SelectByNameAndProjectId(name string, projectId int) (entity.Table, error)
-    UpdateDelFlg(id, delFlg int) error
+	SelectByProjectId(projectId int) ([]entity.Table, error)
+	SelectByNameAndProjectId(name string, projectId int) (entity.Table, error)
+	UpdateDelFlg(id, delFlg int) error
 }
 
 
@@ -45,9 +45,9 @@ func (rep *tableRepository) Select(tableId int) (entity.Table, error){
 			create_user_id,
 			update_user_id
 		 FROM 
-		 	table_def
+			 table_def
 		 WHERE 
-		 	table_id = ?`,
+			 table_id = ?`,
 		 tableId,
 	).Scan(
 		&ret.ProjectId, 
@@ -87,10 +87,10 @@ func (rep *tableRepository) Update(id int, t *entity.Table) error {
 	_, err := rep.db.Exec(
 		`UPDATE table_def
 		 SET 
-		 	table_name = ?,
-		 	table_name_logical = ?,
-		 	del_flg = ?,
-		 	update_user_id = ?
+			 table_name = ?,
+			 table_name_logical = ?,
+			 del_flg = ?,
+			 update_user_id = ?
 		 WHERE table_id= ?`,
 		t.TableName,
 		t.TableNameLogical,
@@ -127,7 +127,7 @@ func (rep *tableRepository) SelectByNameAndProjectId(
 			create_user_id,
 			update_user_id
 		 FROM 
-		 	table_def
+			 table_def
 		 WHERE project_id = ?
 		   AND table_name = ?`,
 		 projectId,
@@ -160,9 +160,9 @@ func (rep *tableRepository) SelectByProjectId(projectId int) ([]entity.Table, er
 			create_at,
 			update_at
 		 FROM 
-		 	table_def
+			 table_def
 		 WHERE 
-		 	project_id = ?`, 
+			 project_id = ?`, 
 		 projectId,
 	)
 

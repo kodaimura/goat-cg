@@ -10,8 +10,8 @@ import (
 
 type ProjectUserRepository interface {
 	Select(userId, projectId int) (entity.ProjectUser, error)
-    Upsert(up *entity.ProjectUser) error
-    Delete(userId, projectId int) error
+	Upsert(up *entity.ProjectUser) error
+	Delete(userId, projectId int) error
 }
 
 
@@ -74,7 +74,7 @@ func (rep *projectUserRepository) Delete(userId, projectId int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM project_user
 		 WHERE 
-		 	user_id = ?
+			 user_id = ?
 		 AND project_id = ?`, 
 		userId,
 		projectId,

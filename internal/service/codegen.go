@@ -41,7 +41,7 @@ func NewCodegenService() CodegenService {
 // param dbType: "sqlite3" or "postgresql" 
 func (serv *codegenService) CodeGenerateDdl(dbType string, tableIds []int) string {
 	path := "./tmp/ddl-" + time.Now().Format("2006-01-02-15-04-05") + 
-    	"-" + utils.RandomString(7) + ".sql"
+		"-" + utils.RandomString(7) + ".sql"
 
 	serv.cgDdlSource(dbType, tableIds, path)
 
@@ -54,7 +54,7 @@ func (serv *codegenService) CodeGenerateDdl(dbType string, tableIds []int) strin
 // param dbType: "sqlite3" or "postgresql" 
 func (serv *codegenService) CodeGenerateGoat(dbType string, tableIds []int) string {
 	path := "./tmp/goat-" + time.Now().Format("2006-01-02-15-04-05") + 
-    	"-" + utils.RandomString(7)
+		"-" + utils.RandomString(7)
 
 	serv.cgGoatSource(dbType, tableIds, path)
 
@@ -142,7 +142,7 @@ func (serv *codegenService) cgDdlSource(dbType string, tableIds []int, path stri
 	s := serv.cgDdlCreateTables(dbType, tableIds) + "\n" +
 		serv.cgDdlCreateTriggers(dbType, tableIds)
 
-    serv.writeFile(path, s)
+	serv.writeFile(path, s)
 }
 
 
@@ -384,8 +384,8 @@ func (serv *codegenService) snakeToLowerCamelCase(snake string) string {
 	ls := strings.Split(n, "_")
 	for i, s := range ls {
 		if i == 0 {
-	        continue
-	    }
+			continue
+		}
 		ls[i] = strings.ToUpper(s[0:1]) + s[1:]
 	}
 	return strings.Join(ls, "")

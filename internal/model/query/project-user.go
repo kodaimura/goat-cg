@@ -37,10 +37,10 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 			p.project_name,
 			pu2.update_at
 		 FROM 
-		 	project_user pu1,
-		 	project_user pu2,
-		 	users u,
-		 	project p
+			 project_user pu1,
+			 project_user pu2,
+			 users u,
+			 project p
 		 WHERE pu1.user_id = ?
 		  AND pu1.role_cls in (?, ?)
 		  AND pu2.project_id = pu1.project_id

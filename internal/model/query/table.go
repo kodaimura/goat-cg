@@ -39,11 +39,11 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 			td.create_at,
 			td.update_at
 		 FROM 
-		 	table_def td
-		 	LEFT OUTER JOIN users u1 ON td.create_user_id = u1.user_id
-		 	LEFT OUTER JOIN users u2 ON td.update_user_id = u2.user_id
+			 table_def td
+			 LEFT OUTER JOIN users u1 ON td.create_user_id = u1.user_id
+			 LEFT OUTER JOIN users u2 ON td.update_user_id = u2.user_id
 		 WHERE 
-		 	td.table_id = ?
+			 td.table_id = ?
 		 ORDER BY td.update_at`, 
 		 id,
 	)

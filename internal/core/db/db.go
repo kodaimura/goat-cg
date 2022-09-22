@@ -1,30 +1,30 @@
 package db
 
 import (
-    "log"
-    "database/sql"
-    
-    _ "github.com/mattn/go-sqlite3"
+	"log"
+	"database/sql"
+	
+	_ "github.com/mattn/go-sqlite3"
 
-    "goat-cg/config"
+	"goat-cg/config"
 )
 
 
 var db *sql.DB
 
 func init() {
-    var err error
+	var err error
 
-    cf := config.GetConfig()
+	cf := config.GetConfig()
 
-    dbname := "./" + cf.DbName + ".db"
-    db, err = sql.Open("sqlite3", dbname)
+	dbname := "./" + cf.DbName + ".db"
+	db, err = sql.Open("sqlite3", dbname)
 
-    if err != nil {
-        log.Panic(err)
-    }
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func GetDB() *sql.DB {
-    return db
+	return db
 }

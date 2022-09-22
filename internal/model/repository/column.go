@@ -54,9 +54,9 @@ func (rep *columnRepository) Select(id int) (entity.Column, error) {
 			create_at,
 			update_at
 		 FROM
-		 	column_def
+			 column_def
 		 WHERE
-		 	column_id = ?
+			 column_id = ?
 		 ORDER BY align_seq`,
 		 id,
 	).Scan(
@@ -196,9 +196,9 @@ func (rep *columnRepository) SelectByNameAndTableId(
 			create_at,
 			update_at
 		 FROM
-		 	column_def
+			 column_def
 		 WHERE
-		 	table_id = ?
+			 table_id = ?
 		 AND column_name = ?
 		 ORDER BY align_seq`,
 		 tableId,
@@ -252,9 +252,9 @@ func (rep *columnRepository) SelectByTableId(tableId int) ([]entity.Column, erro
 			create_at,
 			update_at
 		 FROM
-		 	column_def
+			 column_def
 		 WHERE
-		 	table_id = ?
+			 table_id = ?
 		 ORDER BY align_seq`,
 		 tableId,
 	)
