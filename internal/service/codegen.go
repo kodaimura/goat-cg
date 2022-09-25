@@ -335,7 +335,7 @@ func (serv *codegenService) cgDdlCreateTrigger(dbType string, tid int) string {
 	} else if dbType == "postgresql" {
 		s = "CREATE TRIGGER trg_" + table.TableName + "_upd " + 
 			"AFTER UPDATE ON " + table.TableName + " FOR EACH ROW\n" + 
-			"\texecute procedure set_update_time()" 
+			"\texecute procedure set_update_time();" 
 	}
 
 	return s
