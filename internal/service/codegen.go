@@ -304,7 +304,7 @@ func (serv *codegenService) cgDdlCreateTriggers(dbType string, tableIds []int) s
 	s := ""
 	if dbType == "postgresql" {
 		s = "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
-			"\tBEGIN\n\t\tnew.updated_at := ''now'';\n\t\treturn new;\n\tEND\n" + 
+			"\tBEGIN\n\t\tnew.update_at := ''now'';\n\t\treturn new;\n\tEND\n" + 
 			"' language 'plpgsql';\n\n"
 	}
 
@@ -326,7 +326,7 @@ func (serv *codegenService) cgDdlCreateTrigger(dbType string, tid int) string {
 	}
 
 	if dbType == "sqlite3" {
-		s = "CREATE TRIGGER IF NOT EXISTS " + table.TableName + "_update_trg " + 
+		s = "CREATE TRIGGER IF NOT EXISTS trg_" + table.TableName + "_upd " + 
 			"AFTER UPDATE ON " + table.TableName + "\n" +
 			"BEGIN\n\tUPDATE " + table.TableName + "\n" +
 			"\tSET update_at = DATETIME('now', 'localtime')\n" + 
