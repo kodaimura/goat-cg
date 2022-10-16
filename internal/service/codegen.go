@@ -711,9 +711,8 @@ func (serv *codegenService) cgGoatRepositoryUpdate(
 		"\t_, err := rep.db.Exec(\n" + 
 		"\t\t`UPDATE " + tableName + "\n" +
 		"\t\t SET\n"
-	s += serv.cgGoatRepositoryUpdateSqlSet(dbType, &bindCount, columns)
-	s += "\n\t\t FROM " + tableName + "\n" +
-	serv.cgGoatRepositorySqlWhere(dbType, columns, &bindCount)
+	s += serv.cgGoatRepositoryUpdateSqlSet(dbType, &bindCount, columns) + "\n" +
+		serv.cgGoatRepositorySqlWhere(dbType, columns, &bindCount)
 	s += "`,\n"
 	s += serv.cgGoatRepositoryColumnsBindVals(tableName, columns)
 	s += serv.cgGoatRepositorySqlWhereBindVals(tableName, columns)
