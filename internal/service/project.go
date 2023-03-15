@@ -4,7 +4,7 @@ import (
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/repository"
+	"goat-cg/internal/model/dao"
 )
 
 
@@ -18,15 +18,15 @@ type ProjectService interface {
 
 
 type projectService struct {
-	pRep repository.ProjectRepository
-	upRep repository.ProjectUserRepository
+	pDao dao.ProjectDao
+	upDao dao.ProjectUserDao
 }
 
 
 func NewProjectService() ProjectService {
-	pRep := repository.NewProjectRepository()
-	upRep := repository.NewProjectUserRepository()
-	return &projectService{pRep, upRep}
+	pDao := dao.NewProjectDao()
+	upDao := dao.NewProjectUserDao()
+	return &projectService{pDao, upDao}
 }
 
 
@@ -41,7 +41,7 @@ func (serv *projectService) GetProjectId(
 	userId int, 
 	projectCd string,
 ) int {
-	project, err := serv.pRep.SelectByCdAndUserId(projectCd, userId)
+	project, err := serv.pDao.SelectByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		return GET_PROJECT_ID_NOT_FOUND_INT
@@ -55,7 +55,7 @@ func (serv *projectService) GetProjectId(
 func (serv *projectService) GetProjects(
 	userId int,
 ) ([]entity.Project, error) {
-	projects, err := serv.pRep.SelectByUserIdAndStateCls(
+	projects, err := serv.pDao.SelectByUserIdAndStateCls(
 		userId, constant.STATE_CLS_JOIN,
 	)
 
@@ -71,7 +71,7 @@ func (serv *projectService) GetProjects(
 func (serv *projectService) GetProjectsPendingApproval(
 	userId int,
 ) ([]entity.Project, error) {
-	projects, err := serv.pRep.SelectByUserIdAndStateCls(
+	projects, err := serv.pDao.SelectByUserIdAndStateCls(
 		userId, constant.STATE_CLS_REQUEST,
 	)
 
@@ -86,7 +86,7 @@ func (serv *projectService) GetProjectsPendingApproval(
 func (serv *projectService) GetProjectByCd(
 	projectCd string,
 ) entity.Project {
-	project, _ := serv.pRep.SelectByCd(projectCd)
+	project, _ := serv.pDao.SelectByCd(projectCd)
 
 	return project
 }
@@ -104,7 +104,7 @@ func (serv *projectService) CreateProject(
 	projectCd string, 
 	projectName string,
 ) int {
-	_, err := serv.pRep.SelectByCd(projectCd)
+	_, err := serv.pDao.SelectByCd(projectCd)
 	if err == nil {
 		return CREATE_PROJECT_CONFLICT_INT
 	}
@@ -112,14 +112,14 @@ func (serv *projectService) CreateProject(
 	var p entity.Project
 	p.ProjectCd = projectCd
 	p.ProjectName = projectName
-	err = serv.pRep.Insert(&p)
+	err = serv.pDao.Insert(&p)
 
 	if err != nil {
 		logger.LogError(err.Error())
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	project, err := serv.pRep.SelectByCd(projectCd)
+	project, err := serv.pDao.SelectByCd(projectCd)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -131,7 +131,7 @@ func (serv *projectService) CreateProject(
 	up.ProjectId = project.ProjectId
 	up.StateCls = constant.STATE_CLS_JOIN
 	up.RoleCls = constant.ROLE_CLS_OWNER
-	err = serv.upRep.Upsert(&up)
+	err = serv.upDao.Upsert(&up)
 
 	if err != nil {
 		logger.LogError(err.Error())

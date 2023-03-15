@@ -1,4 +1,4 @@
-package repository
+package dao
 
 import (
 	"database/sql"
@@ -8,25 +8,25 @@ import (
 )
 
 
-type ProjectUserRepository interface {
+type ProjectUserDao interface {
 	Select(userId, projectId int) (entity.ProjectUser, error)
 	Upsert(up *entity.ProjectUser) error
 	Delete(userId, projectId int) error
 }
 
 
-type projectUserRepository struct {
+type projectUserDao struct {
 	db *sql.DB
 }
 
 
-func NewProjectUserRepository() ProjectUserRepository {
+func NewProjectUserDao() ProjectUserDao {
 	db := db.GetDB()
-	return &projectUserRepository{db}
+	return &projectUserDao{db}
 }
 
 
-func (rep *projectUserRepository) Select(userId, projectId int) (entity.ProjectUser, error) {
+func (rep *projectUserDao) Select(userId, projectId int) (entity.ProjectUser, error) {
 	var ret entity.ProjectUser
 
 	err := rep.db.QueryRow(
@@ -51,7 +51,7 @@ func (rep *projectUserRepository) Select(userId, projectId int) (entity.ProjectU
 }
 
 
-func (rep *projectUserRepository) Upsert(up *entity.ProjectUser) error {
+func (rep *projectUserDao) Upsert(up *entity.ProjectUser) error {
 	_, err := rep.db.Exec(
 		`REPLACE INTO project_user (
 			user_id, 
@@ -70,7 +70,7 @@ func (rep *projectUserRepository) Upsert(up *entity.ProjectUser) error {
 }
 
 
-func (rep *projectUserRepository) Delete(userId, projectId int) error {
+func (rep *projectUserDao) Delete(userId, projectId int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM project_user
 		 WHERE 

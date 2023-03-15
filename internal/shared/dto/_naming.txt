@@ -4,11 +4,11 @@ QueIn*
 ### queryservice 戻り値DTO
 QueOut*
 
-### repository 引数DTO
-RepIn*
+### dao 引数DTO
+DaoIn*
 
-### repository 戻り値DTO
-RepOut*
+### dao 戻り値DTO
+DaoOut*
 
 ### service 引数DTO
 ServIn*

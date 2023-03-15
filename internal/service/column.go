@@ -4,7 +4,7 @@ import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/repository"
+	"goat-cg/internal/model/dao"
 	"goat-cg/internal/model/query"
 )
 
@@ -20,23 +20,23 @@ type ColumnService interface {
 
 
 type columnService struct {
-	cRep repository.ColumnRepository
-	tRep repository.TableRepository
+	cDao dao.ColumnDao
+	tDao dao.TableDao
 	cQue query.ColumnQuery
 }
 
 
 func NewColumnService() ColumnService {
-	cRep := repository.NewColumnRepository()
-	tRep := repository.NewTableRepository()
+	cDao := dao.NewColumnDao()
+	tDao := dao.NewTableDao()
 	cQue := query.NewColumnQuery()
-	return &columnService{cRep, tRep, cQue}
+	return &columnService{cDao, tDao, cQue}
 }
 
 
 // GetColumn get Column record by columnId.
 func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
-	column, err := serv.cRep.Select(columnId)
+	column, err := serv.cDao.Select(columnId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -48,7 +48,7 @@ func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
 
 // GetColumn get Column records by tableId.
 func (serv *columnService) GetColumns(tableId int) ([]entity.Column, error) {
-	columns, err := serv.cRep.SelectByTableId(tableId)
+	columns, err := serv.cDao.SelectByTableId(tableId)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -66,13 +66,13 @@ const CREATE_COLUMN_ERROR_INT = 2
 
 // CreateColumn create new Column record.
 func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) int {
-	_, err := serv.cRep.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	_, err := serv.cDao.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
 	if err == nil {
 		return CREATE_COLUMN_CONFLICT_INT
 	}
 	
 	column := sin.ToColumn()
-	err = serv.cRep.Insert(&column)
+	err = serv.cDao.Insert(&column)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -93,14 +93,14 @@ const UPDATE_COLUMN_ERROR_INT = 2
 func (serv *columnService) UpdateColumn(
 	columnId int, sin dto.ServInCreateColumn,
 ) int {
-	col, err := serv.cRep.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	col, err := serv.cDao.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
 	
 	if err == nil && col.ColumnId != columnId {
 		return UPDATE_COLUMN_CONFLICT_INT
 	}
 	
 	column := sin.ToColumn()
-	err = serv.cRep.Update(columnId, &column)
+	err = serv.cDao.Update(columnId, &column)
 
 	if err != nil {
 		logger.LogError(err.Error())
@@ -119,14 +119,14 @@ const DELETE_COLUMN_ERROR_INT = 1
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
 func (serv *columnService) DeleteColumn(columnId int) int {
-	_, err := serv.cRep.Select(columnId)
+	_, err := serv.cDao.Select(columnId)
 
 	if err != nil {
 		logger.LogError(err.Error())
 		return DELETE_COLUMN_ERROR_INT
 	}
 
-	err = serv.cRep.Delete(columnId)
+	err = serv.cDao.Delete(columnId)
 
 	if err != nil {
 		logger.LogError(err.Error())

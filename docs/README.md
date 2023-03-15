@@ -7,4 +7,4 @@ https://goat-cg.carkodr.com/login
 * プロジェクト登録(or 参加)
 * テーブル登録
 * カラム登録
-* プログラム生成(repository, entity, sql)
+* プログラム生成(dao, entity, sql)

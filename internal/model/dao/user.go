@@ -1,4 +1,4 @@
-package repository
+package dao
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 )
 
 
-type UserRepository interface {
+type UserDao interface {
 	Insert(u *entity.User) error
 	Select(id int) (entity.User, error)
 	Update(id int, u *entity.User) error
@@ -21,18 +21,18 @@ type UserRepository interface {
 }
 
 
-type userRepository struct {
+type userDao struct {
 	db *sql.DB
 }
 
 
-func NewUserRepository() UserRepository {
+func NewUserDao() UserDao {
 	db := db.GetDB()
-	return &userRepository{db}
+	return &userDao{db}
 }
 
 
-func (rep *userRepository) Select(id int) (entity.User, error){
+func (rep *userDao) Select(id int) (entity.User, error){
 	var ret entity.User
 
 	err := rep.db.QueryRow(
@@ -55,7 +55,7 @@ func (rep *userRepository) Select(id int) (entity.User, error){
 }
 
 
-func (rep *userRepository) Insert(u *entity.User) error {
+func (rep *userDao) Insert(u *entity.User) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO users (
 			user_name, 
@@ -68,7 +68,7 @@ func (rep *userRepository) Insert(u *entity.User) error {
 }
 
 
-func (rep *userRepository) Update(id int, u *entity.User) error {
+func (rep *userDao) Update(id int, u *entity.User) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
 		 SET user_name = ? 
@@ -82,7 +82,7 @@ func (rep *userRepository) Update(id int, u *entity.User) error {
 }
 
 
-func (rep *userRepository) Delete(id int) error {
+func (rep *userDao) Delete(id int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM users WHERE user_id = ?`, 
 		id,
@@ -92,7 +92,7 @@ func (rep *userRepository) Delete(id int) error {
 }
 
 
-func (rep *userRepository) UpdatePassword(id int, password string) error {
+func (rep *userDao) UpdatePassword(id int, password string) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
 		 SET password = ? 
@@ -104,7 +104,7 @@ func (rep *userRepository) UpdatePassword(id int, password string) error {
 }
 
 
-func (rep *userRepository) UpdateName(id int, name string) error {
+func (rep *userDao) UpdateName(id int, name string) error {
 	_, err := rep.db.Exec(
 		`UPDATE users
 		 SET user_name = ? 
@@ -117,7 +117,7 @@ func (rep *userRepository) UpdateName(id int, name string) error {
 
 
 
-func (rep *userRepository) SelectByName(name string) (entity.User, error) {
+func (rep *userDao) SelectByName(name string) (entity.User, error) {
 	var ret entity.User
 
 	err := rep.db.QueryRow(
@@ -142,7 +142,7 @@ func (rep *userRepository) SelectByName(name string) (entity.User, error) {
 }
 
 
-func (rep *userRepository) SelectAll(id int) ([]entity.User, error) {
+func (rep *userDao) SelectAll(id int) ([]entity.User, error) {
 	var ret []entity.User
 
 	rows, err := rep.db.Query(
