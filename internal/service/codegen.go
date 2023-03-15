@@ -81,7 +81,7 @@ var dataTypeMapSqlite3 = map[string]string {
 
 //dataTypeMapPostgresql map DataTypeCls and postgresql data types.
 var dataTypeMapPostgresql = map[string]string{
-	constant.DATA_TYPE_CLS_SERIAL: "SERIAL",
+	constant.DATA_TYPE_CLS_SERIAL: "SERIAL PRIMARY KEY",
 	constant.DATA_TYPE_CLS_TEXT: "TEXT",
 	constant.DATA_TYPE_CLS_VARCHAR: "VARCHAR",
 	constant.DATA_TYPE_CLS_CHAR: "CHAR",
@@ -211,6 +211,10 @@ func (serv *codegenService) cgDdlPrymaryKey(dbType string, columns []entity.Colu
 	pkcols := serv.extractPrimaryKeys(columns)
 
 	for i, col := range pkcols {
+		if col.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
+			return ""
+		}
+
 		if i == 0 {
 			s += "\tPRIMARY KEY("
 		} else {
@@ -303,13 +307,13 @@ func (serv *codegenService) cgDdlColumnDataTypePostgresql(col entity.Column) str
 func (serv *codegenService) cgDdlCreateTriggers(dbType string, tableIds []int) string {
 	s := ""
 	if dbType == "postgresql" {
-		s = "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
+		s += "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
 			"\tBEGIN\n\t\tnew.update_at := ''now'';\n\t\treturn new;\n\tEND\n" + 
 			"' language 'plpgsql';\n\n"
 	}
 
 	for _, tid := range tableIds {
-		s = serv.cgDdlCreateTrigger(dbType, tid) + "\n\n"
+		s += serv.cgDdlCreateTrigger(dbType, tid) + "\n\n"
 	}
 
 	return s
