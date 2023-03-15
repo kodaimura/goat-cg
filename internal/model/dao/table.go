@@ -78,7 +78,7 @@ func (rep *tableDao) Insert(t *entity.Table) error {
 		t.TableNameLogical,
 		constant.FLG_OFF,
 		t.CreateUserId,
-		t.CreateUserId,
+		t.UpdateUserId,
 	)
 	return err
 }

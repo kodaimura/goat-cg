@@ -28,23 +28,23 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 	var ret []dto.QueOutTableLog	
 	rows, err := que.db.Query(
 		`SELECT 
-			td.table_id,
-			td.table_name,
-			td.table_name_logical,
-			td.del_flg,
-			td.create_user_id,
+			tl.table_id,
+			tl.table_name,
+			tl.table_name_logical,
+			tl.del_flg,
+			tl.create_user_id,
 			u1.user_name create_user_name,
-			td.update_user_id,
+			tl.update_user_id,
 			u2.user_name update_user_name,
-			td.create_at,
-			td.update_at
+			tl.create_at,
+			tl.update_at
 		 FROM 
-			 table_def td
-			 LEFT OUTER JOIN users u1 ON td.create_user_id = u1.user_id
-			 LEFT OUTER JOIN users u2 ON td.update_user_id = u2.user_id
+			 table_def_log tl
+			 LEFT OUTER JOIN users u1 ON tl.create_user_id = u1.user_id
+			 LEFT OUTER JOIN users u2 ON tl.update_user_id = u2.user_id
 		 WHERE 
-			 td.table_id = ?
-		 ORDER BY td.update_at`, 
+			 tl.table_id = ?
+		 ORDER BY tl.update_at`, 
 		 id,
 	)
 

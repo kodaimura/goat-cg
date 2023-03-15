@@ -88,9 +88,9 @@ CREATE TABLE IF NOT EXISTS table_def_log (
 	project_id INTEGER,
 	table_name TEXT,
 	table_name_logical TEXT,
-	del_flg INTEGER,
 	create_user_id INTEGER,
 	update_user_id INTEGER,
+	del_flg INTEGER,
 	create_at TEXT,
 	update_at TEXT
 );

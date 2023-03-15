@@ -8,7 +8,7 @@ type Table struct {
 	TableNameLogical string `db:"table_name_logical" json:"table_name_logical"`
 	DelFlg int `db:"del_flg" json:"del_flg"`
 	CreateUserId int `db:"create_user_id" json:"create_user_id"`
-	UpdateUserId int `db:"create_user_id" json:"create_user_id"`
+	UpdateUserId int `db:"update_user_id" json:"update_user_id"`
 	CreateAt string `db:"create_at" json:"create_at"`
 	UpdateAt string `db:"update_at" json:"update_at"`
 }
