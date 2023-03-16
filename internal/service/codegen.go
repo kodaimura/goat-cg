@@ -92,6 +92,19 @@ var dataTypeMapPostgresql = map[string]string{
 	constant.DATA_TYPE_CLS_BLOB: "BLOB",
 }
 
+//dataTypeMapMysql map DataTypeCls and mysql data types.
+var dataTypeMapMysql = map[string]string{
+	constant.DATA_TYPE_CLS_SERIAL: "INT PRIMARY KEY AUTO_INCREMENT",
+	constant.DATA_TYPE_CLS_TEXT: "TEXT",
+	constant.DATA_TYPE_CLS_VARCHAR: "VARCHAR",
+	constant.DATA_TYPE_CLS_CHAR: "CHAR",
+	constant.DATA_TYPE_CLS_INTEGER: "INT",
+	constant.DATA_TYPE_CLS_NUMERIC: "NUMERIC",
+	constant.DATA_TYPE_CLS_TIMESTAMP: "DATETIME",
+	constant.DATA_TYPE_CLS_DATE: "DATE",
+	constant.DATA_TYPE_CLS_BLOB: "BLOB",
+}
+
 //dbDataTypeGoTypeMap map DataTypeCls and Golang types.
 var dbDataTypeGoTypeMap = map[string]string{
 	constant.DATA_TYPE_CLS_SERIAL: "int",
@@ -200,6 +213,10 @@ func (serv *codegenService) cgDdlCommonColumns(dbType string) string {
 	} else if dbType == "postgresql" {
 		s = "\tcreate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
 			"\tupdate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+
+	} else if dbType == "mysql" {
+		s = "\tcreate_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
+			"\tupdate_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
 	}
 
 	return s
@@ -279,6 +296,9 @@ func (serv *codegenService) cgDdlColumnDataType(dbType string, col entity.Column
 
 	} else if dbType == "postgresql" {
 		s = serv.cgDdlColumnDataTypePostgresql(col)
+	
+	} else if dbType == "mysql" {
+		s = serv.cgDdlColumnDataTypeMysql(col)
 	}
 
 	return s
@@ -287,6 +307,25 @@ func (serv *codegenService) cgDdlColumnDataType(dbType string, col entity.Column
 
 func (serv *codegenService) cgDdlColumnDataTypePostgresql(col entity.Column) string {
 	s := dataTypeMapPostgresql[col.DataTypeCls]
+
+	if col.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
+	col.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
+		if col.Precision != 0 {
+			s += "(" + strconv.Itoa(col.Precision) + ")"
+		}	
+	}
+	if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
+		if col.Precision != 0 {
+			s += "(" + strconv.Itoa(col.Precision) + "," + strconv.Itoa(col.Scale) + ")"
+		}
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) cgDdlColumnDataTypeMysql(col entity.Column) string {
+	s := dataTypeMapMysql[col.DataTypeCls]
 
 	if col.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
 	col.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
@@ -808,7 +847,7 @@ func (serv *codegenService) cgGoatDaoSqlBindVar(
 	dbType string, bindCount *int,
 ) string {
 	s := ""
-	if dbType == "sqlite3" {
+	if dbType == "sqlite3" || dbType == "mysql" {
 		s = "?"
 	} else if dbType == "postgresql" {
 		*bindCount++
