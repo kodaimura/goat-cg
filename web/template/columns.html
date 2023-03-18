@@ -9,18 +9,18 @@
 			<th style="min-width:200px;">カラム名</th>
 			<th style="min-width:200px;">カラム名（JP）</th>
 			<th style="min-width:140px;">型</th>
-			<th style="min-width:110px;">デフォ値</th>	
+			<th style="min-width:100px;">デフォ値</th>	
 			<th style="min-width:50px;">PK</th>
 			<th style="min-width:50px;">NN</th>
 			<th style="min-width:50px;">UQ</th>
-			<th style="min-width:180px;">更新日</th>
+			<th style="min-width:200px;">更新日</th>
 			<th style="min-width:110px;">
-				<a href="columns/new" class="button is-small">追加</a>
+				<a href="columns/new" class="button is-small is-rounded is-dark">追加</a>
 			</th>
 			</tr>
 		</thead>
 	</table>
-	<table class="table is-fullwidth is-hoverable is-bordered is-striped is-narrow">
+	<table class="table is-fullwidth is-hoverable is-bordered is-striped">
 		<tbody>
 			{{ range $i, $c := .columns }}
 			{{ if eq $c.DelFlg 1 }}
@@ -60,7 +60,7 @@
 				{{ end }}
 			{{ end }}
 			</td>
-			<td style="min-width:110px;">{{$c.DefaultValue}}</td>
+			<td style="min-width:100px;">{{$c.DefaultValue}}</td>
 			<td style="min-width:50px;">
 			{{ if eq $c.PrimaryKeyFlg 1 }}
 			○
@@ -76,12 +76,13 @@
 			○
 			{{ end }}
 			</td>
-			<td style="min-width:180px;">
+			<td style="min-width:200px;">
 			<a href="./columns/{{$c.ColumnId}}/log" class="has-text-info">{{.UpdateAt}}</a>
 			</td>
 			<td style="min-width:110px;" class="py-1">
-				<a href="./columns/{{$c.ColumnId}}" 
-				class="button is-small">編集</a>
+				<a href="./columns/{{$c.ColumnId}}">
+					<i class="fa-sharp fa-solid fa-pen-to-square fa-xl has-text-black"></i>
+				</a>
 			</td>
 			</tr>
 			{{ end }}

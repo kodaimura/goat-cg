@@ -18,23 +18,23 @@
 			{{ end }}
 			{{ if eq .project_cd nil }}
 			<div class="navbar-item">
-				<a href="/projects/new" class="button is-small is-light">
+				<a href="/projects/new" class="button is-small is-warning is-light">
 				プロジェクト作成
 				</a>
 			</div>
 			<div class="navbar-item">
-				<a href="/projects/requests" class="button is-small is-light">
+				<a href="/projects/requests" class="button is-small is-warning is-light">
 				メンバー管理
 				</a>
 			</div>
 			{{ else }}
 			<div class="navbar-item">
-				<a href="/projects" class="button is-small is-light">
+				<a href="/projects" class="button is-small is-warning is-light">
 				プロジェクト一覧
 				</a>
 			</div>
 			<div class="navbar-item">
-				<a href="/{{.project_cd}}/tables" class="button is-small is-light">
+				<a href="/{{.project_cd}}/tables" class="button is-small is-info is-light">
 				テーブル一覧
 				</a>
 			</div>
@@ -47,7 +47,7 @@
 		</div>
 		<div class="navbar-end">
 			<div class="navbar-item">
-				<a class="button is-link is-small" href="/logout">ログアウト</a>
+				<a class="button is-small" href="/logout">ログアウト</a>
 			</div>
 		</div>
 	</div>
