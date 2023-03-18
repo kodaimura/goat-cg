@@ -51,7 +51,7 @@ func (ctr *userController) signup(c *gin.Context) {
 	} else if result == service.SIGNUP_CONFLICT_INT {
 		c.HTML(409, "signup.html", gin.H{
 			"commons": constant.Commons,
-			"error": "Usernameが既に使われています。",
+			"error": "ユーザ名が既に使われています。",
 		})
 
 	} else {
@@ -73,7 +73,7 @@ func (ctr *userController) login(c *gin.Context) {
 	if userId == service.LOGIN_FAILURE_INT {
 		c.HTML(401, "login.html", gin.H{
 			"commons": constant.Commons,
-			"error": "UserNameまたはPasswordが異なります。",
+			"error": "ユーザ名またはパスワードが異なります。",
 		})
 		c.Abort()
 		return
