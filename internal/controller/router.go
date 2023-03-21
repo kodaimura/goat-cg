@@ -40,7 +40,6 @@ func SetRouter(r *gin.Engine) {
 
 		ap := a.Group("/:project_cd")
 		{
-
 			tc := newTableController()
 
 			ap.GET("/tables", tc.tablesPage)
@@ -57,9 +56,6 @@ func SetRouter(r *gin.Engine) {
 			ap.GET("/codegen", cgc.codegenPage)
 			ap.POST("/codegen/goat", cgc.codegenGOAT)
 			ap.POST("/codegen/ddl", cgc.codegenDDL)
-
-			bc := newBulkController()
-			ap.GET("/bulk-registration-ddl", bc.bulkPage)
 
 			aptt := ap.Group("/tables/:table_id")
 			{
