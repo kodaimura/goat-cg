@@ -27,7 +27,6 @@
 			<td style="min-width:50px;">{{$i}}</td>
 			<td style="min-width:200px;">{{$t.TableName}}</td>
 			<td style="min-width:200px;">{{$t.TableNameLogical}}</td>
-			
 			<td style="min-width:200px;">
 				<a href="./tables/{{$t.TableId}}/log" class="has-text-info">{{$t.CreateAt}}</a>
 			</td>
@@ -47,5 +46,6 @@
 	</tbody>
 </table>
 </div>
+<a href="bulk-registration-ddl" class="button is-small is-rounded is-dark">DDL一括登録</a>
 </main>
 {{template "footer"}}
