@@ -526,8 +526,8 @@ func (serv *codegenService) cgGoatDao(rdbms, tn string, cols []entity.Column) st
 	s += "\n\n\n"
 	s += fmt.Sprintf("type %sDao struct {\n\tdb *sql.DB\n}", tnc)
 	s += "\n\n\n"
-	s += fmt.Sprintf("func New%sDao() %sDao {\n", tnp, tnc)
-	s += fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sDao{db}\n}", tnp)
+	s += fmt.Sprintf("func New%sDao() *%sDao {\n", tnp, tnc)
+	s += fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sDao{db}\n}", tnc)
 	s += "\n\n\n"
 
 	s += serv.cgGoatDaoInsert(rdbms, tn, cols) + "\n\n\n"
@@ -800,7 +800,7 @@ func (serv *codegenService) cgGoatDaoSqlWhere(rdbms string, cols []entity.Column
 				s += fmt.Sprintf("%s = %s", col.ColumnName, serv.getBindVariable(rdbms, *bindCount))
 				isFirst = false
 			} else {
-				s += fmt.Sprintf("\n\t\t    AND %s = %s", col.ColumnName, serv.getBindVariable(rdbms, *bindCount))
+				s += fmt.Sprintf("\n\t\t   AND %s = %s", col.ColumnName, serv.getBindVariable(rdbms, *bindCount))
 			}
 		}
 	}
