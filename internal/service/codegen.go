@@ -58,7 +58,7 @@ func (serv *codegenService) CodeGenerateGoat(dbType string, tableIds []int) stri
 
 	serv.cgGoatSource(dbType, tableIds, path)
 
-	if err := exec.Command("zip", "-r", path + ".zip", path).Run(); err != nil {
+	if err := exec.Command("zip", "-rm", path + ".zip", path).Run(); err != nil {
 		logger.LogError(err.Error())
 	}
 
@@ -377,7 +377,7 @@ func (serv *codegenService) cgDdlCreateTrigger(dbType string, tid int) string {
 
 	} else if dbType == "postgresql" {
 		s = "CREATE TRIGGER trg_" + table.TableName + "_upd " + 
-			"AFTER UPDATE ON " + table.TableName + " FOR EACH ROW\n" + 
+			"BEFORE UPDATE ON " + table.TableName + " FOR EACH ROW\n" + 
 			"\texecute procedure set_update_time();" 
 	}
 
