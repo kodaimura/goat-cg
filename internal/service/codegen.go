@@ -207,16 +207,16 @@ func (serv *codegenService) cgDdlColumns(dbType string, tid int) string {
 func (serv *codegenService) cgDdlCommonColumns(dbType string) string {
 	s := ""
 	if dbType == "sqlite3" {
-		s = "\tcreate_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n" + 
-			"\tupdate_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n"
+		s = "\tcreated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n" + 
+			"\tupdated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n"
 
 	} else if dbType == "postgresql" {
-		s = "\tcreate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
-			"\tupdate_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+		s = "\tcreated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
+			"\tupdated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
 
 	} else if dbType == "mysql" {
-		s = "\tcreate_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
-			"\tupdate_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
+		s = "\tcreated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n" + 
+			"\tupdated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
 	}
 
 	return s
@@ -347,7 +347,7 @@ func (serv *codegenService) cgDdlCreateTriggers(dbType string, tableIds []int) s
 	s := ""
 	if dbType == "postgresql" {
 		s += "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
-			"\tBEGIN\n\t\tnew.update_at := ''now'';\n\t\treturn new;\n\tEND\n" + 
+			"\tBEGIN\n\t\tnew.updated_at := ''now'';\n\t\treturn new;\n\tEND\n" + 
 			"' language 'plpgsql';\n\n"
 	}
 
@@ -372,7 +372,7 @@ func (serv *codegenService) cgDdlCreateTrigger(dbType string, tid int) string {
 		s = "CREATE TRIGGER IF NOT EXISTS trg_" + table.TableName + "_upd " + 
 			"AFTER UPDATE ON " + table.TableName + "\n" +
 			"BEGIN\n\tUPDATE " + table.TableName + "\n" +
-			"\tSET update_at = DATETIME('now', 'localtime')\n" + 
+			"\tSET updated_at = DATETIME('now', 'localtime')\n" + 
 			"\tWHERE rowid == NEW.rowid;\nEND;"
 
 	} else if dbType == "postgresql" {
@@ -499,8 +499,8 @@ func (serv *codegenService) cgGoatEntity(
 			"`db:\"" + strings.ToLower(col.ColumnName) + "\" " +
 			"json:\"" + strings.ToLower(col.ColumnName) + "\"`\n"
 	}
-	s += "\tCreateAt string `db:\"create_at\" json:\"create_at\"`\n"
-	s += "\tUpdateAt string `db:\"update_at\" json:\"update_at\"`\n"
+	s += "\tCreatedAt string `db:\"created_at \" json:\"created_at \"`\n"
+	s += "\tUpdatedAt string `db:\"updated_at\" json:\"updated_at\"`\n"
 
 	return s + "}"
 }
@@ -923,8 +923,8 @@ func (serv *codegenService) cgGoatDaoSelectSqlColumns(
 	for _, col := range columns {
 		s += "\t\t\t" + col.ColumnName + ",\n"
 	}
-	s += "\t\t\t" + "create_at" + ",\n"
-	s += "\t\t\t" + "update_at"
+	s += "\t\t\t" + "created_at " + ",\n"
+	s += "\t\t\t" + "updated_at"
 
 	return s
 }
@@ -938,8 +938,8 @@ func (serv *codegenService) cgGoatDaoScanVars(
 		s += prefix + serv.columnNameToFieldName(col.ColumnName) + ",\n"
 	}
 
-	s += prefix + "CreateAt" + ",\n"
-	s += prefix + "UpdateAt" + ",\n"
+	s += prefix + "CreatedAt" + ",\n"
+	s += prefix + "UpdatedAt" + ",\n"
 
 	return s
 }

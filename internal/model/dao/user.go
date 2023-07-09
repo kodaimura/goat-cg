@@ -39,16 +39,16 @@ func (rep *userDao) Select(id int) (entity.User, error){
 		`SELECT 
 			user_id, 
 			user_name, 
-			create_at, 
-			update_at 
+			created_at , 
+			updated_at 
 		 FROM users 
 		 WHERE user_id = ?`, 
 		 id,
 	).Scan(
 		&ret.UserId, 
 		&ret.UserName, 
-		&ret.CreateAt, 
-		&ret.UpdateAt,
+		&ret.CreatedAt, 
+		&ret.UpdatedAt,
 	)
 
 	return ret, err
@@ -125,8 +125,8 @@ func (rep *userDao) SelectByName(name string) (entity.User, error) {
 			user_id, 
 			user_name, 
 			password, 
-			create_at, 
-			update_at 
+			created_at , 
+			updated_at 
 		 FROM users 
 		 WHERE user_name = ?`, 
 		 name,
@@ -134,8 +134,8 @@ func (rep *userDao) SelectByName(name string) (entity.User, error) {
 		&ret.UserId, 
 		&ret.UserName, 
 		&ret.Password, 
-		&ret.CreateAt, 
-		&ret.UpdateAt,
+		&ret.CreatedAt, 
+		&ret.UpdatedAt,
 	)
 
 	return ret, err
@@ -149,8 +149,8 @@ func (rep *userDao) SelectAll(id int) ([]entity.User, error) {
 		`SELECT 
 			user_id, 
 			user_name, 
-			create_at, 
-			update_at 
+			created_at , 
+			updated_at 
 		 FROM users`,
 	)
 
@@ -163,8 +163,8 @@ func (rep *userDao) SelectAll(id int) ([]entity.User, error) {
 		err = rows.Scan(
 			&u.UserId, 
 			&u.UserName,
-			&u.CreateAt, 
-			&u.UpdateAt,
+			&u.CreatedAt, 
+			&u.UpdatedAt,
 		)
 		if err != nil {
 			break

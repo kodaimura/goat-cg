@@ -20,7 +20,7 @@
 		<tr>
 			<td style="min-width:160px;">{{.project.ProjectCd}}</td>
 			<td style="min-width:200px;">{{.project.ProjectName}}</td>
-			<td style="min-width:200px;">{{.project.CreateAt}}~</td>
+			<td style="min-width:200px;">{{.project.CreatedAt}}~</td>
 			<td style="min-width:120px;">
 				<form method="post" action="./projects/requests/join">
 					<input type="hidden" name="project_cd" value="{{.project.ProjectCd}}">
@@ -46,7 +46,7 @@
 		<tr>
 			<td style="min-width:160px;">{{.ProjectCd}}</td>
 			<td style="min-width:200px;">{{.ProjectName}}</td>
-			<td style="min-width:200px;">{{.CreateAt}}~</td>
+			<td style="min-width:200px;">{{.CreatedAt}}~</td>
 			<td style="min-width:120px;">
 				<form method="post" action="./projects/requests/cancel">
 					<input type="hidden" name="project_cd" value="{{.ProjectCd}}">
@@ -72,7 +72,7 @@
 		<tr>
 			<td style="min-width:160px;">{{.ProjectCd}}</td>
 			<td style="min-width:200px;">{{.ProjectName}}</td>
-			<td style="min-width:200px;">{{.CreateAt}}~</td>
+			<td style="min-width:200px;">{{.CreatedAt}}~</td>
 			<td style="min-width:120px;">
 				<a class="button is-small is-info is-rounded" href="/{{.ProjectCd}}/tables">
 					開始

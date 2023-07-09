@@ -6,6 +6,6 @@ type ProjectUser struct {
 	ProjectId int `db:"project_id" json:"project_id"`
 	StateCls string `db:"state_cls" json:"state_cls"`
 	RoleCls string `db:"role_cls" json:"role_cls"`
-	CreateAt string `db:"create_at" json:"create_at"`
-	UpdateAt string `db:"create_at" json:"create_at"`
+	CreatedAt string `db:"created_at " json:"created_at "`
+	UpdatedAt string `db:"created_at " json:"created_at "`
 }

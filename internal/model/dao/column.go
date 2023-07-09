@@ -51,8 +51,8 @@ func (rep *columnDao) Select(id int) (entity.Column, error) {
 			del_flg,
 			create_user_id,
 			update_user_id,
-			create_at,
-			update_at
+			created_at ,
+			updated_at
 		 FROM
 			 column_def
 		 WHERE
@@ -76,8 +76,8 @@ func (rep *columnDao) Select(id int) (entity.Column, error) {
 		&ret.DelFlg,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
-		&ret.CreateAt,
-		&ret.UpdateAt,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
 	)
 
 	return ret, err
@@ -193,8 +193,8 @@ func (rep *columnDao) SelectByNameAndTableId(
 			del_flg,
 			create_user_id,
 			update_user_id,
-			create_at,
-			update_at
+			created_at ,
+			updated_at
 		 FROM
 			 column_def
 		 WHERE
@@ -220,8 +220,8 @@ func (rep *columnDao) SelectByNameAndTableId(
 		&ret.DelFlg,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
-		&ret.CreateAt,
-		&ret.UpdateAt,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
 	)
 
 	return ret, err
@@ -249,8 +249,8 @@ func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
 			del_flg,
 			create_user_id,
 			update_user_id,
-			create_at,
-			update_at
+			created_at ,
+			updated_at
 		 FROM
 			 column_def
 		 WHERE
@@ -282,8 +282,8 @@ func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
 			&c.DelFlg,
 			&c.CreateUserId,
 			&c.UpdateUserId,
-			&c.CreateAt,
-			&c.UpdateAt,
+			&c.CreatedAt,
+			&c.UpdatedAt,
 		)
 		if err != nil {
 			break
