@@ -7,5 +7,5 @@ type QueOutJoinRequest struct {
 	ProjectName string
 	UserId int
 	UserName string
-	UpdateAt string
+	UpdatedAt string
 }

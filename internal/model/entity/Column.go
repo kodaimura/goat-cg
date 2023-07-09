@@ -18,6 +18,6 @@ type Column struct {
 	DelFlg int `db:"del_flg" json:"del_flg"`
 	CreateUserId int `db:"create_user_id" json:"create_user_id"`
 	UpdateUserId int `db:"update_user_id" json:"update_user_id"`
-	CreateAt string `db:"create_at" json:"create_at"`
-	UpdateAt string `db:"update_at" json:"update_at"`
+	CreatedAt string `db:"created_at " json:"created_at "`
+	UpdatedAt string `db:"updated_at" json:"updated_at"`
 }

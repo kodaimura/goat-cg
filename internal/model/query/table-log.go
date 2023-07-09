@@ -36,15 +36,15 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 			u1.user_name create_user_name,
 			tl.update_user_id,
 			u2.user_name update_user_name,
-			tl.create_at,
-			tl.update_at
+			tl.created_at ,
+			tl.updated_at
 		 FROM 
 			 table_def_log tl
 			 LEFT OUTER JOIN users u1 ON tl.create_user_id = u1.user_id
 			 LEFT OUTER JOIN users u2 ON tl.update_user_id = u2.user_id
 		 WHERE 
 			 tl.table_id = ?
-		 ORDER BY tl.update_at`, 
+		 ORDER BY tl.updated_at`, 
 		 id,
 	)
 
@@ -63,8 +63,8 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 			&x.CreateUserName,
 			&x.UpdateUserId,
 			&x.UpdateUserName,
-			&x.CreateAt,
-			&x.UpdateAt,
+			&x.CreatedAt,
+			&x.UpdatedAt,
 		)
 		if err != nil {
 			break

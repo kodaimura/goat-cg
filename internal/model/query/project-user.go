@@ -35,7 +35,7 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 			p.project_id,
 			p.project_cd,
 			p.project_name,
-			pu2.update_at
+			pu2.updated_at
 		 FROM 
 			 project_user pu1,
 			 project_user pu2,
@@ -65,7 +65,7 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 			&x.ProjectId,
 			&x.ProjectCd,
 			&x.ProjectName,
-			&x.UpdateAt,
+			&x.UpdatedAt,
 		)
 		if err != nil {
 			break

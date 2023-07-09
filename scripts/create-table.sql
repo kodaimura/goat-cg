@@ -2,14 +2,14 @@ CREATE TABLE IF NOT EXISTS users (
 	user_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	user_name TEXT NOT NULL UNIQUE,
 	password TEXT NOT NULL,
-	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_users_upd AFTER UPDATE ON users
 BEGIN
     UPDATE users 
-    	SET update_at = DATETIME('now', 'localtime') 
+    	SET updated_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
 END;
 
@@ -18,14 +18,14 @@ CREATE TABLE IF NOT EXISTS project (
 	project_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	project_cd TEXT NOT NULL UNIQUE,
 	project_name TEXT,
-	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_project_upd AFTER UPDATE ON project
 BEGIN
     UPDATE project
-    	SET update_at = DATETIME('now', 'localtime') 
+    	SET updated_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
 END;
 
@@ -35,15 +35,15 @@ CREATE TABLE IF NOT EXISTS project_user (
 	project_id INTEGER NOT NULL,
 	state_cls TEXT NOT NULL,
 	role_cls TEXT,
-	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	PRIMARY KEY(user_id, project_id)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_project_user_upd AFTER UPDATE ON project_user
 BEGIN
     UPDATE project_user
-    	SET update_at = DATETIME('now', 'localtime') 
+    	SET updated_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
 END;
 
@@ -56,14 +56,14 @@ CREATE TABLE IF NOT EXISTS table_def (
 	create_user_id INTEGER,
 	update_user_id INTEGER,
 	del_flg INTEGER NOT NULL DEFAULT 0,
-	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_table_def_upd AFTER UPDATE ON table_def
 BEGIN
     UPDATE table_def
-    	SET update_at = DATETIME('now', 'localtime') 
+    	SET updated_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
 
     INSERT INTO table_def_log
@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS table_def_log (
 	create_user_id INTEGER,
 	update_user_id INTEGER,
 	del_flg INTEGER,
-	create_at TEXT,
-	update_at TEXT
+	created_at TEXT,
+	updated_at TEXT
 );
 
 
@@ -113,14 +113,14 @@ CREATE TABLE IF NOT EXISTS column_def (
 	del_flg INTEGER NOT NULL DEFAULT 0,
 	create_user_id INTEGER,
 	update_user_id INTEGER,
-	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_column_def_upd AFTER UPDATE ON column_def
 BEGIN
     UPDATE column_def
-    SET update_at = DATETIME('now', 'localtime') 
+    SET updated_at = DATETIME('now', 'localtime') 
     WHERE rowid == NEW.rowid;
 
     INSERT INTO column_def_log
@@ -156,8 +156,8 @@ CREATE TABLE IF NOT EXISTS column_def_log (
 	del_flg INTEGER,
 	create_user_id INTEGER,
 	update_user_id INTEGER,
-	create_at TEXT,
-	update_at TEXT
+	created_at TEXT,
+	updated_at TEXT
 );
 
 
@@ -168,13 +168,13 @@ CREATE TABLE IF NOT EXISTS general (
 	key2 TEXT,
 	value2 TEXT,
 	remark TEXT,
-	create_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	update_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_general_upd AFTER UPDATE ON general
 BEGIN
     UPDATE general
-    	SET update_at = DATETIME('now', 'localtime') 
+    	SET updated_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
 END;

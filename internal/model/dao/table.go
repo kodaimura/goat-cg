@@ -157,8 +157,8 @@ func (rep *tableDao) SelectByProjectId(projectId int) ([]entity.Table, error){
 			del_flg,
 			create_user_id,
 			update_user_id,
-			create_at,
-			update_at
+			created_at ,
+			updated_at
 		 FROM 
 			 table_def
 		 WHERE 
@@ -179,8 +179,8 @@ func (rep *tableDao) SelectByProjectId(projectId int) ([]entity.Table, error){
 			&t.DelFlg,
 			&t.CreateUserId,
 			&t.UpdateUserId,
-			&t.CreateAt,
-			&t.UpdateAt,
+			&t.CreatedAt,
+			&t.UpdatedAt,
 		)
 		if err != nil {
 			break

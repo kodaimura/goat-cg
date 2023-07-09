@@ -47,15 +47,15 @@ func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
 			u1.user_name create_user_name,
 			cl.update_user_id,
 			u2.user_name update_user_name,
-			cl.create_at,
-			cl.update_at
+			cl.created_at ,
+			cl.updated_at
 		 FROM
 			 column_def_log cl
 			 LEFT OUTER JOIN users u1 ON cl.create_user_id = u1.user_id
 			 LEFT OUTER JOIN users u2 ON cl.update_user_id = u2.user_id
 		 WHERE 
 			 cl.column_id = ?
-		 ORDER BY cl.update_at`,
+		 ORDER BY cl.updated_at`,
 		 id,
 	)
 
@@ -84,8 +84,8 @@ func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
 			&x.CreateUserName,
 			&x.UpdateUserId,
 			&x.UpdateUserName,
-			&x.CreateAt,
-			&x.UpdateAt,
+			&x.CreatedAt,
+			&x.UpdatedAt,
 		)
 		if err != nil {
 			break

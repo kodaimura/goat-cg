@@ -65,7 +65,7 @@ func (rep *projectDao) SelectByCd(cd string) (entity.Project, error) {
 			project_id,
 			project_cd,
 			project_name,
-			create_at
+			created_at 
 		 FROM 
 			 project
 		 WHERE 
@@ -75,7 +75,7 @@ func (rep *projectDao) SelectByCd(cd string) (entity.Project, error) {
 		&ret.ProjectId, 
 		&ret.ProjectCd, 
 		&ret.ProjectName,
-		&ret.CreateAt,
+		&ret.CreatedAt,
 	)
 
 	return ret, err
@@ -91,7 +91,7 @@ func (rep *projectDao) SelectByUserIdAndStateCls(
 			p.project_id,
 			p.project_cd,
 			p.project_name,
-			p.create_at
+			p.created_at 
 		 FROM 
 			 project p,
 			 project_user pu
@@ -113,7 +113,7 @@ func (rep *projectDao) SelectByUserIdAndStateCls(
 			&p.ProjectId, 
 			&p.ProjectCd, 
 			&p.ProjectName,
-			&p.CreateAt,
+			&p.CreatedAt,
 		)
 		if err != nil {
 			break

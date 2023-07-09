@@ -20,6 +20,6 @@ type QueOutColumnLog struct {
 	CreateUserName string
 	UpdateUserId int
 	UpdateUserName string
-	CreateAt string
-	UpdateAt string
+	CreatedAt string
+	UpdatedAt string
 }

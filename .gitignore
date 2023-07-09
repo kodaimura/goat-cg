@@ -5,3 +5,6 @@ log/
 local.env
 .DS_Store
 main
+
+tmp/*.zip
+tmp/*.sql
