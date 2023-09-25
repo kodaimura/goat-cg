@@ -484,8 +484,9 @@ func (serv *codegenService) cgGoatEntity(tn string, cols []entity.Column,) strin
 	s += fmt.Sprintf("type %s struct {\n", SnakeToPascal(tn))
 	for _, col := range cols {
 		s += fmt.Sprintf(
-			"\t%s int `db:\"%s\" json:\"%s\"`\n", 
+			"\t%s %s `db:\"%s\" json:\"%s\"`\n", 
 			SnakeToPascal(col.ColumnName),
+			dbDataTypeGoTypeMap[col.DataTypeCls],
 			strings.ToLower(col.ColumnName),
 			strings.ToLower(col.ColumnName),
 		)
