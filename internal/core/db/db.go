@@ -17,8 +17,8 @@ func init() {
 
 	cf := config.GetConfig()
 
-	dbname := "./" + cf.DbName + ".db"
-	db, err = sql.Open("sqlite3", dbname)
+	DBName := "./" + cf.DBName + ".db"
+	db, err = sql.Open("sqlite3", DBName)
 
 	if err != nil {
 		log.Panic(err)

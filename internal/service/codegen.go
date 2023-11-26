@@ -58,7 +58,7 @@ func (serv *codegenService) CodeGenerateGoat(rdbms string, tableIds []int) strin
 	serv.cgGoatSource(rdbms, tableIds, path)
 
 	if err := exec.Command("zip", "-rm", path + ".zip", path).Run(); err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return path + ".zip"
@@ -123,10 +123,10 @@ func (serv *codegenService) writeFile(path, content string) {
 	defer f.Close()
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 	if _, err = f.Write([]byte(content)); err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 }
 
@@ -173,7 +173,7 @@ func (serv *codegenService) cgDdlCreateTable(rdbms string, tid int) string {
 	table, err := serv.tDao.Select(tid)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return s
 	}
 
@@ -189,7 +189,7 @@ func (serv *codegenService) cgDdlColumns(rdbms string, tid int) string {
 	cols, err := serv.cDao.SelectByTableId(tid)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return s
 	}
 
@@ -363,7 +363,7 @@ func (serv *codegenService) cgDdlCreateTrigger(rdbms string, tid int) string {
 	table, err := serv.tDao.Select(tid)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return s
 	}
 
@@ -434,26 +434,26 @@ func GetSnakeInitial(snake string) string {
 func (serv *codegenService) cgGoatSource(rdbms string, tableIds []int, path string) {
 	mePath := path + "/model/entity"
 	if err := os.MkdirAll(mePath, 0777); err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 
 	mrPath := path + "/model/dao"
 	if err := os.MkdirAll(mrPath, 0777); err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 
 	for _, tid := range tableIds {
 		table, err := serv.tDao.Select(tid)
 		if err != nil {
-			logger.LogError(err.Error())
+			logger.Error(err.Error())
 			break
 		}
 
 		cols, err := serv.cDao.SelectByTableId(tid)
 		if err != nil {
-			logger.LogError(err.Error())
+			logger.Error(err.Error())
 			break
 		}
 

@@ -49,7 +49,7 @@ func (serv *tableService) GetTables(
 	tables, err := serv.tDao.SelectByProjectId(projectId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return tables, err
@@ -61,7 +61,7 @@ func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
 	table, err := serv.tDao.Select(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return table, err
@@ -94,7 +94,7 @@ func (serv *tableService) CreateTable(
 	err = serv.tDao.Insert(&t)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CREATE_TABLE_ERROR_INT
 	}
 
@@ -129,7 +129,7 @@ func (serv *tableService) UpdateTable(
 	err = serv.tDao.Update(tableId, &t)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return UPDATE_TABLE_ERROR_INT
 	}
 
@@ -148,14 +148,14 @@ func (serv *tableService) DeleteTable(tableId int) int {
 	err := serv.tDao.Delete(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_TABLE_ERROR_INT
 	}
 
 	err = serv.cDao.DeleteByTableId(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_TABLE_ERROR_INT
 	}
 
@@ -168,7 +168,7 @@ func (serv *tableService) GetTableLog(tableId int) ([]dto.QueOutTableLog, error)
 	tableLog, err := serv.tQue.QueryTableLog(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return tableLog, err
