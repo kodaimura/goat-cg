@@ -13,11 +13,11 @@ type Config struct {
 	AppHost string
 	AppPort string
 
-	DbName string
-	DbHost string
-	DbPort string
-	DbUser string
-	DbPassword string
+	DBName string
+	DBHost string
+	DBPort string
+	DBUser string
+	DBPass string
 
 	JwtSecretKey string
 }
@@ -35,11 +35,11 @@ func init() {
 	cf.AppHost = os.Getenv("APP_HOST")
 	cf.AppPort = os.Getenv("APP_PORT")
 
-	cf.DbName = os.Getenv("DB_NAME")
-	cf.DbHost = os.Getenv("DB_HOST")
-	cf.DbPort = os.Getenv("DB_PORT")
-	cf.DbUser = os.Getenv("DB_USER")
-	cf.DbPassword = os.Getenv("DB_PASSWORD")
+	cf.DBName = os.Getenv("DB_NAME")
+	cf.DBHost = os.Getenv("DB_HOST")
+	cf.DBPort = os.Getenv("DB_PORT")
+	cf.DBUser = os.Getenv("DB_USER")
+	cf.DBPass = os.Getenv("DB_PASSWORD")
 
 	cf.JwtSecretKey = os.Getenv("JWT_SECRET_KEY")
 }

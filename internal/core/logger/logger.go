@@ -71,16 +71,16 @@ func init() {
 
 }
 
-func SetAccessLogger() {
+func SetOutputLogToFile() {
 	gin.DefaultWriter = io.MultiWriter(os.Stdout, file)
 }
 
-func LogFatal(msg string) {
+func Fatal(msg string) {
 	logF.Fatal("Msg:", msg)
 }
 
 
-func LogError(msg string) {
+func Error(msg string) {
 	pc, file, line, _ := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	logE.Println("\n", "File:", file, "Line:", line, "\n",
@@ -89,21 +89,21 @@ func LogError(msg string) {
 }
 
 
-func LogWarn(msg string) {
+func Warn(msg string) {
 	pc, _, _, _ := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	logW.Println(f.Name(), msg)
 }
 
 
-func LogInfo(msg string) {
+func Info(msg string) {
 	pc, _, _, _ := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	logI.Println(f.Name(), msg)
 }
 
 
-func LogDebug(msg string) {
+func Debug(msg string) {
 	pc, _, _, _ := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	logD.Println(f.Name(), msg)

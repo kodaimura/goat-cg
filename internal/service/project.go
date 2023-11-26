@@ -60,7 +60,7 @@ func (serv *projectService) GetProjects(
 	)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return projects, err
@@ -76,7 +76,7 @@ func (serv *projectService) GetProjectsPendingApproval(
 	)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return projects, err
@@ -115,14 +115,14 @@ func (serv *projectService) CreateProject(
 	err = serv.pDao.Insert(&p)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CREATE_PROJECT_ERROR_INT
 	}
 
 	project, err := serv.pDao.SelectByCd(projectCd)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CREATE_PROJECT_ERROR_INT
 	}
 
@@ -134,7 +134,7 @@ func (serv *projectService) CreateProject(
 	err = serv.upDao.Upsert(&up)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CREATE_PROJECT_ERROR_INT
 	}
 

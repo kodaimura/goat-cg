@@ -50,7 +50,7 @@ func (serv *userService) Signup(username, password string) int {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return SIGNUP_ERROR_INT
 	}
 
@@ -61,7 +61,7 @@ func (serv *userService) Signup(username, password string) int {
 	err = serv.uDao.Insert(&user)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return SIGNUP_ERROR_INT
 	}
 
@@ -96,7 +96,7 @@ func (serv *userService) GenerateJWT(userId int) string {
 	user, err := serv.uDao.Select(userId)
 	
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return GENERATE_JWT_FAILURE_STR
 	}
 
@@ -106,7 +106,7 @@ func (serv *userService) GenerateJWT(userId int) string {
 	jwtStr, err := jwt.GenerateJWT(cc)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return GENERATE_JWT_FAILURE_STR
 	}
 
@@ -118,7 +118,7 @@ func (serv *userService) GetProfile(userId int) (entity.User, error) {
 	user, err := serv.uDao.Select(userId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return user, err
@@ -134,7 +134,7 @@ func (serv *userService) ChangeUsername(userId int, username string) int {
 	err := serv.uDao.UpdateName(userId, username)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CHANGE_USERNAME_FAILURE_INT
 	}
 
@@ -151,14 +151,14 @@ func (serv *userService) ChangePassword(userId int, password string) int {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CHANGE_PASSWORD_FAILURE_INT
 	}
 
 	err = serv.uDao.UpdatePassword(userId, string(hashed))
 	
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CHANGE_PASSWORD_FAILURE_INT
 	}
 
@@ -175,7 +175,7 @@ func (serv *userService) DeleteUser(userId int) int {
 	err := serv.uDao.Delete(userId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_USER_FAILURE_INT
 	}
 

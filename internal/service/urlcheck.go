@@ -45,7 +45,7 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 	project, err := serv.pDao.SelectByCdAndUserId(projectCd, userId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		c.Redirect(303, "/projects")
 		c.Abort()
 		return -1
@@ -63,7 +63,7 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 ) int {
 	tableId, err := strconv.Atoi(c.Param("table_id"))
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		c.Redirect(303, "/projects")
 		c.Abort()
 		return -1
@@ -73,9 +73,9 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 
 	if err != nil || table.ProjectId != projectId {
 		if err != nil {
-			logger.LogError(err.Error())
+			logger.Error(err.Error())
 		} else {
-			logger.LogError(fmt.Sprintf("table.ProjectId:%d/projectId:%d", table.ProjectId, projectId))
+			logger.Error(fmt.Sprintf("table.ProjectId:%d/projectId:%d", table.ProjectId, projectId))
 		}
 		c.Redirect(303, "/projects")
 		c.Abort()
@@ -94,7 +94,7 @@ func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
 ) int {
 	columnId, err := strconv.Atoi(c.Param("column_id"))
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		c.Redirect(303, "/projects")
 		c.Abort()
 		return -1
@@ -104,9 +104,9 @@ func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
 
 	if err != nil || column.TableId != tableId{
 		if err != nil {
-			logger.LogError(err.Error())
+			logger.Error(err.Error())
 		} else {
-			logger.LogError(fmt.Sprintf("column.TableId:%d/tableId:%d", column.TableId, tableId))
+			logger.Error(fmt.Sprintf("column.TableId:%d/tableId:%d", column.TableId, tableId))
 		}
 		
 		c.Redirect(303, "/projects")

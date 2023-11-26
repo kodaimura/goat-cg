@@ -56,7 +56,7 @@ func (serv *projectUserService) JoinRequest(
 	err = serv.upDao.Upsert(&up)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return JOIN_REQUEST_ERROR_INT
 	}
 
@@ -77,7 +77,7 @@ func (serv *projectUserService) CancelJoinRequest(
 	err := serv.upDao.Delete(userId, projectId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CANCEL_JOIN_REQUEST_ERROR_INT
 	}
 
@@ -105,7 +105,7 @@ func (serv *projectUserService) PermitJoinRequest(
 	err := serv.upDao.Upsert(&up)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return PERMIT_JOIN_REQUEST_ERROR_INT
 	}
 
@@ -122,7 +122,7 @@ func (serv *projectUserService) GetJoinRequests(
 	jrs, err := serv.upQue.QueryJoinRequests(userId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return jrs, err

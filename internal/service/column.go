@@ -39,7 +39,7 @@ func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
 	column, err := serv.cDao.Select(columnId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return column, err
@@ -51,7 +51,7 @@ func (serv *columnService) GetColumns(tableId int) ([]entity.Column, error) {
 	columns, err := serv.cDao.SelectByTableId(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return columns, err
@@ -75,7 +75,7 @@ func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) int {
 	err = serv.cDao.Insert(&column)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CREATE_COLUMN_ERROR_INT
 	}
 
@@ -103,7 +103,7 @@ func (serv *columnService) UpdateColumn(
 	err = serv.cDao.Update(columnId, &column)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return UPDATE_COLUMN_ERROR_INT
 	}
 
@@ -122,14 +122,14 @@ func (serv *columnService) DeleteColumn(columnId int) int {
 	_, err := serv.cDao.Select(columnId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_COLUMN_ERROR_INT
 	}
 
 	err = serv.cDao.Delete(columnId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_COLUMN_ERROR_INT
 	}
 
@@ -142,7 +142,7 @@ func (serv *columnService) GetColumnLog(columnId int) ([]dto.QueOutColumnLog, er
 	columnLog, err := serv.cQue.QueryColumnLog(columnId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return columnLog, err
