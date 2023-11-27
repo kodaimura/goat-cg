@@ -5,18 +5,18 @@ import (
 
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/db"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
 type TableDao interface {
-	Select(id int) (entity.Table, error)
-	Insert(t *entity.Table) error
-	Update(id int, t *entity.Table) error
+	Select(id int) (model.Table, error)
+	Insert(t *model.Table) error
+	Update(id int, t *model.Table) error
 	Delete(id int) error
 
-	SelectByProjectId(projectId int) ([]entity.Table, error)
-	SelectByNameAndProjectId(name string, projectId int) (entity.Table, error)
+	SelectByProjectId(projectId int) ([]model.Table, error)
+	SelectByNameAndProjectId(name string, projectId int) (model.Table, error)
 	UpdateDelFlg(id, delFlg int) error
 }
 
@@ -32,9 +32,9 @@ func NewTableDao() TableDao {
 }
 
 
-func (rep *tableDao) Select(tableId int) (entity.Table, error){
+func (rep *tableDao) Select(tableId int) (model.Table, error){
 	
-	var ret entity.Table
+	var ret model.Table
 	err := rep.db.QueryRow(
 		`SELECT 
 			project_id,
@@ -63,7 +63,7 @@ func (rep *tableDao) Select(tableId int) (entity.Table, error){
 }
 
 
-func (rep *tableDao) Insert(t *entity.Table) error {
+func (rep *tableDao) Insert(t *model.Table) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO table_def (
 			project_id, 
@@ -83,7 +83,7 @@ func (rep *tableDao) Insert(t *entity.Table) error {
 	return err
 }
 
-func (rep *tableDao) Update(id int, t *entity.Table) error {
+func (rep *tableDao) Update(id int, t *model.Table) error {
 	_, err := rep.db.Exec(
 		`UPDATE table_def
 		 SET 
@@ -114,9 +114,9 @@ func (rep *tableDao) Delete(id int) error {
 
 func (rep *tableDao) SelectByNameAndProjectId(
 	name string, projectId int,
-) (entity.Table, error){
+) (model.Table, error){
 	
-	var ret entity.Table
+	var ret model.Table
 	err := rep.db.QueryRow(
 		`SELECT 
 			project_id,
@@ -146,9 +146,9 @@ func (rep *tableDao) SelectByNameAndProjectId(
 }
 
 
-func (rep *tableDao) SelectByProjectId(projectId int) ([]entity.Table, error){
+func (rep *tableDao) SelectByProjectId(projectId int) ([]model.Table, error){
 	
-	var ret []entity.Table
+	var ret []model.Table
 	rows, err := rep.db.Query(
 		`SELECT 
 			table_id,
@@ -171,7 +171,7 @@ func (rep *tableDao) SelectByProjectId(projectId int) ([]entity.Table, error){
 	}
 
 	for rows.Next() {
-		t := entity.Table{}
+		t := model.Table{}
 		err = rows.Scan(
 			&t.TableId, 
 			&t.TableName,

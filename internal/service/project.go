@@ -3,16 +3,16 @@ package service
 import (	
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
+	"goat-cg/internal/model"
+	"goat-cg/internal/dao"
 )
 
 
 type ProjectService interface {
 	GetProjectId(userId int, projectCd string) int 
-	GetProjects(userId int) ([]entity.Project, error)
-	GetProjectsPendingApproval(userId int) ([]entity.Project, error)
-	GetProjectByCd(projectCd string) entity.Project
+	GetProjects(userId int) ([]model.Project, error)
+	GetProjectsPendingApproval(userId int) ([]model.Project, error)
+	GetProjectByCd(projectCd string) model.Project
 	CreateProject(userId int, projectCd, projectName string) int
 }
 
@@ -54,7 +54,7 @@ func (serv *projectService) GetProjectId(
 // GetProjects get projects: the state user join.
 func (serv *projectService) GetProjects(
 	userId int,
-) ([]entity.Project, error) {
+) ([]model.Project, error) {
 	projects, err := serv.pDao.SelectByUserIdAndStateCls(
 		userId, constant.STATE_CLS_JOIN,
 	)
@@ -70,7 +70,7 @@ func (serv *projectService) GetProjects(
 // GetProjects get projects: the state user are applying for joinrequest.
 func (serv *projectService) GetProjectsPendingApproval(
 	userId int,
-) ([]entity.Project, error) {
+) ([]model.Project, error) {
 	projects, err := serv.pDao.SelectByUserIdAndStateCls(
 		userId, constant.STATE_CLS_REQUEST,
 	)
@@ -85,7 +85,7 @@ func (serv *projectService) GetProjectsPendingApproval(
 
 func (serv *projectService) GetProjectByCd(
 	projectCd string,
-) entity.Project {
+) model.Project {
 	project, _ := serv.pDao.SelectByCd(projectCd)
 
 	return project
@@ -109,7 +109,7 @@ func (serv *projectService) CreateProject(
 		return CREATE_PROJECT_CONFLICT_INT
 	}
 
-	var p entity.Project
+	var p model.Project
 	p.ProjectCd = projectCd
 	p.ProjectName = projectName
 	err = serv.pDao.Insert(&p)
@@ -126,7 +126,7 @@ func (serv *projectService) CreateProject(
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	var up entity.ProjectUser
+	var up model.ProjectUser
 	up.UserId = userId
 	up.ProjectId = project.ProjectId
 	up.StateCls = constant.STATE_CLS_JOIN

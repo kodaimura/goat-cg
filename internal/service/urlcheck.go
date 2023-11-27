@@ -8,7 +8,7 @@ import (
 
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/dao"
+	"goat-cg/internal/dao"
 )
 
 

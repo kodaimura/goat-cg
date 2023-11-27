@@ -4,18 +4,18 @@ import (
 	"database/sql"
 
 	"goat-cg/internal/core/db"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
 type ColumnDao interface {
-	Select(id int) (entity.Column, error)
-	Insert(c *entity.Column) error
-	Update(id int, c *entity.Column) error
+	Select(id int) (model.Column, error)
+	Insert(c *model.Column) error
+	Update(id int, c *model.Column) error
 	Delete(id int) error
 
-	SelectByNameAndTableId(name string, tableId int) (entity.Column, error)
-	SelectByTableId(tableId int) ([]entity.Column, error)
+	SelectByNameAndTableId(name string, tableId int) (model.Column, error)
+	SelectByTableId(tableId int) ([]model.Column, error)
 	DeleteByTableId(tableId int) error
 }
 
@@ -31,8 +31,8 @@ func NewColumnDao() ColumnDao {
 }
 
 
-func (rep *columnDao) Select(id int) (entity.Column, error) {
-	var ret entity.Column
+func (rep *columnDao) Select(id int) (model.Column, error) {
+	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
 			column_id,
@@ -84,7 +84,7 @@ func (rep *columnDao) Select(id int) (entity.Column, error) {
 }
 
 
-func (rep *columnDao) Insert(c *entity.Column) error {
+func (rep *columnDao) Insert(c *model.Column) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO column_def (
 			table_id, 
@@ -123,7 +123,7 @@ func (rep *columnDao) Insert(c *entity.Column) error {
 }
 
 
-func (rep *columnDao) Update(id int, c *entity.Column) error {
+func (rep *columnDao) Update(id int, c *model.Column) error {
 	_, err := rep.db.Exec(
 		`UPDATE column_def
 		 SET 
@@ -173,8 +173,8 @@ func (rep *columnDao) Delete(id int) error {
 func (rep *columnDao) SelectByNameAndTableId(
 	name string, 
 	tableId int,
-) (entity.Column, error) {
-	var ret entity.Column
+) (model.Column, error) {
+	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
 			column_id,
@@ -228,9 +228,9 @@ func (rep *columnDao) SelectByNameAndTableId(
 }
 
 
-func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
+func (rep *columnDao) SelectByTableId(tableId int) ([]model.Column, error) {
 	
-	var ret []entity.Column
+	var ret []model.Column
 	rows, err := rep.db.Query(
 		`SELECT 
 			column_id,
@@ -264,7 +264,7 @@ func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
 	}
 
 	for rows.Next() {
-		c := entity.Column{}
+		c := model.Column{}
 		err = rows.Scan(
 			&c.ColumnId,
 			&c.TableId,

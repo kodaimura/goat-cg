@@ -3,15 +3,15 @@ package service
 import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
-	"goat-cg/internal/model/query"
+	"goat-cg/internal/model"
+	"goat-cg/internal/dao"
+	"goat-cg/internal/query"
 )
 
 
 type ColumnService interface {
-	GetColumn(columnId int) (entity.Column, error)
-	GetColumns(tableId int) ([]entity.Column, error)
+	GetColumn(columnId int) (model.Column, error)
+	GetColumns(tableId int) ([]model.Column, error)
 	CreateColumn(in dto.ServInCreateColumn) int
 	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
 	DeleteColumn(columnId int) int
@@ -35,7 +35,7 @@ func NewColumnService() ColumnService {
 
 
 // GetColumn get Column record by columnId.
-func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
+func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
 	column, err := serv.cDao.Select(columnId)
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
 
 
 // GetColumn get Column records by tableId.
-func (serv *columnService) GetColumns(tableId int) ([]entity.Column, error) {
+func (serv *columnService) GetColumns(tableId int) ([]model.Column, error) {
 	columns, err := serv.cDao.SelectByTableId(tableId)
 
 	if err != nil {

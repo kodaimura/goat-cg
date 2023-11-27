@@ -6,7 +6,7 @@ import (
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
@@ -25,7 +25,7 @@ func newProjectController() *projectController {
 func (ctr *projectController) projectsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectCd := c.Query("project_cd")
-	var project entity.Project
+	var project model.Project
 
 	projects, _ := ctr.pServ.GetProjects(userId)
 	projects2, _ := ctr.pServ.GetProjectsPendingApproval(userId)

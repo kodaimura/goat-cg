@@ -6,8 +6,8 @@ import (
 	"goat-cg/internal/core/jwt"
 	
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
+	"goat-cg/internal/model"
+	"goat-cg/internal/dao"
 )
 
 
@@ -15,7 +15,7 @@ type UserService interface {
 	Signup(username, password string) int
 	Login(username, password string) int
 	GenerateJWT(userId int) string
-	GetProfile(userId int) (entity.User, error)
+	GetProfile(userId int) (model.User, error)
 	ChangeUsername(userId int, username string) int
 	ChangePassword(userId int, password string) int
 	DeleteUser(userId int) int
@@ -54,7 +54,7 @@ func (serv *userService) Signup(username, password string) int {
 		return SIGNUP_ERROR_INT
 	}
 
-	var user entity.User
+	var user model.User
 	user.UserName = username
 	user.Password = string(hashed)
 
@@ -114,7 +114,7 @@ func (serv *userService) GenerateJWT(userId int) string {
 }
 
 
-func (serv *userService) GetProfile(userId int) (entity.User, error) {
+func (serv *userService) GetProfile(userId int) (model.User, error) {
 	user, err := serv.uDao.Select(userId)
 
 	if err != nil {

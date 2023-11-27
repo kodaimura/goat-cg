@@ -3,15 +3,15 @@ package service
 import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
-	"goat-cg/internal/model/query"
+	"goat-cg/internal/model"
+	"goat-cg/internal/dao"
+	"goat-cg/internal/query"
 )
 
 
 type TableService interface {
-	GetTables(projectId int) ([]entity.Table, error)
-	GetTable(tableId int) (entity.Table, error)
+	GetTables(projectId int) ([]model.Table, error)
+	GetTable(tableId int) (model.Table, error)
 	CreateTable(
 		projectId, userId int,
 		tableName, tableNameLogical string,
@@ -45,7 +45,7 @@ func NewTableService() TableService {
 // GetTables get tables by projeectId.
 func (serv *tableService) GetTables(
 	projectId int,
-) ([]entity.Table, error) {
+) ([]model.Table, error) {
 	tables, err := serv.tDao.SelectByProjectId(projectId)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func (serv *tableService) GetTables(
 
 
 // GetTable get table by tableId.
-func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
+func (serv *tableService) GetTable(tableId int) (model.Table, error) {
 	table, err := serv.tDao.Select(tableId)
 
 	if err != nil {
@@ -85,7 +85,7 @@ func (serv *tableService) CreateTable(
 		return CREATE_TABLE_CONFLICT_INT
 	}
 
-	var t entity.Table
+	var t model.Table
 	t.ProjectId = projectId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
@@ -121,7 +121,7 @@ func (serv *tableService) UpdateTable(
 		return UPDATE_TABLE_CONFLICT_INT
 	}
 
-	var t entity.Table
+	var t model.Table
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId

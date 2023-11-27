@@ -4,9 +4,9 @@ import (
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
-	"goat-cg/internal/model/query"
+	"goat-cg/internal/model"
+	"goat-cg/internal/dao"
+	"goat-cg/internal/query"
 )
 
 
@@ -47,7 +47,7 @@ func (serv *projectUserService) JoinRequest(
 		return JOIN_REQUEST_ALREADY_INT
 	} 
 
-	var up entity.ProjectUser
+	var up model.ProjectUser
 	up.UserId = userId
 	up.ProjectId = projectId
 	up.StateCls = constant.STATE_CLS_REQUEST
@@ -96,7 +96,7 @@ func (serv *projectUserService) PermitJoinRequest(
 	userId int, projectId int,
 ) int {
 
-	var up entity.ProjectUser
+	var up model.ProjectUser
 	up.UserId = userId
 	up.ProjectId = projectId
 	up.StateCls = constant.STATE_CLS_JOIN

@@ -5,19 +5,19 @@ import (
 
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/db"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
 type ProjectDao interface {
-	Insert(p *entity.Project) error
-	Update(id int, p *entity.Project) error
+	Insert(p *model.Project) error
+	Update(id int, p *model.Project) error
 
-	SelectByCd(cd string) (entity.Project, error)
+	SelectByCd(cd string) (model.Project, error)
 	SelectByUserIdAndStateCls(
 		userId int, state string,
-	) ([]entity.Project, error)
-	SelectByCdAndUserId(cd string, userId int) (entity.Project, error)
+	) ([]model.Project, error)
+	SelectByCdAndUserId(cd string, userId int) (model.Project, error)
 	
 }
 
@@ -33,7 +33,7 @@ func NewProjectDao() ProjectDao {
 }
 
 
-func (rep *projectDao) Insert(p *entity.Project) error {
+func (rep *projectDao) Insert(p *model.Project) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO project (
 			project_cd, 
@@ -46,7 +46,7 @@ func (rep *projectDao) Insert(p *entity.Project) error {
 }
 
 
-func (rep *projectDao) Update(id int, p *entity.Project) error {
+func (rep *projectDao) Update(id int, p *model.Project) error {
 	_, err := rep.db.Exec(
 		`UPDATE project 
 		 SET project_name = ? 
@@ -58,8 +58,8 @@ func (rep *projectDao) Update(id int, p *entity.Project) error {
 }
 
 
-func (rep *projectDao) SelectByCd(cd string) (entity.Project, error) {
-	var ret entity.Project
+func (rep *projectDao) SelectByCd(cd string) (model.Project, error) {
+	var ret model.Project
 	err := rep.db.QueryRow(
 		`SELECT 
 			project_id,
@@ -84,8 +84,8 @@ func (rep *projectDao) SelectByCd(cd string) (entity.Project, error) {
 
 func (rep *projectDao) SelectByUserIdAndStateCls(
 	userId int, state string,
-) ([]entity.Project, error){
-	var ret []entity.Project
+) ([]model.Project, error){
+	var ret []model.Project
 	rows, err := rep.db.Query(
 		`SELECT 
 			p.project_id,
@@ -108,7 +108,7 @@ func (rep *projectDao) SelectByUserIdAndStateCls(
 	}
 
 	for rows.Next() {
-		p := entity.Project{}
+		p := model.Project{}
 		err = rows.Scan(
 			&p.ProjectId, 
 			&p.ProjectCd, 
@@ -128,9 +128,9 @@ func (rep *projectDao) SelectByUserIdAndStateCls(
 func (rep *projectDao) SelectByCdAndUserId(
 	cd string,
 	userId int,
-) (entity.Project, error) {
+) (model.Project, error) {
 
-	var ret entity.Project
+	var ret model.Project
 	err := rep.db.QueryRow(
 		`SELECT 
 			p.project_id,

@@ -4,18 +4,18 @@ import (
 	"database/sql"
 
 	"goat-cg/internal/core/db"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
 type UserDao interface {
-	Insert(u *entity.User) error
-	Select(id int) (entity.User, error)
-	Update(id int, u *entity.User) error
+	Insert(u *model.User) error
+	Select(id int) (model.User, error)
+	Update(id int, u *model.User) error
 	Delete(id int) error
 	
 	/* 以降に追加 */
-	SelectByName(name string) (entity.User, error)
+	SelectByName(name string) (model.User, error)
 	UpdatePassword(id int, password string) error
 	UpdateName(id int, name string) error
 }
@@ -32,8 +32,8 @@ func NewUserDao() UserDao {
 }
 
 
-func (rep *userDao) Select(id int) (entity.User, error){
-	var ret entity.User
+func (rep *userDao) Select(id int) (model.User, error){
+	var ret model.User
 
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -55,7 +55,7 @@ func (rep *userDao) Select(id int) (entity.User, error){
 }
 
 
-func (rep *userDao) Insert(u *entity.User) error {
+func (rep *userDao) Insert(u *model.User) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO users (
 			user_name, 
@@ -68,7 +68,7 @@ func (rep *userDao) Insert(u *entity.User) error {
 }
 
 
-func (rep *userDao) Update(id int, u *entity.User) error {
+func (rep *userDao) Update(id int, u *model.User) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
 		 SET user_name = ? 
@@ -117,8 +117,8 @@ func (rep *userDao) UpdateName(id int, name string) error {
 
 
 
-func (rep *userDao) SelectByName(name string) (entity.User, error) {
-	var ret entity.User
+func (rep *userDao) SelectByName(name string) (model.User, error) {
+	var ret model.User
 
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -142,8 +142,8 @@ func (rep *userDao) SelectByName(name string) (entity.User, error) {
 }
 
 
-func (rep *userDao) SelectAll(id int) ([]entity.User, error) {
-	var ret []entity.User
+func (rep *userDao) SelectAll(id int) ([]model.User, error) {
+	var ret []model.User
 
 	rows, err := rep.db.Query(
 		`SELECT 
@@ -159,7 +159,7 @@ func (rep *userDao) SelectAll(id int) ([]entity.User, error) {
 	}
 
 	for rows.Next() {
-		u := entity.User{}
+		u := model.User{}
 		err = rows.Scan(
 			&u.UserId, 
 			&u.UserName,

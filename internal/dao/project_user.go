@@ -4,13 +4,13 @@ import (
 	"database/sql"
 
 	"goat-cg/internal/core/db"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
 type ProjectUserDao interface {
-	Select(userId, projectId int) (entity.ProjectUser, error)
-	Upsert(up *entity.ProjectUser) error
+	Select(userId, projectId int) (model.ProjectUser, error)
+	Upsert(up *model.ProjectUser) error
 	Delete(userId, projectId int) error
 }
 
@@ -26,8 +26,8 @@ func NewProjectUserDao() ProjectUserDao {
 }
 
 
-func (rep *projectUserDao) Select(userId, projectId int) (entity.ProjectUser, error) {
-	var ret entity.ProjectUser
+func (rep *projectUserDao) Select(userId, projectId int) (model.ProjectUser, error) {
+	var ret model.ProjectUser
 
 	err := rep.db.QueryRow(
 		`SELECT
@@ -51,7 +51,7 @@ func (rep *projectUserDao) Select(userId, projectId int) (entity.ProjectUser, er
 }
 
 
-func (rep *projectUserDao) Upsert(up *entity.ProjectUser) error {
+func (rep *projectUserDao) Upsert(up *model.ProjectUser) error {
 	_, err := rep.db.Exec(
 		`REPLACE INTO project_user (
 			user_id, 
