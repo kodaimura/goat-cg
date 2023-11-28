@@ -24,7 +24,7 @@ func NewProjectUserController() *ProjectUserController {
 
 
 //POST /projects/requests/join
-func (ctr *ProjectUserController) joinRequest(c *gin.Context) {
+func (ctr *ProjectUserController) JoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	p := ctr.projectService .GetProjectByCd(c.PostForm("project_cd"))
 
@@ -35,7 +35,7 @@ func (ctr *ProjectUserController) joinRequest(c *gin.Context) {
 
 
 //POST /projects/requests/cancel
-func (ctr *ProjectUserController) cancelJoinRequest(c *gin.Context) {
+func (ctr *ProjectUserController) CancelJoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	p := ctr.projectService .GetProjectByCd(c.PostForm("project_cd"))
 
@@ -46,7 +46,7 @@ func (ctr *ProjectUserController) cancelJoinRequest(c *gin.Context) {
 
 
 //POST /projects/requests/permit
-func (ctr *ProjectUserController) permitJoinRequest(c *gin.Context) {
+func (ctr *ProjectUserController) PermitJoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	targetUserId, err := strconv.Atoi(c.PostForm("user_id"))
 	projectId := ctr.projectService .GetProjectId(userId, c.PostForm("project_cd"))
@@ -60,7 +60,7 @@ func (ctr *ProjectUserController) permitJoinRequest(c *gin.Context) {
 
 
 //GET /projects/requests
-func (ctr *ProjectUserController) requestsPage(c *gin.Context) {
+func (ctr *ProjectUserController) RequestsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 
 	joinrequests, _ := ctr.projectUserService .GetJoinRequests(userId)

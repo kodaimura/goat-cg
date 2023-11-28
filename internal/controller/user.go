@@ -24,14 +24,14 @@ func NewUserController() *UserController {
 
 
 //GET /signup
-func (ctr *UserController) signupPage(c *gin.Context) {
+func (ctr *UserController) SignupPage(c *gin.Context) {
 	c.HTML(200, "signup.html", gin.H{
 		"commons": constant.Commons,
 	})
 }
 
 //GET /login
-func (ctr *UserController) loginPage(c *gin.Context) {
+func (ctr *UserController) LoginPage(c *gin.Context) {
 	c.HTML(200, "login.html", gin.H{
 		"commons": constant.Commons,
 	})
@@ -39,7 +39,7 @@ func (ctr *UserController) loginPage(c *gin.Context) {
 
 
 //POST /signup
-func (ctr *UserController) signup(c *gin.Context) {
+func (ctr *UserController) Signup(c *gin.Context) {
 	name := c.PostForm("user_name")
 	pass := c.PostForm("password")
 
@@ -64,7 +64,7 @@ func (ctr *UserController) signup(c *gin.Context) {
 
 
 //POST /login
-func (ctr *UserController) login(c *gin.Context) {
+func (ctr *UserController) Login(c *gin.Context) {
 	name := c.PostForm("user_name")
 	pass := c.PostForm("password")
 
@@ -97,7 +97,7 @@ func (ctr *UserController) login(c *gin.Context) {
 
 
 //GET /logout
-func (ctr *UserController) logout(c *gin.Context) {
+func (ctr *UserController) Logout(c *gin.Context) {
 	cf := config.GetConfig()
 	c.SetCookie(jwt.COOKIE_KEY_JWT, "", 0, "/", cf.AppHost, false, true)
 	c.Redirect(303, "/login")
@@ -105,7 +105,7 @@ func (ctr *UserController) logout(c *gin.Context) {
 
 
 //GET /api/profile
-func (ctr *UserController) getProfile(c *gin.Context) {
+func (ctr *UserController) GetProfile(c *gin.Context) {
 	user, err := ctr.userService.GetProfile(jwt.GetUserId(c))
 
 	if err != nil {

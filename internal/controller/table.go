@@ -25,7 +25,7 @@ func NewTableController() *TableController {
 
 
 //GET /:project_cd/tables
-func (ctr *TableController) tablesPage(c *gin.Context) {
+func (ctr *TableController) TablesPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tables, _ := ctr.tableService.GetTables(projectId)
 
@@ -38,7 +38,7 @@ func (ctr *TableController) tablesPage(c *gin.Context) {
 
 
 //GET /:project_cd/tables/new
-func (ctr *TableController) createTablePage(c *gin.Context) {
+func (ctr *TableController) CreateTablePage(c *gin.Context) {
 	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	c.HTML(200, "table.html", gin.H{
@@ -49,7 +49,7 @@ func (ctr *TableController) createTablePage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/new
-func (ctr *TableController) createTable(c *gin.Context) {
+func (ctr *TableController) CreateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
@@ -82,7 +82,7 @@ func (ctr *TableController) createTable(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id
-func (ctr *TableController) updateTablePage(c *gin.Context) {
+func (ctr *TableController) UpdateTablePage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
@@ -100,7 +100,7 @@ func (ctr *TableController) updateTablePage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/:table_id
-func (ctr *TableController) updateTable(c *gin.Context) {
+func (ctr *TableController) UpdateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
@@ -144,7 +144,7 @@ func (ctr *TableController) updateTable(c *gin.Context) {
 
 
 //DELETE /:project_cd/tables/:table_id
-func (ctr *TableController) deleteTable(c *gin.Context) {
+func (ctr *TableController) DeleteTable(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
@@ -156,7 +156,7 @@ func (ctr *TableController) deleteTable(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/log
-func (ctr *TableController) tableLogPage(c *gin.Context) {
+func (ctr *TableController) TableLogPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 

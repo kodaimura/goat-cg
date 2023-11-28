@@ -11,63 +11,63 @@ func SetRouter(r *gin.Engine) {
 	uc := NewUserController()
 
 	//render HTML or redirect
-	r.GET("/signup", uc.signupPage)
-	r.GET("/login", uc.loginPage)
-	r.GET("/logout", uc.logout)
-	r.POST("/signup", uc.signup)
-	r.POST("/login", uc.login)
+	r.GET("/signup", uc.SignupPage)
+	r.GET("/login", uc.LoginPage)
+	r.GET("/logout", uc.Logout)
+	r.POST("/signup", uc.Signup)
+	r.POST("/login", uc.Login)
 
 	//render HTML or redirect (Authorized request)
 	a := r.Group("/", jwt.JwtAuthMiddleware())
 	{
 		rc := NewRootController()
 		
-		a.GET("/", rc.indexPage)
+		a.GET("/", rc.IndexPage)
 
 		pc := NewProjectController()
 
-		a.GET("/projects", pc.projectsPage)
-		a.GET("/projects/new", pc.createProjectPage)
-		a.POST("/projects", pc.createProject)
+		a.GET("/projects", pc.ProjectsPage)
+		a.GET("/projects/new", pc.CreateProjectPage)
+		a.POST("/projects", pc.CreateProject)
 
 		upc := NewProjectUserController()
 
-		a.GET("/projects/requests", upc.requestsPage)
-		a.POST("/projects/requests/join", upc.joinRequest)
-		a.POST("/projects/requests/cancel", upc.cancelJoinRequest)
-		a.POST("/projects/requests/permit", upc.permitJoinRequest)
+		a.GET("/projects/requests", upc.RequestsPage)
+		a.POST("/projects/requests/join", upc.JoinRequest)
+		a.POST("/projects/requests/cancel", upc.CancelJoinRequest)
+		a.POST("/projects/requests/permit", upc.PermitJoinRequest)
 
 
 		ap := a.Group("/:project_cd")
 		{
 			tc := NewTableController()
 
-			ap.GET("/tables", tc.tablesPage)
-			ap.GET("/tables/new", tc.createTablePage)
-			ap.POST("/tables/new", tc.createTable)
-			ap.GET("/tables/:table_id", tc.updateTablePage)
-			ap.POST("/tables/:table_id", tc.updateTable)
-			ap.DELETE("/tables/:table_id", tc.deleteTable)
-			ap.GET("/tables/:table_id/log", tc.tableLogPage)
+			ap.GET("/tables", tc.TablesPage)
+			ap.GET("/tables/new", tc.CreateTablePage)
+			ap.POST("/tables/new", tc.CreateTable)
+			ap.GET("/tables/:table_id", tc.UpdateTablePage)
+			ap.POST("/tables/:table_id", tc.UpdateTable)
+			ap.DELETE("/tables/:table_id", tc.DeleteTable)
+			ap.GET("/tables/:table_id/log", tc.TableLogPage)
 
 
 			cgc := NewCodegenController()
 
-			ap.GET("/codegen", cgc.codegenPage)
-			ap.POST("/codegen/goat", cgc.codegenGOAT)
-			ap.POST("/codegen/ddl", cgc.codegenDDL)
+			ap.GET("/codegen", cgc.CodegenPage)
+			ap.POST("/codegen/goat", cgc.CodegenGOAT)
+			ap.POST("/codegen/ddl", cgc.CodegenDDL)
 
 			aptt := ap.Group("/tables/:table_id")
 			{
 				cc := NewColumnController()
 
-				aptt.GET("/columns", cc.columnsPage)
-				aptt.GET("/columns/new", cc.createColumnPage)
-				aptt.POST("/columns/new", cc.createColumn)
-				aptt.GET("/columns/:column_id", cc.updateColumnPage)
-				aptt.POST("/columns/:column_id", cc.updateColumn)
-				aptt.DELETE("/columns/:column_id", cc.deleteColumn)
-				aptt.GET("/columns/:column_id/log", cc.columnLogPage)
+				aptt.GET("/columns", cc.ColumnsPage)
+				aptt.GET("/columns/new", cc.CreateColumnPage)
+				aptt.POST("/columns/new", cc.CreateColumn)
+				aptt.GET("/columns/:column_id", cc.UpdateColumnPage)
+				aptt.POST("/columns/:column_id", cc.UpdateColumn)
+				aptt.DELETE("/columns/:column_id", cc.DeleteColumn)
+				aptt.GET("/columns/:column_id/log", cc.ColumnLogPage)
 			}
 		}
 	}
@@ -77,20 +77,20 @@ func SetRouter(r *gin.Engine) {
 	{
 		uac := NewUserApiController()
 
-		api.POST("/signup", uac.signup)
-		api.POST("/login", uac.login)
-		api.GET("/logout", uac.logout)
+		api.POST("/signup", uac.Signup)
+		api.POST("/login", uac.Login)
+		api.GET("/logout", uac.Logout)
 
 
 		//response JSON (Authorized request)
 		a := api.Group("/", jwt.JwtAuthApiMiddleware())
 		{
-			a.GET("/profile", uac.getProfile)
-			a.PUT("/username", uac.changeUsername)
-			a.POST("/username", uac.changeUsername)
-			a.PUT("/password", uac.changePassword)
-			a.POST("/password", uac.changePassword)
-			a.DELETE("/account", uac.deleteUser)
+			a.GET("/profile", uac.GetProfile)
+			a.PUT("/username", uac.ChangeUsername)
+			a.POST("/username", uac.ChangeUsername)
+			a.PUT("/password", uac.ChangePassword)
+			a.POST("/password", uac.ChangePassword)
+			a.DELETE("/account", uac.DeleteUser)
 		}
 	}
 }

@@ -14,6 +14,6 @@ func NewRootController() *RootController {
 
 
 //GET /
-func (ctr *RootController) indexPage(c *gin.Context) {
+func (ctr *RootController) IndexPage(c *gin.Context) {
 	c.Redirect(303, "/projects")
 }
