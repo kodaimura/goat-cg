@@ -23,15 +23,15 @@ type CodegenService interface {
 
 
 type codegenService struct {
-	cRepository repository.ColumnRepository
-	tRepository repository.TableRepository
+	columnRepository repository.ColumnRepository
+	tableRepository repository.TableRepository
 }
 
 
 func NewCodegenService() CodegenService {
-	cRepository := repository.NewColumnRepository()
-	tRepository := repository.NewTableRepository()
-	return &codegenService{cRepository, tRepository}
+	columnRepository := repository.NewColumnRepository()
+	tableRepository := repository.NewTableRepository()
+	return &codegenService{columnRepository, tableRepository}
 }
 
 
@@ -170,7 +170,7 @@ func (serv *codegenService) cgDdlCreateTables(rdbms string, tableIds []int) stri
 
 func (serv *codegenService) cgDdlCreateTable(rdbms string, tid int) string {
 	s := ""
-	table, err := serv.tRepository.GetById(tid)
+	table, err := serv.tableRepository.GetById(tid)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -186,7 +186,7 @@ func (serv *codegenService) cgDdlCreateTable(rdbms string, tid int) string {
 
 func (serv *codegenService) cgDdlColumns(rdbms string, tid int) string {
 	s := ""
-	cols, err := serv.cRepository.GetByTableId(tid)
+	cols, err := serv.columnRepository.GetByTableId(tid)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -360,7 +360,7 @@ func (serv *codegenService) cgDdlCreateTriggers(rdbms string, tableIds []int) st
 
 func (serv *codegenService) cgDdlCreateTrigger(rdbms string, tid int) string {
 	s := ""
-	table, err := serv.tRepository.GetById(tid)
+	table, err := serv.tableRepository.GetById(tid)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -445,13 +445,13 @@ func (serv *codegenService) cgGoatSource(rdbms string, tableIds []int, path stri
 	}
 
 	for _, tid := range tableIds {
-		table, err := serv.tRepository.GetById(tid)
+		table, err := serv.tableRepository.GetById(tid)
 		if err != nil {
 			logger.Error(err.Error())
 			break
 		}
 
-		cols, err := serv.cRepository.GetByTableId(tid)
+		cols, err := serv.columnRepository.GetByTableId(tid)
 		if err != nil {
 			logger.Error(err.Error())
 			break

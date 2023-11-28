@@ -20,17 +20,17 @@ type UrlCheckService interface {
 
 
 type urlCheckService struct {
-	pRepository repository.ProjectRepository
-	tRepository repository.TableRepository
-	cRepository repository.ColumnRepository
+	projectRepository repository.ProjectRepository
+	tableRepository repository.TableRepository
+	columnRepository repository.ColumnRepository
 }
 
 
 func NewUrlCheckService() UrlCheckService {
-	pRepository := repository.NewProjectRepository()
-	tRepository := repository.NewTableRepository()
-	cRepository := repository.NewColumnRepository()
-	return &urlCheckService{pRepository, tRepository, cRepository}
+	projectRepository := repository.NewProjectRepository()
+	tableRepository := repository.NewTableRepository()
+	columnRepository := repository.NewColumnRepository()
+	return &urlCheckService{projectRepository, tableRepository, columnRepository}
 }
 
 
@@ -42,7 +42,7 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 	userId := jwt.GetUserId(c)
 	projectCd := c.Param("project_cd")
 
-	project, err := serv.pRepository.GetByCdAndUserId(projectCd, userId)
+	project, err := serv.projectRepository.GetByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -69,7 +69,7 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 		return -1
 	}
 
-	table, err := serv.tRepository.GetById(tableId)
+	table, err := serv.tableRepository.GetById(tableId)
 
 	if err != nil || table.ProjectId != projectId {
 		if err != nil {
@@ -100,7 +100,7 @@ func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
 		return -1
 	}
 
-	column, err := serv.cRepository.GetById(columnId)
+	column, err := serv.columnRepository.GetById(columnId)
 
 	if err != nil || column.TableId != tableId{
 		if err != nil {

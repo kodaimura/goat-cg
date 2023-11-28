@@ -23,13 +23,13 @@ type UserService interface {
 
 
 type userService struct {
-	uRepository repository.UserRepository
+	userRepository repository.UserRepository
 }
 
 
 func NewUserService() UserService {
-	uRepository := repository.NewUserRepository()
-	return &userService{uRepository}
+	userRepository := repository.NewUserRepository()
+	return &userService{userRepository}
 }
 
 
@@ -41,7 +41,7 @@ const SIGNUP_ERROR_INT = 2
 /*----------------------------------------*/
 
 func (serv *userService) Signup(username, password string) int {
-	_, err := serv.uRepository.GetByName(username)
+	_, err := serv.userRepository.GetByName(username)
 
 	if err == nil {
 		return SIGNUP_CONFLICT_INT
@@ -58,7 +58,7 @@ func (serv *userService) Signup(username, password string) int {
 	user.UserName = username
 	user.Password = string(hashed)
 
-	err = serv.uRepository.Insert(&user)
+	err = serv.userRepository.Insert(&user)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -76,7 +76,7 @@ const LOGIN_FAILURE_INT = -1
 /*----------------------------------------*/
 
 func (serv *userService) Login(username, password string) int {
-	user, err := serv.uRepository.GetByName(username)
+	user, err := serv.userRepository.GetByName(username)
 
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		return LOGIN_FAILURE_INT
@@ -93,7 +93,7 @@ const GENERATE_JWT_FAILURE_STR = ""
 /*----------------------------------------*/
 
 func (serv *userService) GenerateJWT(userId int) string {
-	user, err := serv.uRepository.GetById(userId)
+	user, err := serv.userRepository.GetById(userId)
 	
 	if err != nil {
 		logger.Error(err.Error())
@@ -115,7 +115,7 @@ func (serv *userService) GenerateJWT(userId int) string {
 
 
 func (serv *userService) GetProfile(userId int) (model.User, error) {
-	user, err := serv.uRepository.GetById(userId)
+	user, err := serv.userRepository.GetById(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -131,7 +131,7 @@ const CHANGE_USERNAME_SUCCESS_INT = 0
 const CHANGE_USERNAME_FAILURE_INT = 1
 /*----------------------------------------*/
 func (serv *userService) ChangeUsername(userId int, username string) int {
-	err := serv.uRepository.UpdateName(userId, username)
+	err := serv.userRepository.UpdateName(userId, username)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -155,7 +155,7 @@ func (serv *userService) ChangePassword(userId int, password string) int {
 		return CHANGE_PASSWORD_FAILURE_INT
 	}
 
-	err = serv.uRepository.UpdatePassword(userId, string(hashed))
+	err = serv.userRepository.UpdatePassword(userId, string(hashed))
 	
 	if err != nil {
 		logger.Error(err.Error())
@@ -172,7 +172,7 @@ const DELETE_USER_SUCCESS_INT = 0
 const DELETE_USER_FAILURE_INT = 1
 /*----------------------------------------*/
 func (serv *userService) DeleteUser(userId int) int {
-	err := serv.uRepository.Delete(userId)
+	err := serv.userRepository.Delete(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
