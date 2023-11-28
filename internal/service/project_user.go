@@ -4,9 +4,9 @@ import (
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
-	"goat-cg/internal/model/query"
+	"goat-cg/internal/model"
+	"goat-cg/internal/repository"
+	"goat-cg/internal/query"
 )
 
 
@@ -19,15 +19,15 @@ type ProjectUserService interface {
 
 
 type projectUserService struct {
-	upDao dao.ProjectUserDao
-	upQue query.ProjectUserQuery
+	projectUserRepository repository.ProjectUserRepository
+	projectUserQuery query.ProjectUserQuery
 }
 
 
 func NewProjectUserService() ProjectUserService {
-	upDao := dao.NewProjectUserDao()
-	upQue := query.NewProjectUserQuery()
-	return &projectUserService{upDao, upQue}
+	projectUserRepository := repository.NewProjectUserRepository()
+	projectUserQuery := query.NewProjectUserQuery()
+	return &projectUserService{projectUserRepository, projectUserQuery}
 }
 
 
@@ -41,19 +41,19 @@ const JOIN_REQUEST_ERROR_INT = 2
 func (serv *projectUserService) JoinRequest(
 	userId int, projectId int,
 ) int {
-	up0, err := serv.upDao.Select(userId, projectId)
+	up0, err := serv.projectUserRepository.GetByPk(userId, projectId)
 
 	if err == nil && up0.StateCls == constant.STATE_CLS_JOIN {
 		return JOIN_REQUEST_ALREADY_INT
 	} 
 
-	var up entity.ProjectUser
+	var up model.ProjectUser
 	up.UserId = userId
 	up.ProjectId = projectId
 	up.StateCls = constant.STATE_CLS_REQUEST
 	up.RoleCls = constant.ROLE_CLS_NOMAL
 
-	err = serv.upDao.Upsert(&up)
+	err = serv.projectUserRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -74,7 +74,7 @@ const CANCEL_JOIN_REQUEST_ERROR_INT= 1
 func (serv *projectUserService) CancelJoinRequest(
 	userId int, projectId int,
 ) int {
-	err := serv.upDao.Delete(userId, projectId)
+	err := serv.projectUserRepository.Delete(userId, projectId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -96,13 +96,13 @@ func (serv *projectUserService) PermitJoinRequest(
 	userId int, projectId int,
 ) int {
 
-	var up entity.ProjectUser
+	var up model.ProjectUser
 	up.UserId = userId
 	up.ProjectId = projectId
 	up.StateCls = constant.STATE_CLS_JOIN
 	up.RoleCls = constant.ROLE_CLS_NOMAL
 
-	err := serv.upDao.Upsert(&up)
+	err := serv.projectUserRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -119,7 +119,7 @@ func (serv *projectUserService) PermitJoinRequest(
 func (serv *projectUserService) GetJoinRequests(
 	userId int,
 ) ([]dto.QueOutJoinRequest, error) {
-	jrs, err := serv.upQue.QueryJoinRequests(userId)
+	jrs, err := serv.projectUserQuery.QueryJoinRequests(userId)
 
 	if err != nil {
 		logger.Error(err.Error())

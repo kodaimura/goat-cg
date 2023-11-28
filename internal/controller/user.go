@@ -13,13 +13,13 @@ import (
 
 
 type userController struct {
-	uServ service.UserService
+	userService service.UserService
 }
 
 
 func newUserController() *userController {
-	uServ := service.NewUserService()
-	return &userController{uServ}
+	userService := service.NewUserService()
+	return &userController{userService}
 }
 
 
@@ -43,7 +43,7 @@ func (ctr *userController) signup(c *gin.Context) {
 	name := c.PostForm("user_name")
 	pass := c.PostForm("password")
 
-	result := ctr.uServ.Signup(name, pass)
+	result := ctr.userService.Signup(name, pass)
 
 	if result == service.SIGNUP_SUCCESS_INT {
 		c.Redirect(303, "/login")
@@ -68,7 +68,7 @@ func (ctr *userController) login(c *gin.Context) {
 	name := c.PostForm("user_name")
 	pass := c.PostForm("password")
 
-	userId := ctr.uServ.Login(name, pass)
+	userId := ctr.userService.Login(name, pass)
 
 	if userId == service.LOGIN_FAILURE_INT {
 		c.HTML(401, "login.html", gin.H{
@@ -79,7 +79,7 @@ func (ctr *userController) login(c *gin.Context) {
 		return
 	}
 
-	jwtStr := ctr.uServ.GenerateJWT(userId)
+	jwtStr := ctr.userService.GenerateJWT(userId)
 
 	if jwtStr == service.GENERATE_JWT_FAILURE_STR {
 		c.HTML(500, "login.html", gin.H{
@@ -106,7 +106,7 @@ func (ctr *userController) logout(c *gin.Context) {
 
 //GET /api/profile
 func (ctr *userController) getProfile(c *gin.Context) {
-	user, err := ctr.uServ.GetProfile(jwt.GetUserId(c))
+	user, err := ctr.userService.GetProfile(jwt.GetUserId(c))
 
 	if err != nil {
 		c.JSON(500, gin.H{"error": http.StatusText(500)})

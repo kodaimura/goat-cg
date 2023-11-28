@@ -3,15 +3,15 @@ package service
 import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
-	"goat-cg/internal/model/query"
+	"goat-cg/internal/model"
+	"goat-cg/internal/repository"
+	"goat-cg/internal/query"
 )
 
 
 type ColumnService interface {
-	GetColumn(columnId int) (entity.Column, error)
-	GetColumns(tableId int) ([]entity.Column, error)
+	GetColumn(columnId int) (model.Column, error)
+	GetColumns(tableId int) ([]model.Column, error)
 	CreateColumn(in dto.ServInCreateColumn) int
 	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
 	DeleteColumn(columnId int) int
@@ -20,23 +20,23 @@ type ColumnService interface {
 
 
 type columnService struct {
-	cDao dao.ColumnDao
-	tDao dao.TableDao
-	cQue query.ColumnQuery
+	columnRepository repository.ColumnRepository
+	tableRepository repository.TableRepository
+	columnQuery query.ColumnQuery
 }
 
 
 func NewColumnService() ColumnService {
-	cDao := dao.NewColumnDao()
-	tDao := dao.NewTableDao()
-	cQue := query.NewColumnQuery()
-	return &columnService{cDao, tDao, cQue}
+	columnRepository := repository.NewColumnRepository()
+	tableRepository := repository.NewTableRepository()
+	columnQuery := query.NewColumnQuery()
+	return &columnService{columnRepository, tableRepository, columnQuery}
 }
 
 
 // GetColumn get Column record by columnId.
-func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
-	column, err := serv.cDao.Select(columnId)
+func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
+	column, err := serv.columnRepository.GetById(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -47,8 +47,8 @@ func (serv *columnService) GetColumn(columnId int) (entity.Column, error) {
 
 
 // GetColumn get Column records by tableId.
-func (serv *columnService) GetColumns(tableId int) ([]entity.Column, error) {
-	columns, err := serv.cDao.SelectByTableId(tableId)
+func (serv *columnService) GetColumns(tableId int) ([]model.Column, error) {
+	columns, err := serv.columnRepository.GetByTableId(tableId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -66,13 +66,13 @@ const CREATE_COLUMN_ERROR_INT = 2
 
 // CreateColumn create new Column record.
 func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) int {
-	_, err := serv.cDao.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	_, err := serv.columnRepository.GetByNameAndTableId(sin.ColumnName, sin.TableId)
 	if err == nil {
 		return CREATE_COLUMN_CONFLICT_INT
 	}
 	
 	column := sin.ToColumn()
-	err = serv.cDao.Insert(&column)
+	err = serv.columnRepository.Insert(&column)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -93,14 +93,14 @@ const UPDATE_COLUMN_ERROR_INT = 2
 func (serv *columnService) UpdateColumn(
 	columnId int, sin dto.ServInCreateColumn,
 ) int {
-	col, err := serv.cDao.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	col, err := serv.columnRepository.GetByNameAndTableId(sin.ColumnName, sin.TableId)
 	
 	if err == nil && col.ColumnId != columnId {
 		return UPDATE_COLUMN_CONFLICT_INT
 	}
 	
 	column := sin.ToColumn()
-	err = serv.cDao.Update(columnId, &column)
+	err = serv.columnRepository.Update(columnId, &column)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -119,14 +119,14 @@ const DELETE_COLUMN_ERROR_INT = 1
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
 func (serv *columnService) DeleteColumn(columnId int) int {
-	_, err := serv.cDao.Select(columnId)
+	_, err := serv.columnRepository.GetById(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())
 		return DELETE_COLUMN_ERROR_INT
 	}
 
-	err = serv.cDao.Delete(columnId)
+	err = serv.columnRepository.Delete(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -139,7 +139,7 @@ func (serv *columnService) DeleteColumn(columnId int) int {
 
 // GetColumnLog get Column chenge log.
 func (serv *columnService) GetColumnLog(columnId int) ([]dto.QueOutColumnLog, error) {
-	columnLog, err := serv.cQue.QueryColumnLog(columnId)
+	columnLog, err := serv.columnQuery.QueryColumnLog(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())

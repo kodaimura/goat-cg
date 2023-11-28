@@ -3,30 +3,30 @@ package service
 import (	
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
+	"goat-cg/internal/model"
+	"goat-cg/internal/repository"
 )
 
 
 type ProjectService interface {
 	GetProjectId(userId int, projectCd string) int 
-	GetProjects(userId int) ([]entity.Project, error)
-	GetProjectsPendingApproval(userId int) ([]entity.Project, error)
-	GetProjectByCd(projectCd string) entity.Project
+	GetProjects(userId int) ([]model.Project, error)
+	GetProjectsPendingApproval(userId int) ([]model.Project, error)
+	GetProjectByCd(projectCd string) model.Project
 	CreateProject(userId int, projectCd, projectName string) int
 }
 
 
 type projectService struct {
-	pDao dao.ProjectDao
-	upDao dao.ProjectUserDao
+	projectRepository repository.ProjectRepository
+	projectUserRepository repository.ProjectUserRepository
 }
 
 
 func NewProjectService() ProjectService {
-	pDao := dao.NewProjectDao()
-	upDao := dao.NewProjectUserDao()
-	return &projectService{pDao, upDao}
+	projectRepository := repository.NewProjectRepository()
+	projectUserRepository := repository.NewProjectUserRepository()
+	return &projectService{projectRepository, projectUserRepository}
 }
 
 
@@ -41,7 +41,7 @@ func (serv *projectService) GetProjectId(
 	userId int, 
 	projectCd string,
 ) int {
-	project, err := serv.pDao.SelectByCdAndUserId(projectCd, userId)
+	project, err := serv.projectRepository.GetByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		return GET_PROJECT_ID_NOT_FOUND_INT
@@ -54,8 +54,8 @@ func (serv *projectService) GetProjectId(
 // GetProjects get projects: the state user join.
 func (serv *projectService) GetProjects(
 	userId int,
-) ([]entity.Project, error) {
-	projects, err := serv.pDao.SelectByUserIdAndStateCls(
+) ([]model.Project, error) {
+	projects, err := serv.projectRepository.GetByUserIdAndStateCls(
 		userId, constant.STATE_CLS_JOIN,
 	)
 
@@ -70,8 +70,8 @@ func (serv *projectService) GetProjects(
 // GetProjects get projects: the state user are applying for joinrequest.
 func (serv *projectService) GetProjectsPendingApproval(
 	userId int,
-) ([]entity.Project, error) {
-	projects, err := serv.pDao.SelectByUserIdAndStateCls(
+) ([]model.Project, error) {
+	projects, err := serv.projectRepository.GetByUserIdAndStateCls(
 		userId, constant.STATE_CLS_REQUEST,
 	)
 
@@ -85,8 +85,8 @@ func (serv *projectService) GetProjectsPendingApproval(
 
 func (serv *projectService) GetProjectByCd(
 	projectCd string,
-) entity.Project {
-	project, _ := serv.pDao.SelectByCd(projectCd)
+) model.Project {
+	project, _ := serv.projectRepository.GetByCd(projectCd)
 
 	return project
 }
@@ -104,34 +104,34 @@ func (serv *projectService) CreateProject(
 	projectCd string, 
 	projectName string,
 ) int {
-	_, err := serv.pDao.SelectByCd(projectCd)
+	_, err := serv.projectRepository.GetByCd(projectCd)
 	if err == nil {
 		return CREATE_PROJECT_CONFLICT_INT
 	}
 
-	var p entity.Project
+	var p model.Project
 	p.ProjectCd = projectCd
 	p.ProjectName = projectName
-	err = serv.pDao.Insert(&p)
+	err = serv.projectRepository.Insert(&p)
 
 	if err != nil {
 		logger.Error(err.Error())
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	project, err := serv.pDao.SelectByCd(projectCd)
+	project, err := serv.projectRepository.GetByCd(projectCd)
 
 	if err != nil {
 		logger.Error(err.Error())
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	var up entity.ProjectUser
+	var up model.ProjectUser
 	up.UserId = userId
 	up.ProjectId = project.ProjectId
 	up.StateCls = constant.STATE_CLS_JOIN
 	up.RoleCls = constant.ROLE_CLS_OWNER
-	err = serv.upDao.Upsert(&up)
+	err = serv.projectUserRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())

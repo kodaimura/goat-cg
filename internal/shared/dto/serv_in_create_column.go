@@ -2,7 +2,7 @@ package dto
 
 
 import (
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 type ServInCreateColumn struct {
@@ -24,8 +24,8 @@ type ServInCreateColumn struct {
 }
 
 
-func (d ServInCreateColumn) ToColumn() entity.Column {
-	var c entity.Column
+func (d ServInCreateColumn) ToColumn() model.Column {
+	var c model.Column
 
 	c.TableId = d.TableId
 	c.ColumnName = d.ColumnName

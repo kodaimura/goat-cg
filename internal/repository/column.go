@@ -1,38 +1,38 @@
-package dao
+package repository
 
 import (
 	"database/sql"
 
 	"goat-cg/internal/core/db"
-	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model"
 )
 
 
-type ColumnDao interface {
-	Select(id int) (entity.Column, error)
-	Insert(c *entity.Column) error
-	Update(id int, c *entity.Column) error
+type ColumnRepository interface {
+	GetById(id int) (model.Column, error)
+	Insert(c *model.Column) error
+	Update(id int, c *model.Column) error
 	Delete(id int) error
 
-	SelectByNameAndTableId(name string, tableId int) (entity.Column, error)
-	SelectByTableId(tableId int) ([]entity.Column, error)
+	GetByNameAndTableId(name string, tableId int) (model.Column, error)
+	GetByTableId(tableId int) ([]model.Column, error)
 	DeleteByTableId(tableId int) error
 }
 
 
-type columnDao struct {
+type columnRepository struct {
 	db *sql.DB
 }
 
 
-func NewColumnDao() ColumnDao {
+func NewColumnRepository() ColumnRepository {
 	db := db.GetDB()
-	return &columnDao{db}
+	return &columnRepository{db}
 }
 
 
-func (rep *columnDao) Select(id int) (entity.Column, error) {
-	var ret entity.Column
+func (rep *columnRepository) GetById(id int) (model.Column, error) {
+	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
 			column_id,
@@ -84,7 +84,7 @@ func (rep *columnDao) Select(id int) (entity.Column, error) {
 }
 
 
-func (rep *columnDao) Insert(c *entity.Column) error {
+func (rep *columnRepository) Insert(c *model.Column) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO column_def (
 			table_id, 
@@ -123,7 +123,7 @@ func (rep *columnDao) Insert(c *entity.Column) error {
 }
 
 
-func (rep *columnDao) Update(id int, c *entity.Column) error {
+func (rep *columnRepository) Update(id int, c *model.Column) error {
 	_, err := rep.db.Exec(
 		`UPDATE column_def
 		 SET 
@@ -160,7 +160,7 @@ func (rep *columnDao) Update(id int, c *entity.Column) error {
 }
 
 
-func (rep *columnDao) Delete(id int) error {
+func (rep *columnRepository) Delete(id int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM column_def WHERE column_id = ?`, 
 		id,
@@ -170,11 +170,11 @@ func (rep *columnDao) Delete(id int) error {
 }
 
 
-func (rep *columnDao) SelectByNameAndTableId(
+func (rep *columnRepository) GetByNameAndTableId(
 	name string, 
 	tableId int,
-) (entity.Column, error) {
-	var ret entity.Column
+) (model.Column, error) {
+	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
 			column_id,
@@ -228,9 +228,9 @@ func (rep *columnDao) SelectByNameAndTableId(
 }
 
 
-func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
+func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 	
-	var ret []entity.Column
+	var ret []model.Column
 	rows, err := rep.db.Query(
 		`SELECT 
 			column_id,
@@ -264,7 +264,7 @@ func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
 	}
 
 	for rows.Next() {
-		c := entity.Column{}
+		c := model.Column{}
 		err = rows.Scan(
 			&c.ColumnId,
 			&c.TableId,
@@ -295,7 +295,7 @@ func (rep *columnDao) SelectByTableId(tableId int) ([]entity.Column, error) {
 }
 
 
-func (rep *columnDao) DeleteByTableId(tableId int) error {
+func (rep *columnRepository) DeleteByTableId(tableId int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM column_def WHERE table_id = ?`, 
 		tableId,
