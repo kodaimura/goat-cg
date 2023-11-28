@@ -38,7 +38,7 @@ func (rep *userRepository) GetById(id int) (model.User, error){
 	err := rep.db.QueryRow(
 		`SELECT 
 			user_id, 
-			user_name, 
+			username, 
 			created_at , 
 			updated_at 
 		 FROM users 
@@ -46,7 +46,7 @@ func (rep *userRepository) GetById(id int) (model.User, error){
 		 id,
 	).Scan(
 		&ret.UserId, 
-		&ret.UserName, 
+		&ret.Username, 
 		&ret.CreatedAt, 
 		&ret.UpdatedAt,
 	)
@@ -58,10 +58,10 @@ func (rep *userRepository) GetById(id int) (model.User, error){
 func (rep *userRepository) Insert(u *model.User) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO users (
-			user_name, 
+			username, 
 			password
 		 ) VALUES(?,?)`,
-		u.UserName, 
+		u.Username, 
 		u.Password,
 	)
 	return err
@@ -71,10 +71,10 @@ func (rep *userRepository) Insert(u *model.User) error {
 func (rep *userRepository) Update(id int, u *model.User) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
-		 SET user_name = ? 
+		 SET username = ? 
 			  password = ?
 		 WHERE user_id = ?`,
-		u.UserName,
+		u.Username,
 		u.Password, 
 		id,
 	)
@@ -107,7 +107,7 @@ func (rep *userRepository) UpdatePassword(id int, password string) error {
 func (rep *userRepository) UpdateName(id int, name string) error {
 	_, err := rep.db.Exec(
 		`UPDATE users
-		 SET user_name = ? 
+		 SET username = ? 
 		 WHERE user_id = ?`, 
 		name, 
 		id,
@@ -123,16 +123,16 @@ func (rep *userRepository) GetByName(name string) (model.User, error) {
 	err := rep.db.QueryRow(
 		`SELECT 
 			user_id, 
-			user_name, 
+			username, 
 			password, 
 			created_at , 
 			updated_at 
 		 FROM users 
-		 WHERE user_name = ?`, 
+		 WHERE username = ?`, 
 		 name,
 	).Scan(
 		&ret.UserId, 
-		&ret.UserName, 
+		&ret.Username, 
 		&ret.Password, 
 		&ret.CreatedAt, 
 		&ret.UpdatedAt,

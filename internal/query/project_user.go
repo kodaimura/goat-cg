@@ -31,7 +31,7 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 	rows, err := que.db.Query(
 		`SELECT
 			u.user_id,
-			u.user_name,
+			u.username,
 			p.project_id,
 			p.project_cd,
 			p.project_name,
@@ -61,7 +61,7 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 		x := dto.QueOutJoinRequest{}
 		err = rows.Scan(
 			&x.UserId,
-			&x.UserName,
+			&x.Username,
 			&x.ProjectId,
 			&x.ProjectCd,
 			&x.ProjectName,

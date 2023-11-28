@@ -60,7 +60,7 @@ func (ctr *UserApiController) ChangeUsername(c *gin.Context) {
 
 	m := map[string]string{}
 	c.BindJSON(&m)
-	name := m["user_name"]
+	name := m["username"]
 
 	if ctr.userService.ChangeUsername(userId, name) != service.CHANGE_USERNAME_SUCCESS_INT {
 		c.JSON(500, gin.H{"error": "登録に失敗しました。"})
@@ -90,7 +90,7 @@ func (ctr *UserApiController) DeleteUser(c *gin.Context) {
 func (ctr *UserApiController) Signup(c *gin.Context) {
 	m := map[string]string{}
 	c.BindJSON(&m)
-	name := m["user_name"]
+	name := m["username"]
 	pass := m["password"]
 
 	result := ctr.userService.Signup(name, pass)
@@ -115,7 +115,7 @@ func (ctr *UserApiController) Signup(c *gin.Context) {
 func (ctr *UserApiController) Login(c *gin.Context) {
 	m := map[string]string{}
 	c.BindJSON(&m)
-	name := m["user_name"]
+	name := m["username"]
 	pass := m["password"]
 
 	userId := ctr.userService.Login(name, pass)

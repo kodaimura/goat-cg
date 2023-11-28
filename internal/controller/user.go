@@ -40,7 +40,7 @@ func (ctr *UserController) LoginPage(c *gin.Context) {
 
 //POST /signup
 func (ctr *UserController) Signup(c *gin.Context) {
-	name := c.PostForm("user_name")
+	name := c.PostForm("username")
 	pass := c.PostForm("password")
 
 	result := ctr.userService.Signup(name, pass)
@@ -65,7 +65,7 @@ func (ctr *UserController) Signup(c *gin.Context) {
 
 //POST /login
 func (ctr *UserController) Login(c *gin.Context) {
-	name := c.PostForm("user_name")
+	name := c.PostForm("username")
 	pass := c.PostForm("password")
 
 	userId := ctr.userService.Login(name, pass)

@@ -55,7 +55,7 @@ func (serv *userService) Signup(username, password string) int {
 	}
 
 	var user model.User
-	user.UserName = username
+	user.Username = username
 	user.Password = string(hashed)
 
 	err = serv.userRepository.Insert(&user)
@@ -102,7 +102,7 @@ func (serv *userService) GenerateJWT(userId int) string {
 
 	var cc jwt.CustomClaims
 	cc.UserId = user.UserId
-	cc.UserName = user.UserName
+	cc.Username = user.Username
 	jwtStr, err := jwt.GenerateJWT(cc)
 
 	if err != nil {
