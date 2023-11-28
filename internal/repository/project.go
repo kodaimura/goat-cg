@@ -1,4 +1,4 @@
-package dao
+package repository
 
 import (
 	"database/sql"
@@ -9,7 +9,7 @@ import (
 )
 
 
-type ProjectDao interface {
+type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(id int, p *model.Project) error
 
@@ -22,18 +22,18 @@ type ProjectDao interface {
 }
 
 
-type projectDao struct {
+type projectRepository struct {
 	db *sql.DB
 }
 
 
-func NewProjectDao() ProjectDao {
+func NewProjectRepository() ProjectRepository {
 	db := db.GetDB()
-	return &projectDao{db}
+	return &projectRepository{db}
 }
 
 
-func (rep *projectDao) Insert(p *model.Project) error {
+func (rep *projectRepository) Insert(p *model.Project) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO project (
 			project_cd, 
@@ -46,7 +46,7 @@ func (rep *projectDao) Insert(p *model.Project) error {
 }
 
 
-func (rep *projectDao) Update(id int, p *model.Project) error {
+func (rep *projectRepository) Update(id int, p *model.Project) error {
 	_, err := rep.db.Exec(
 		`UPDATE project 
 		 SET project_name = ? 
@@ -58,7 +58,7 @@ func (rep *projectDao) Update(id int, p *model.Project) error {
 }
 
 
-func (rep *projectDao) SelectByCd(cd string) (model.Project, error) {
+func (rep *projectRepository) SelectByCd(cd string) (model.Project, error) {
 	var ret model.Project
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -82,7 +82,7 @@ func (rep *projectDao) SelectByCd(cd string) (model.Project, error) {
 }
 
 
-func (rep *projectDao) SelectByUserIdAndStateCls(
+func (rep *projectRepository) SelectByUserIdAndStateCls(
 	userId int, state string,
 ) ([]model.Project, error){
 	var ret []model.Project
@@ -125,7 +125,7 @@ func (rep *projectDao) SelectByUserIdAndStateCls(
 }
 
 
-func (rep *projectDao) SelectByCdAndUserId(
+func (rep *projectRepository) SelectByCdAndUserId(
 	cd string,
 	userId int,
 ) (model.Project, error) {

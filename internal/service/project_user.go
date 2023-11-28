@@ -5,7 +5,7 @@ import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model"
-	"goat-cg/internal/dao"
+	"goat-cg/internal/repository"
 	"goat-cg/internal/query"
 )
 
@@ -19,15 +19,15 @@ type ProjectUserService interface {
 
 
 type projectUserService struct {
-	upDao dao.ProjectUserDao
+	upRepository repository.ProjectUserRepository
 	upQue query.ProjectUserQuery
 }
 
 
 func NewProjectUserService() ProjectUserService {
-	upDao := dao.NewProjectUserDao()
+	upRepository := repository.NewProjectUserRepository()
 	upQue := query.NewProjectUserQuery()
-	return &projectUserService{upDao, upQue}
+	return &projectUserService{upRepository, upQue}
 }
 
 
@@ -41,7 +41,7 @@ const JOIN_REQUEST_ERROR_INT = 2
 func (serv *projectUserService) JoinRequest(
 	userId int, projectId int,
 ) int {
-	up0, err := serv.upDao.Select(userId, projectId)
+	up0, err := serv.upRepository.Select(userId, projectId)
 
 	if err == nil && up0.StateCls == constant.STATE_CLS_JOIN {
 		return JOIN_REQUEST_ALREADY_INT
@@ -53,7 +53,7 @@ func (serv *projectUserService) JoinRequest(
 	up.StateCls = constant.STATE_CLS_REQUEST
 	up.RoleCls = constant.ROLE_CLS_NOMAL
 
-	err = serv.upDao.Upsert(&up)
+	err = serv.upRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -74,7 +74,7 @@ const CANCEL_JOIN_REQUEST_ERROR_INT= 1
 func (serv *projectUserService) CancelJoinRequest(
 	userId int, projectId int,
 ) int {
-	err := serv.upDao.Delete(userId, projectId)
+	err := serv.upRepository.Delete(userId, projectId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -102,7 +102,7 @@ func (serv *projectUserService) PermitJoinRequest(
 	up.StateCls = constant.STATE_CLS_JOIN
 	up.RoleCls = constant.ROLE_CLS_NOMAL
 
-	err := serv.upDao.Upsert(&up)
+	err := serv.upRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())

@@ -1,4 +1,4 @@
-package dao
+package repository
 
 import (
 	"database/sql"
@@ -9,7 +9,7 @@ import (
 )
 
 
-type TableDao interface {
+type TableRepository interface {
 	Select(id int) (model.Table, error)
 	Insert(t *model.Table) error
 	Update(id int, t *model.Table) error
@@ -21,18 +21,18 @@ type TableDao interface {
 }
 
 
-type tableDao struct {
+type tableRepository struct {
 	db *sql.DB
 }
 
 
-func NewTableDao() TableDao {
+func NewTableRepository() TableRepository {
 	db := db.GetDB()
-	return &tableDao{db}
+	return &tableRepository{db}
 }
 
 
-func (rep *tableDao) Select(tableId int) (model.Table, error){
+func (rep *tableRepository) Select(tableId int) (model.Table, error){
 	
 	var ret model.Table
 	err := rep.db.QueryRow(
@@ -63,7 +63,7 @@ func (rep *tableDao) Select(tableId int) (model.Table, error){
 }
 
 
-func (rep *tableDao) Insert(t *model.Table) error {
+func (rep *tableRepository) Insert(t *model.Table) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO table_def (
 			project_id, 
@@ -83,7 +83,7 @@ func (rep *tableDao) Insert(t *model.Table) error {
 	return err
 }
 
-func (rep *tableDao) Update(id int, t *model.Table) error {
+func (rep *tableRepository) Update(id int, t *model.Table) error {
 	_, err := rep.db.Exec(
 		`UPDATE table_def
 		 SET 
@@ -102,7 +102,7 @@ func (rep *tableDao) Update(id int, t *model.Table) error {
 }
 
 
-func (rep *tableDao) Delete(id int) error {
+func (rep *tableRepository) Delete(id int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM table_def WHERE table_id = ?`, 
 		id,
@@ -112,7 +112,7 @@ func (rep *tableDao) Delete(id int) error {
 }
 
 
-func (rep *tableDao) SelectByNameAndProjectId(
+func (rep *tableRepository) SelectByNameAndProjectId(
 	name string, projectId int,
 ) (model.Table, error){
 	
@@ -146,7 +146,7 @@ func (rep *tableDao) SelectByNameAndProjectId(
 }
 
 
-func (rep *tableDao) SelectByProjectId(projectId int) ([]model.Table, error){
+func (rep *tableRepository) SelectByProjectId(projectId int) ([]model.Table, error){
 	
 	var ret []model.Table
 	rows, err := rep.db.Query(
@@ -192,7 +192,7 @@ func (rep *tableDao) SelectByProjectId(projectId int) ([]model.Table, error){
 }
 
 
-func (rep *tableDao) UpdateDelFlg(id, delFlg int) error {
+func (rep *tableRepository) UpdateDelFlg(id, delFlg int) error {
 	_, err := rep.db.Exec(
 		`UPDATE table_def 
 		 SET del_flg = ?

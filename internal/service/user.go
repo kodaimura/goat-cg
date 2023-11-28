@@ -7,7 +7,7 @@ import (
 	
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model"
-	"goat-cg/internal/dao"
+	"goat-cg/internal/repository"
 )
 
 
@@ -23,13 +23,13 @@ type UserService interface {
 
 
 type userService struct {
-	uDao dao.UserDao
+	uRepository repository.UserRepository
 }
 
 
 func NewUserService() UserService {
-	uDao := dao.NewUserDao()
-	return &userService{uDao}
+	uRepository := repository.NewUserRepository()
+	return &userService{uRepository}
 }
 
 
@@ -41,7 +41,7 @@ const SIGNUP_ERROR_INT = 2
 /*----------------------------------------*/
 
 func (serv *userService) Signup(username, password string) int {
-	_, err := serv.uDao.SelectByName(username)
+	_, err := serv.uRepository.SelectByName(username)
 
 	if err == nil {
 		return SIGNUP_CONFLICT_INT
@@ -58,7 +58,7 @@ func (serv *userService) Signup(username, password string) int {
 	user.UserName = username
 	user.Password = string(hashed)
 
-	err = serv.uDao.Insert(&user)
+	err = serv.uRepository.Insert(&user)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -76,7 +76,7 @@ const LOGIN_FAILURE_INT = -1
 /*----------------------------------------*/
 
 func (serv *userService) Login(username, password string) int {
-	user, err := serv.uDao.SelectByName(username)
+	user, err := serv.uRepository.SelectByName(username)
 
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		return LOGIN_FAILURE_INT
@@ -93,7 +93,7 @@ const GENERATE_JWT_FAILURE_STR = ""
 /*----------------------------------------*/
 
 func (serv *userService) GenerateJWT(userId int) string {
-	user, err := serv.uDao.Select(userId)
+	user, err := serv.uRepository.Select(userId)
 	
 	if err != nil {
 		logger.Error(err.Error())
@@ -115,7 +115,7 @@ func (serv *userService) GenerateJWT(userId int) string {
 
 
 func (serv *userService) GetProfile(userId int) (model.User, error) {
-	user, err := serv.uDao.Select(userId)
+	user, err := serv.uRepository.Select(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -131,7 +131,7 @@ const CHANGE_USERNAME_SUCCESS_INT = 0
 const CHANGE_USERNAME_FAILURE_INT = 1
 /*----------------------------------------*/
 func (serv *userService) ChangeUsername(userId int, username string) int {
-	err := serv.uDao.UpdateName(userId, username)
+	err := serv.uRepository.UpdateName(userId, username)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -155,7 +155,7 @@ func (serv *userService) ChangePassword(userId int, password string) int {
 		return CHANGE_PASSWORD_FAILURE_INT
 	}
 
-	err = serv.uDao.UpdatePassword(userId, string(hashed))
+	err = serv.uRepository.UpdatePassword(userId, string(hashed))
 	
 	if err != nil {
 		logger.Error(err.Error())
@@ -172,7 +172,7 @@ const DELETE_USER_SUCCESS_INT = 0
 const DELETE_USER_FAILURE_INT = 1
 /*----------------------------------------*/
 func (serv *userService) DeleteUser(userId int) int {
-	err := serv.uDao.Delete(userId)
+	err := serv.uRepository.Delete(userId)
 
 	if err != nil {
 		logger.Error(err.Error())

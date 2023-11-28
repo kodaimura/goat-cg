@@ -8,7 +8,7 @@ import (
 
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/dao"
+	"goat-cg/internal/repository"
 )
 
 
@@ -20,17 +20,17 @@ type UrlCheckService interface {
 
 
 type urlCheckService struct {
-	pDao dao.ProjectDao
-	tDao dao.TableDao
-	cDao dao.ColumnDao
+	pRepository repository.ProjectRepository
+	tRepository repository.TableRepository
+	cRepository repository.ColumnRepository
 }
 
 
 func NewUrlCheckService() UrlCheckService {
-	pDao := dao.NewProjectDao()
-	tDao := dao.NewTableDao()
-	cDao := dao.NewColumnDao()
-	return &urlCheckService{pDao, tDao, cDao}
+	pRepository := repository.NewProjectRepository()
+	tRepository := repository.NewTableRepository()
+	cRepository := repository.NewColumnRepository()
+	return &urlCheckService{pRepository, tRepository, cRepository}
 }
 
 
@@ -42,7 +42,7 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 	userId := jwt.GetUserId(c)
 	projectCd := c.Param("project_cd")
 
-	project, err := serv.pDao.SelectByCdAndUserId(projectCd, userId)
+	project, err := serv.pRepository.SelectByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -69,7 +69,7 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 		return -1
 	}
 
-	table, err := serv.tDao.Select(tableId)
+	table, err := serv.tRepository.Select(tableId)
 
 	if err != nil || table.ProjectId != projectId {
 		if err != nil {
@@ -100,7 +100,7 @@ func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
 		return -1
 	}
 
-	column, err := serv.cDao.Select(columnId)
+	column, err := serv.cRepository.Select(columnId)
 
 	if err != nil || column.TableId != tableId{
 		if err != nil {

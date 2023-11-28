@@ -1,4 +1,4 @@
-package dao
+package repository
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 )
 
 
-type UserDao interface {
+type UserRepository interface {
 	Insert(u *model.User) error
 	Select(id int) (model.User, error)
 	Update(id int, u *model.User) error
@@ -21,18 +21,18 @@ type UserDao interface {
 }
 
 
-type userDao struct {
+type userRepository struct {
 	db *sql.DB
 }
 
 
-func NewUserDao() UserDao {
+func NewUserRepository() UserRepository {
 	db := db.GetDB()
-	return &userDao{db}
+	return &userRepository{db}
 }
 
 
-func (rep *userDao) Select(id int) (model.User, error){
+func (rep *userRepository) Select(id int) (model.User, error){
 	var ret model.User
 
 	err := rep.db.QueryRow(
@@ -55,7 +55,7 @@ func (rep *userDao) Select(id int) (model.User, error){
 }
 
 
-func (rep *userDao) Insert(u *model.User) error {
+func (rep *userRepository) Insert(u *model.User) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO users (
 			user_name, 
@@ -68,7 +68,7 @@ func (rep *userDao) Insert(u *model.User) error {
 }
 
 
-func (rep *userDao) Update(id int, u *model.User) error {
+func (rep *userRepository) Update(id int, u *model.User) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
 		 SET user_name = ? 
@@ -82,7 +82,7 @@ func (rep *userDao) Update(id int, u *model.User) error {
 }
 
 
-func (rep *userDao) Delete(id int) error {
+func (rep *userRepository) Delete(id int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM users WHERE user_id = ?`, 
 		id,
@@ -92,7 +92,7 @@ func (rep *userDao) Delete(id int) error {
 }
 
 
-func (rep *userDao) UpdatePassword(id int, password string) error {
+func (rep *userRepository) UpdatePassword(id int, password string) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
 		 SET password = ? 
@@ -104,7 +104,7 @@ func (rep *userDao) UpdatePassword(id int, password string) error {
 }
 
 
-func (rep *userDao) UpdateName(id int, name string) error {
+func (rep *userRepository) UpdateName(id int, name string) error {
 	_, err := rep.db.Exec(
 		`UPDATE users
 		 SET user_name = ? 
@@ -117,7 +117,7 @@ func (rep *userDao) UpdateName(id int, name string) error {
 
 
 
-func (rep *userDao) SelectByName(name string) (model.User, error) {
+func (rep *userRepository) SelectByName(name string) (model.User, error) {
 	var ret model.User
 
 	err := rep.db.QueryRow(
@@ -142,7 +142,7 @@ func (rep *userDao) SelectByName(name string) (model.User, error) {
 }
 
 
-func (rep *userDao) SelectAll(id int) ([]model.User, error) {
+func (rep *userRepository) SelectAll(id int) ([]model.User, error) {
 	var ret []model.User
 
 	rows, err := rep.db.Query(

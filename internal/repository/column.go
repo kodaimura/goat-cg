@@ -1,4 +1,4 @@
-package dao
+package repository
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 )
 
 
-type ColumnDao interface {
+type ColumnRepository interface {
 	Select(id int) (model.Column, error)
 	Insert(c *model.Column) error
 	Update(id int, c *model.Column) error
@@ -20,18 +20,18 @@ type ColumnDao interface {
 }
 
 
-type columnDao struct {
+type columnRepository struct {
 	db *sql.DB
 }
 
 
-func NewColumnDao() ColumnDao {
+func NewColumnRepository() ColumnRepository {
 	db := db.GetDB()
-	return &columnDao{db}
+	return &columnRepository{db}
 }
 
 
-func (rep *columnDao) Select(id int) (model.Column, error) {
+func (rep *columnRepository) Select(id int) (model.Column, error) {
 	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -84,7 +84,7 @@ func (rep *columnDao) Select(id int) (model.Column, error) {
 }
 
 
-func (rep *columnDao) Insert(c *model.Column) error {
+func (rep *columnRepository) Insert(c *model.Column) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO column_def (
 			table_id, 
@@ -123,7 +123,7 @@ func (rep *columnDao) Insert(c *model.Column) error {
 }
 
 
-func (rep *columnDao) Update(id int, c *model.Column) error {
+func (rep *columnRepository) Update(id int, c *model.Column) error {
 	_, err := rep.db.Exec(
 		`UPDATE column_def
 		 SET 
@@ -160,7 +160,7 @@ func (rep *columnDao) Update(id int, c *model.Column) error {
 }
 
 
-func (rep *columnDao) Delete(id int) error {
+func (rep *columnRepository) Delete(id int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM column_def WHERE column_id = ?`, 
 		id,
@@ -170,7 +170,7 @@ func (rep *columnDao) Delete(id int) error {
 }
 
 
-func (rep *columnDao) SelectByNameAndTableId(
+func (rep *columnRepository) SelectByNameAndTableId(
 	name string, 
 	tableId int,
 ) (model.Column, error) {
@@ -228,7 +228,7 @@ func (rep *columnDao) SelectByNameAndTableId(
 }
 
 
-func (rep *columnDao) SelectByTableId(tableId int) ([]model.Column, error) {
+func (rep *columnRepository) SelectByTableId(tableId int) ([]model.Column, error) {
 	
 	var ret []model.Column
 	rows, err := rep.db.Query(
@@ -295,7 +295,7 @@ func (rep *columnDao) SelectByTableId(tableId int) ([]model.Column, error) {
 }
 
 
-func (rep *columnDao) DeleteByTableId(tableId int) error {
+func (rep *columnRepository) DeleteByTableId(tableId int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM column_def WHERE table_id = ?`, 
 		tableId,
