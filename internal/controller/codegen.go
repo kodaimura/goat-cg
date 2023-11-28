@@ -10,25 +10,25 @@ import (
 
 
 type codegenController struct {
-	tServ service.TableService
-	cgServ service.CodegenService
-	urlServ service.UrlCheckService
+	tableService service.TableService
+	codegenService service.CodegenService
+	urlCheckService service.UrlCheckService
 }
 
 
 func newCodegenController() *codegenController {
-	tServ := service.NewTableService()
-	cgServ := service.NewCodegenService()
-	urlServ := service.NewUrlCheckService()
-	return &codegenController{tServ, cgServ, urlServ}
+	tableService := service.NewTableService()
+	codegenService := service.NewCodegenService()
+	urlCheckService := service.NewUrlCheckService()
+	return &codegenController{tableService, codegenService, urlCheckService}
 }
 
 
 //GET /:project_cd/codegen
 func (ctr *codegenController) codegenPage(c *gin.Context) {
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	
-	tables, _ := ctr.tServ.GetTables(projectId)
+	tables, _ := ctr.tableService.GetTables(projectId)
 
 	c.HTML(200, "codegen.html", gin.H{
 		"commons": constant.Commons,
@@ -46,7 +46,7 @@ type CodegenPostBody struct {
 
 //POST /:project_cd/codegen/goat
 func (ctr *codegenController) codegenGOAT(c *gin.Context) {
-	ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	pb := &CodegenPostBody{} 
 	c.BindJSON(&pb)
@@ -58,7 +58,7 @@ func (ctr *codegenController) codegenGOAT(c *gin.Context) {
 		return
 	}
 
-	fpath := ctr.cgServ.CodeGenerateGoat(pb.DbType, tableIds)
+	fpath := ctr.codegenService.CodeGenerateGoat(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }
@@ -66,7 +66,7 @@ func (ctr *codegenController) codegenGOAT(c *gin.Context) {
 
 //POST /:project_cd/codegen/ddl
 func (ctr *codegenController) codegenDDL(c *gin.Context) {
-	ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	pb := &CodegenPostBody{} 
 	c.BindJSON(&pb)
@@ -78,7 +78,7 @@ func (ctr *codegenController) codegenDDL(c *gin.Context) {
 		return
 	}
 
-	fpath := ctr.cgServ.CodeGenerateDdl(pb.DbType, tableIds)
+	fpath := ctr.codegenService.CodeGenerateDdl(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }

@@ -12,22 +12,22 @@ import (
 
 
 type tableController struct {
-	tServ service.TableService
-	urlServ service.UrlCheckService
+	tableService service.TableService
+	urlCheckService service.UrlCheckService
 }
 
 
 func newTableController() *tableController {
-	tServ := service.NewTableService()
-	urlServ := service.NewUrlCheckService()
-	return &tableController{tServ, urlServ}
+	tableService := service.NewTableService()
+	urlCheckService := service.NewUrlCheckService()
+	return &tableController{tableService, urlCheckService}
 }
 
 
 //GET /:project_cd/tables
 func (ctr *tableController) tablesPage(c *gin.Context) {
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
-	tables, _ := ctr.tServ.GetTables(projectId)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
+	tables, _ := ctr.tableService.GetTables(projectId)
 
 	c.HTML(200, "tables.html", gin.H{
 		"commons": constant.Commons,
@@ -39,7 +39,7 @@ func (ctr *tableController) tablesPage(c *gin.Context) {
 
 //GET /:project_cd/tables/new
 func (ctr *tableController) createTablePage(c *gin.Context) {
-	ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	c.HTML(200, "table.html", gin.H{
 		"commons": constant.Commons,
@@ -51,12 +51,12 @@ func (ctr *tableController) createTablePage(c *gin.Context) {
 //POST /:project_cd/tables/new
 func (ctr *tableController) createTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	tableName := c.PostForm("table_name")
 	tableNameLogical := c.PostForm("table_name_logical")
 
-	result := ctr.tServ.CreateTable(projectId, userId, tableName, tableNameLogical)
+	result := ctr.tableService.CreateTable(projectId, userId, tableName, tableNameLogical)
 
 	if result == service.CREATE_TABLE_SUCCESS_INT {
 		c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
@@ -83,10 +83,10 @@ func (ctr *tableController) createTable(c *gin.Context) {
 
 //GET /:project_cd/tables/:table_id
 func (ctr *tableController) updateTablePage(c *gin.Context) {
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
+	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
-	table, _ := ctr.tServ.GetTable(tableId)
+	table, _ := ctr.tableService.GetTable(tableId)
 
 	c.HTML(200, "table.html", gin.H{
 		"commons": constant.Commons,
@@ -102,8 +102,8 @@ func (ctr *tableController) updateTablePage(c *gin.Context) {
 //POST /:project_cd/tables/:table_id
 func (ctr *tableController) updateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
+	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
 	tableName := c.PostForm("table_name")
 	tableNameLogical := c.PostForm("table_name_logical")
@@ -112,7 +112,7 @@ func (ctr *tableController) updateTable(c *gin.Context) {
 		delFlg = 0
 	}
 
-	result := ctr.tServ.UpdateTable(
+	result := ctr.tableService.UpdateTable(
 		projectId, tableId, userId, tableName, tableNameLogical, delFlg,
 	)
 
@@ -145,10 +145,10 @@ func (ctr *tableController) updateTable(c *gin.Context) {
 
 //DELETE /:project_cd/tables/:table_id
 func (ctr *tableController) deleteTable(c *gin.Context) {
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
+	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
-	ctr.tServ.DeleteTable(tableId)
+	ctr.tableService.DeleteTable(tableId)
 
 	c.Redirect(303, fmt.Sprintf("/%s/tables", c.Param("project_cd")))
 
@@ -157,10 +157,10 @@ func (ctr *tableController) deleteTable(c *gin.Context) {
 
 //GET /:project_cd/tables/:table_id/log
 func (ctr *tableController) tableLogPage(c *gin.Context) {
-	projectId := ctr.urlServ.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlServ.CheckTableIdAndGetTableId(c, projectId)
+	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
+	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
-	tableLog, _ := ctr.tServ.GetTableLog(tableId)
+	tableLog, _ := ctr.tableService.GetTableLog(tableId)
 
 	c.HTML(200, "tablelog.html", gin.H{
 		"commons": constant.Commons,

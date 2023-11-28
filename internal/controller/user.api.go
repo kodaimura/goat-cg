@@ -12,19 +12,19 @@ import (
 
 
 type userApiController struct {
-	uServ service.UserService
+	userService service.UserService
 }
 
 
 func newUserApiController() *userApiController {
-	uServ := service.NewUserService()
-	return &userApiController{uServ}
+	userService := service.NewUserService()
+	return &userApiController{userService}
 }
 
 
 //GET /api/profile
 func (ctr *userApiController) getProfile(c *gin.Context) {
-	user, err := ctr.uServ.GetProfile(jwt.GetUserId(c))
+	user, err := ctr.userService.GetProfile(jwt.GetUserId(c))
 
 	if err != nil {
 		c.JSON(500, gin.H{"error": http.StatusText(500)})
@@ -44,7 +44,7 @@ func (ctr *userApiController) changePassword(c *gin.Context) {
 	c.BindJSON(&m)
 	pass := m["password"]
 
-	if ctr.uServ.ChangePassword(userId, pass) != service.CHANGE_PASSWORD_SUCCESS_INT {
+	if ctr.userService.ChangePassword(userId, pass) != service.CHANGE_PASSWORD_SUCCESS_INT {
 		c.JSON(500, gin.H{"error": "登録に失敗しました。"})
 		c.Abort()
 		return
@@ -62,7 +62,7 @@ func (ctr *userApiController) changeUsername(c *gin.Context) {
 	c.BindJSON(&m)
 	name := m["user_name"]
 
-	if ctr.uServ.ChangeUsername(userId, name) != service.CHANGE_USERNAME_SUCCESS_INT {
+	if ctr.userService.ChangeUsername(userId, name) != service.CHANGE_USERNAME_SUCCESS_INT {
 		c.JSON(500, gin.H{"error": "登録に失敗しました。"})
 		c.Abort()
 		return
@@ -76,7 +76,7 @@ func (ctr *userApiController) changeUsername(c *gin.Context) {
 func (ctr *userApiController) deleteUser(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 
-	if ctr.uServ.DeleteUser(userId) != service.DELETE_USER_SUCCESS_INT {
+	if ctr.userService.DeleteUser(userId) != service.DELETE_USER_SUCCESS_INT {
 		c.JSON(500, gin.H{"error": "削除に失敗しました。"})
 		c.Abort()
 		return
@@ -93,7 +93,7 @@ func (ctr *userApiController) signup(c *gin.Context) {
 	name := m["user_name"]
 	pass := m["password"]
 
-	result := ctr.uServ.Signup(name, pass)
+	result := ctr.userService.Signup(name, pass)
 
 	if result == service.SIGNUP_SUCCESS_INT {
 		c.JSON(200, gin.H{})
@@ -118,7 +118,7 @@ func (ctr *userApiController) login(c *gin.Context) {
 	name := m["user_name"]
 	pass := m["password"]
 
-	userId := ctr.uServ.Login(name, pass)
+	userId := ctr.userService.Login(name, pass)
 
 	if userId == service.LOGIN_FAILURE_INT {
 		c.JSON(401, gin.H{
@@ -128,7 +128,7 @@ func (ctr *userApiController) login(c *gin.Context) {
 		return
 	}
 
-	jwtStr := ctr.uServ.GenerateJWT(userId)
+	jwtStr := ctr.userService.GenerateJWT(userId)
 
 	if jwtStr == service.GENERATE_JWT_FAILURE_STR {
 		c.JSON(500, gin.H{

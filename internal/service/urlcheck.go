@@ -19,7 +19,7 @@ type UrlCheckService interface {
 }
 
 
-type urlCheckService struct {
+type urlCheckServiceice struct {
 	projectRepository repository.ProjectRepository
 	tableRepository repository.TableRepository
 	columnRepository repository.ColumnRepository
@@ -30,13 +30,13 @@ func NewUrlCheckService() UrlCheckService {
 	projectRepository := repository.NewProjectRepository()
 	tableRepository := repository.NewTableRepository()
 	columnRepository := repository.NewColumnRepository()
-	return &urlCheckService{projectRepository, tableRepository, columnRepository}
+	return &urlCheckServiceice{projectRepository, tableRepository, columnRepository}
 }
 
 
 // CheckProjectCdAndGetProjectId check url parameter (/:project_cd).
 // if user is accessible to the project return projectId.
-func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
+func (serv *urlCheckServiceice) CheckProjectCdAndGetProjectId(
 	c *gin.Context,
 ) int {
 	userId := jwt.GetUserId(c)
@@ -57,7 +57,7 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 
 // CheckTableIdAndGetTableId check url parameter (/:table_id).
 // if table related to the project return tableId.
-func (serv *urlCheckService) CheckTableIdAndGetTableId(
+func (serv *urlCheckServiceice) CheckTableIdAndGetTableId(
 	c *gin.Context, 
 	projectId int,
 ) int {
@@ -88,7 +88,7 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 
 // CheckColumnIdAndGetColumnId check url parameter (/:column_id).
 // if column related to the table return columnId.
-func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
+func (serv *urlCheckServiceice) CheckColumnIdAndGetColumnId(
 	c *gin.Context, 
 	tableId int,
 ) int {

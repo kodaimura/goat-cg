@@ -11,13 +11,13 @@ import (
 
 
 type projectController struct {
-	pServ service.ProjectService
+	projectService  service.ProjectService
 }
 
 
 func newProjectController() *projectController {
-	pServ := service.NewProjectService()
-	return &projectController{pServ}
+	projectService  := service.NewProjectService()
+	return &projectController{projectService}
 }
 
 
@@ -27,11 +27,11 @@ func (ctr *projectController) projectsPage(c *gin.Context) {
 	projectCd := c.Query("project_cd")
 	var project model.Project
 
-	projects, _ := ctr.pServ.GetProjects(userId)
-	projects2, _ := ctr.pServ.GetProjectsPendingApproval(userId)
+	projects, _ := ctr.projectService .GetProjects(userId)
+	projects2, _ := ctr.projectService .GetProjectsPendingApproval(userId)
 	
 	if projectCd != "" {
-		project = ctr.pServ.GetProjectByCd(projectCd)
+		project = ctr.projectService .GetProjectByCd(projectCd)
 	}
 
 	c.HTML(200, "projects.html", gin.H{
@@ -56,7 +56,7 @@ func (ctr *projectController) createProjectPage(c *gin.Context) {
 func (ctr *projectController) createProject(c *gin.Context) {
 	projectCd := c.PostForm("project_cd")
 	projectName := c.PostForm("project_name")
-	result := ctr.pServ.CreateProject(jwt.GetUserId(c), projectCd, projectName)
+	result := ctr.projectService .CreateProject(jwt.GetUserId(c), projectCd, projectName)
 	
 	if result == service.CREATE_PROJECT_SUCCESS_INT {
 		c.Redirect(303, "/projects")
