@@ -42,7 +42,7 @@ func (serv *urlCheckService) CheckProjectCdAndGetProjectId(
 	userId := jwt.GetUserId(c)
 	projectCd := c.Param("project_cd")
 
-	project, err := serv.pRepository.SelectByCdAndUserId(projectCd, userId)
+	project, err := serv.pRepository.GetByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -69,7 +69,7 @@ func (serv *urlCheckService) CheckTableIdAndGetTableId(
 		return -1
 	}
 
-	table, err := serv.tRepository.Select(tableId)
+	table, err := serv.tRepository.GetById(tableId)
 
 	if err != nil || table.ProjectId != projectId {
 		if err != nil {
@@ -100,7 +100,7 @@ func (serv *urlCheckService) CheckColumnIdAndGetColumnId(
 		return -1
 	}
 
-	column, err := serv.cRepository.Select(columnId)
+	column, err := serv.cRepository.GetById(columnId)
 
 	if err != nil || column.TableId != tableId{
 		if err != nil {

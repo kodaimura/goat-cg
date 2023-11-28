@@ -10,13 +10,13 @@ import (
 
 
 type TableRepository interface {
-	Select(id int) (model.Table, error)
+	GetById(id int) (model.Table, error)
 	Insert(t *model.Table) error
 	Update(id int, t *model.Table) error
 	Delete(id int) error
 
-	SelectByProjectId(projectId int) ([]model.Table, error)
-	SelectByNameAndProjectId(name string, projectId int) (model.Table, error)
+	GetByProjectId(projectId int) ([]model.Table, error)
+	GetByNameAndProjectId(name string, projectId int) (model.Table, error)
 	UpdateDelFlg(id, delFlg int) error
 }
 
@@ -32,7 +32,7 @@ func NewTableRepository() TableRepository {
 }
 
 
-func (rep *tableRepository) Select(tableId int) (model.Table, error){
+func (rep *tableRepository) GetById(id int) (model.Table, error){
 	
 	var ret model.Table
 	err := rep.db.QueryRow(
@@ -48,7 +48,7 @@ func (rep *tableRepository) Select(tableId int) (model.Table, error){
 			 table_def
 		 WHERE 
 			 table_id = ?`,
-		 tableId,
+		 id,
 	).Scan(
 		&ret.ProjectId, 
 		&ret.TableId, 
@@ -112,7 +112,7 @@ func (rep *tableRepository) Delete(id int) error {
 }
 
 
-func (rep *tableRepository) SelectByNameAndProjectId(
+func (rep *tableRepository) GetByNameAndProjectId(
 	name string, projectId int,
 ) (model.Table, error){
 	
@@ -146,7 +146,7 @@ func (rep *tableRepository) SelectByNameAndProjectId(
 }
 
 
-func (rep *tableRepository) SelectByProjectId(projectId int) ([]model.Table, error){
+func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error){
 	
 	var ret []model.Table
 	rows, err := rep.db.Query(

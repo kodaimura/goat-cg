@@ -41,7 +41,7 @@ func (serv *projectService) GetProjectId(
 	userId int, 
 	projectCd string,
 ) int {
-	project, err := serv.pRepository.SelectByCdAndUserId(projectCd, userId)
+	project, err := serv.pRepository.GetByCdAndUserId(projectCd, userId)
 
 	if err != nil {
 		return GET_PROJECT_ID_NOT_FOUND_INT
@@ -55,7 +55,7 @@ func (serv *projectService) GetProjectId(
 func (serv *projectService) GetProjects(
 	userId int,
 ) ([]model.Project, error) {
-	projects, err := serv.pRepository.SelectByUserIdAndStateCls(
+	projects, err := serv.pRepository.GetByUserIdAndStateCls(
 		userId, constant.STATE_CLS_JOIN,
 	)
 
@@ -71,7 +71,7 @@ func (serv *projectService) GetProjects(
 func (serv *projectService) GetProjectsPendingApproval(
 	userId int,
 ) ([]model.Project, error) {
-	projects, err := serv.pRepository.SelectByUserIdAndStateCls(
+	projects, err := serv.pRepository.GetByUserIdAndStateCls(
 		userId, constant.STATE_CLS_REQUEST,
 	)
 
@@ -86,7 +86,7 @@ func (serv *projectService) GetProjectsPendingApproval(
 func (serv *projectService) GetProjectByCd(
 	projectCd string,
 ) model.Project {
-	project, _ := serv.pRepository.SelectByCd(projectCd)
+	project, _ := serv.pRepository.GetByCd(projectCd)
 
 	return project
 }
@@ -104,7 +104,7 @@ func (serv *projectService) CreateProject(
 	projectCd string, 
 	projectName string,
 ) int {
-	_, err := serv.pRepository.SelectByCd(projectCd)
+	_, err := serv.pRepository.GetByCd(projectCd)
 	if err == nil {
 		return CREATE_PROJECT_CONFLICT_INT
 	}
@@ -119,7 +119,7 @@ func (serv *projectService) CreateProject(
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	project, err := serv.pRepository.SelectByCd(projectCd)
+	project, err := serv.pRepository.GetByCd(projectCd)
 
 	if err != nil {
 		logger.Error(err.Error())

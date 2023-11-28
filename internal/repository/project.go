@@ -13,11 +13,11 @@ type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(id int, p *model.Project) error
 
-	SelectByCd(cd string) (model.Project, error)
-	SelectByUserIdAndStateCls(
+	GetByCd(cd string) (model.Project, error)
+	GetByUserIdAndStateCls(
 		userId int, state string,
 	) ([]model.Project, error)
-	SelectByCdAndUserId(cd string, userId int) (model.Project, error)
+	GetByCdAndUserId(cd string, userId int) (model.Project, error)
 	
 }
 
@@ -58,7 +58,7 @@ func (rep *projectRepository) Update(id int, p *model.Project) error {
 }
 
 
-func (rep *projectRepository) SelectByCd(cd string) (model.Project, error) {
+func (rep *projectRepository) GetByCd(cd string) (model.Project, error) {
 	var ret model.Project
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -82,7 +82,7 @@ func (rep *projectRepository) SelectByCd(cd string) (model.Project, error) {
 }
 
 
-func (rep *projectRepository) SelectByUserIdAndStateCls(
+func (rep *projectRepository) GetByUserIdAndStateCls(
 	userId int, state string,
 ) ([]model.Project, error){
 	var ret []model.Project
@@ -125,7 +125,7 @@ func (rep *projectRepository) SelectByUserIdAndStateCls(
 }
 
 
-func (rep *projectRepository) SelectByCdAndUserId(
+func (rep *projectRepository) GetByCdAndUserId(
 	cd string,
 	userId int,
 ) (model.Project, error) {

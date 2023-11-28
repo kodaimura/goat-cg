@@ -41,7 +41,7 @@ const JOIN_REQUEST_ERROR_INT = 2
 func (serv *projectUserService) JoinRequest(
 	userId int, projectId int,
 ) int {
-	up0, err := serv.upRepository.Select(userId, projectId)
+	up0, err := serv.upRepository.GetByPk(userId, projectId)
 
 	if err == nil && up0.StateCls == constant.STATE_CLS_JOIN {
 		return JOIN_REQUEST_ALREADY_INT

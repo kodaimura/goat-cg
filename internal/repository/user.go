@@ -10,12 +10,12 @@ import (
 
 type UserRepository interface {
 	Insert(u *model.User) error
-	Select(id int) (model.User, error)
+	GetById(id int) (model.User, error)
 	Update(id int, u *model.User) error
 	Delete(id int) error
 	
 	/* 以降に追加 */
-	SelectByName(name string) (model.User, error)
+	GetByName(name string) (model.User, error)
 	UpdatePassword(id int, password string) error
 	UpdateName(id int, name string) error
 }
@@ -32,7 +32,7 @@ func NewUserRepository() UserRepository {
 }
 
 
-func (rep *userRepository) Select(id int) (model.User, error){
+func (rep *userRepository) GetById(id int) (model.User, error){
 	var ret model.User
 
 	err := rep.db.QueryRow(
@@ -117,7 +117,7 @@ func (rep *userRepository) UpdateName(id int, name string) error {
 
 
 
-func (rep *userRepository) SelectByName(name string) (model.User, error) {
+func (rep *userRepository) GetByName(name string) (model.User, error) {
 	var ret model.User
 
 	err := rep.db.QueryRow(
@@ -137,40 +137,6 @@ func (rep *userRepository) SelectByName(name string) (model.User, error) {
 		&ret.CreatedAt, 
 		&ret.UpdatedAt,
 	)
-
-	return ret, err
-}
-
-
-func (rep *userRepository) SelectAll(id int) ([]model.User, error) {
-	var ret []model.User
-
-	rows, err := rep.db.Query(
-		`SELECT 
-			user_id, 
-			user_name, 
-			created_at , 
-			updated_at 
-		 FROM users`,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		u := model.User{}
-		err = rows.Scan(
-			&u.UserId, 
-			&u.UserName,
-			&u.CreatedAt, 
-			&u.UpdatedAt,
-		)
-		if err != nil {
-			break
-		}
-		ret = append(ret, u)
-	}
 
 	return ret, err
 }

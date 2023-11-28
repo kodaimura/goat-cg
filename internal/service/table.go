@@ -46,7 +46,7 @@ func NewTableService() TableService {
 func (serv *tableService) GetTables(
 	projectId int,
 ) ([]model.Table, error) {
-	tables, err := serv.tRepository.SelectByProjectId(projectId)
+	tables, err := serv.tRepository.GetByProjectId(projectId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -58,7 +58,7 @@ func (serv *tableService) GetTables(
 
 // GetTable get table by tableId.
 func (serv *tableService) GetTable(tableId int) (model.Table, error) {
-	table, err := serv.tRepository.Select(tableId)
+	table, err := serv.tRepository.GetById(tableId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -80,7 +80,7 @@ func (serv *tableService) CreateTable(
 	tableName, tableNameLogical string, 
 ) int {
 
-	_, err := serv.tRepository.SelectByNameAndProjectId(tableName, projectId)
+	_, err := serv.tRepository.GetByNameAndProjectId(tableName, projectId)
 	if err == nil {
 		return CREATE_TABLE_CONFLICT_INT
 	}
@@ -116,7 +116,7 @@ func (serv *tableService) UpdateTable(
 	delFlg int,
 ) int {
 
-	t0, err := serv.tRepository.SelectByNameAndProjectId(tableName, projectId)
+	t0, err := serv.tRepository.GetByNameAndProjectId(tableName, projectId)
 	if err == nil && t0.TableId != tableId{
 		return UPDATE_TABLE_CONFLICT_INT
 	}

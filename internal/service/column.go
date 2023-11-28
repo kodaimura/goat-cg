@@ -36,7 +36,7 @@ func NewColumnService() ColumnService {
 
 // GetColumn get Column record by columnId.
 func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
-	column, err := serv.cRepository.Select(columnId)
+	column, err := serv.cRepository.GetById(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -48,7 +48,7 @@ func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
 
 // GetColumn get Column records by tableId.
 func (serv *columnService) GetColumns(tableId int) ([]model.Column, error) {
-	columns, err := serv.cRepository.SelectByTableId(tableId)
+	columns, err := serv.cRepository.GetByTableId(tableId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -66,7 +66,7 @@ const CREATE_COLUMN_ERROR_INT = 2
 
 // CreateColumn create new Column record.
 func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) int {
-	_, err := serv.cRepository.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	_, err := serv.cRepository.GetByNameAndTableId(sin.ColumnName, sin.TableId)
 	if err == nil {
 		return CREATE_COLUMN_CONFLICT_INT
 	}
@@ -93,7 +93,7 @@ const UPDATE_COLUMN_ERROR_INT = 2
 func (serv *columnService) UpdateColumn(
 	columnId int, sin dto.ServInCreateColumn,
 ) int {
-	col, err := serv.cRepository.SelectByNameAndTableId(sin.ColumnName, sin.TableId)
+	col, err := serv.cRepository.GetByNameAndTableId(sin.ColumnName, sin.TableId)
 	
 	if err == nil && col.ColumnId != columnId {
 		return UPDATE_COLUMN_CONFLICT_INT
@@ -119,7 +119,7 @@ const DELETE_COLUMN_ERROR_INT = 1
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
 func (serv *columnService) DeleteColumn(columnId int) int {
-	_, err := serv.cRepository.Select(columnId)
+	_, err := serv.cRepository.GetById(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())

@@ -9,13 +9,13 @@ import (
 
 
 type ColumnRepository interface {
-	Select(id int) (model.Column, error)
+	GetById(id int) (model.Column, error)
 	Insert(c *model.Column) error
 	Update(id int, c *model.Column) error
 	Delete(id int) error
 
-	SelectByNameAndTableId(name string, tableId int) (model.Column, error)
-	SelectByTableId(tableId int) ([]model.Column, error)
+	GetByNameAndTableId(name string, tableId int) (model.Column, error)
+	GetByTableId(tableId int) ([]model.Column, error)
 	DeleteByTableId(tableId int) error
 }
 
@@ -31,7 +31,7 @@ func NewColumnRepository() ColumnRepository {
 }
 
 
-func (rep *columnRepository) Select(id int) (model.Column, error) {
+func (rep *columnRepository) GetById(id int) (model.Column, error) {
 	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -170,7 +170,7 @@ func (rep *columnRepository) Delete(id int) error {
 }
 
 
-func (rep *columnRepository) SelectByNameAndTableId(
+func (rep *columnRepository) GetByNameAndTableId(
 	name string, 
 	tableId int,
 ) (model.Column, error) {
@@ -228,7 +228,7 @@ func (rep *columnRepository) SelectByNameAndTableId(
 }
 
 
-func (rep *columnRepository) SelectByTableId(tableId int) ([]model.Column, error) {
+func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 	
 	var ret []model.Column
 	rows, err := rep.db.Query(

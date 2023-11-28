@@ -9,7 +9,7 @@ import (
 
 
 type ProjectUserRepository interface {
-	Select(userId, projectId int) (model.ProjectUser, error)
+	GetByPk(userId, projectId int) (model.ProjectUser, error)
 	Upsert(up *model.ProjectUser) error
 	Delete(userId, projectId int) error
 }
@@ -26,7 +26,7 @@ func NewProjectUserRepository() ProjectUserRepository {
 }
 
 
-func (rep *projectUserRepository) Select(userId, projectId int) (model.ProjectUser, error) {
+func (rep *projectUserRepository) GetByPk(userId, projectId int) (model.ProjectUser, error) {
 	var ret model.ProjectUser
 
 	err := rep.db.QueryRow(
