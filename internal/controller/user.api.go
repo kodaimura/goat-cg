@@ -11,19 +11,19 @@ import (
 )
 
 
-type userApiController struct {
+type UserApiController struct {
 	userService service.UserService
 }
 
 
-func newUserApiController() *userApiController {
+func NewUserApiController() *UserApiController {
 	userService := service.NewUserService()
-	return &userApiController{userService}
+	return &UserApiController{userService}
 }
 
 
 //GET /api/profile
-func (ctr *userApiController) getProfile(c *gin.Context) {
+func (ctr *UserApiController) getProfile(c *gin.Context) {
 	user, err := ctr.userService.GetProfile(jwt.GetUserId(c))
 
 	if err != nil {
@@ -37,7 +37,7 @@ func (ctr *userApiController) getProfile(c *gin.Context) {
 
 
 //PUT[POST] /api/password
-func (ctr *userApiController) changePassword(c *gin.Context) {
+func (ctr *UserApiController) changePassword(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 
 	m := map[string]string{}
@@ -55,7 +55,7 @@ func (ctr *userApiController) changePassword(c *gin.Context) {
 
 
 //PUT[POST] /api/username
-func (ctr *userApiController) changeUsername(c *gin.Context) {
+func (ctr *UserApiController) changeUsername(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 
 	m := map[string]string{}
@@ -73,7 +73,7 @@ func (ctr *userApiController) changeUsername(c *gin.Context) {
 
 
 //DELETE /api/account
-func (ctr *userApiController) deleteUser(c *gin.Context) {
+func (ctr *UserApiController) deleteUser(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 
 	if ctr.userService.DeleteUser(userId) != service.DELETE_USER_SUCCESS_INT {
@@ -87,7 +87,7 @@ func (ctr *userApiController) deleteUser(c *gin.Context) {
 
 
 //POST /api/signup
-func (ctr *userApiController) signup(c *gin.Context) {
+func (ctr *UserApiController) signup(c *gin.Context) {
 	m := map[string]string{}
 	c.BindJSON(&m)
 	name := m["user_name"]
@@ -112,7 +112,7 @@ func (ctr *userApiController) signup(c *gin.Context) {
 
 
 //POST /api/login
-func (ctr *userApiController) login(c *gin.Context) {
+func (ctr *UserApiController) login(c *gin.Context) {
 	m := map[string]string{}
 	c.BindJSON(&m)
 	name := m["user_name"]
@@ -147,7 +147,7 @@ func (ctr *userApiController) login(c *gin.Context) {
 
 
 //GET /api/logout
-func (ctr *userApiController) logout(c *gin.Context) {
+func (ctr *UserApiController) logout(c *gin.Context) {
 	cf := config.GetConfig()
 	c.SetCookie(jwt.COOKIE_KEY_JWT, "", 0, "/", cf.AppHost, false, true)
 	c.JSON(200, gin.H{})

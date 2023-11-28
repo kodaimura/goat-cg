@@ -5,15 +5,15 @@ import (
 )
 
 
-type rootController struct {}
+type RootController struct {}
 
 
-func newRootController() *rootController {
-	return &rootController{}
+func NewRootController() *RootController {
+	return &RootController{}
 }
 
 
 //GET /
-func (ctr *rootController) indexPage(c *gin.Context) {
+func (ctr *RootController) indexPage(c *gin.Context) {
 	c.Redirect(303, "/projects")
 }

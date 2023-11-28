@@ -11,23 +11,23 @@ import (
 )
 
 
-type columnController struct {
+type ColumnController struct {
 	columnService  service.ColumnService
 	tableService service.TableService
 	urlCheckService service.UrlCheckService
 }
 
 
-func newColumnController() *columnController {
+func NewColumnController() *ColumnController {
 	columnService  := service.NewColumnService()
 	tableService := service.NewTableService()
 	urlCheckService := service.NewUrlCheckService()
-	return &columnController{columnService , tableService, urlCheckService}
+	return &ColumnController{columnService , tableService, urlCheckService}
 }
 
 
 //GET /:project_cd/tables/:table_id/columns
-func (ctr *columnController) columnsPage(c *gin.Context) {
+func (ctr *ColumnController) columnsPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
@@ -44,7 +44,7 @@ func (ctr *columnController) columnsPage(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/columns/new
-func (ctr *columnController) createColumnPage(c *gin.Context) {
+func (ctr *ColumnController) createColumnPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
@@ -59,7 +59,7 @@ func (ctr *columnController) createColumnPage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/:table_id/columns/new
-func (ctr *columnController) createColumn(c *gin.Context) {
+func (ctr *ColumnController) createColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
@@ -96,7 +96,7 @@ func (ctr *columnController) createColumn(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *columnController) updateColumnPage(c *gin.Context) {
+func (ctr *ColumnController) updateColumnPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)
@@ -114,7 +114,7 @@ func (ctr *columnController) updateColumnPage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *columnController) updateColumn(c *gin.Context) {
+func (ctr *ColumnController) updateColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
@@ -154,7 +154,7 @@ func (ctr *columnController) updateColumn(c *gin.Context) {
 
 
 //DELETE /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *columnController) deleteColumn(c *gin.Context) {
+func (ctr *ColumnController) deleteColumn(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)
@@ -167,7 +167,7 @@ func (ctr *columnController) deleteColumn(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/columns/:column_id/log
-func (ctr *columnController) columnLogPage(c *gin.Context) {
+func (ctr *ColumnController) columnLogPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)

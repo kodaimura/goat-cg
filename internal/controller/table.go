@@ -11,21 +11,21 @@ import (
 )
 
 
-type tableController struct {
+type TableController struct {
 	tableService service.TableService
 	urlCheckService service.UrlCheckService
 }
 
 
-func newTableController() *tableController {
+func NewTableController() *TableController {
 	tableService := service.NewTableService()
 	urlCheckService := service.NewUrlCheckService()
-	return &tableController{tableService, urlCheckService}
+	return &TableController{tableService, urlCheckService}
 }
 
 
 //GET /:project_cd/tables
-func (ctr *tableController) tablesPage(c *gin.Context) {
+func (ctr *TableController) tablesPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tables, _ := ctr.tableService.GetTables(projectId)
 
@@ -38,7 +38,7 @@ func (ctr *tableController) tablesPage(c *gin.Context) {
 
 
 //GET /:project_cd/tables/new
-func (ctr *tableController) createTablePage(c *gin.Context) {
+func (ctr *TableController) createTablePage(c *gin.Context) {
 	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	c.HTML(200, "table.html", gin.H{
@@ -49,7 +49,7 @@ func (ctr *tableController) createTablePage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/new
-func (ctr *tableController) createTable(c *gin.Context) {
+func (ctr *TableController) createTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
@@ -82,7 +82,7 @@ func (ctr *tableController) createTable(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id
-func (ctr *tableController) updateTablePage(c *gin.Context) {
+func (ctr *TableController) updateTablePage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
@@ -100,7 +100,7 @@ func (ctr *tableController) updateTablePage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/:table_id
-func (ctr *tableController) updateTable(c *gin.Context) {
+func (ctr *TableController) updateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
@@ -144,7 +144,7 @@ func (ctr *tableController) updateTable(c *gin.Context) {
 
 
 //DELETE /:project_cd/tables/:table_id
-func (ctr *tableController) deleteTable(c *gin.Context) {
+func (ctr *TableController) deleteTable(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 
@@ -156,7 +156,7 @@ func (ctr *tableController) deleteTable(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/log
-func (ctr *tableController) tableLogPage(c *gin.Context) {
+func (ctr *TableController) tableLogPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
 

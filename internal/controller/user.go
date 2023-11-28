@@ -12,26 +12,26 @@ import (
 )
 
 
-type userController struct {
+type UserController struct {
 	userService service.UserService
 }
 
 
-func newUserController() *userController {
+func NewUserController() *UserController {
 	userService := service.NewUserService()
-	return &userController{userService}
+	return &UserController{userService}
 }
 
 
 //GET /signup
-func (ctr *userController) signupPage(c *gin.Context) {
+func (ctr *UserController) signupPage(c *gin.Context) {
 	c.HTML(200, "signup.html", gin.H{
 		"commons": constant.Commons,
 	})
 }
 
 //GET /login
-func (ctr *userController) loginPage(c *gin.Context) {
+func (ctr *UserController) loginPage(c *gin.Context) {
 	c.HTML(200, "login.html", gin.H{
 		"commons": constant.Commons,
 	})
@@ -39,7 +39,7 @@ func (ctr *userController) loginPage(c *gin.Context) {
 
 
 //POST /signup
-func (ctr *userController) signup(c *gin.Context) {
+func (ctr *UserController) signup(c *gin.Context) {
 	name := c.PostForm("user_name")
 	pass := c.PostForm("password")
 
@@ -64,7 +64,7 @@ func (ctr *userController) signup(c *gin.Context) {
 
 
 //POST /login
-func (ctr *userController) login(c *gin.Context) {
+func (ctr *UserController) login(c *gin.Context) {
 	name := c.PostForm("user_name")
 	pass := c.PostForm("password")
 
@@ -97,7 +97,7 @@ func (ctr *userController) login(c *gin.Context) {
 
 
 //GET /logout
-func (ctr *userController) logout(c *gin.Context) {
+func (ctr *UserController) logout(c *gin.Context) {
 	cf := config.GetConfig()
 	c.SetCookie(jwt.COOKIE_KEY_JWT, "", 0, "/", cf.AppHost, false, true)
 	c.Redirect(303, "/login")
@@ -105,7 +105,7 @@ func (ctr *userController) logout(c *gin.Context) {
 
 
 //GET /api/profile
-func (ctr *userController) getProfile(c *gin.Context) {
+func (ctr *UserController) getProfile(c *gin.Context) {
 	user, err := ctr.userService.GetProfile(jwt.GetUserId(c))
 
 	if err != nil {

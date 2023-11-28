@@ -14,11 +14,8 @@ type ProjectRepository interface {
 	Update(id int, p *model.Project) error
 
 	GetByCd(cd string) (model.Project, error)
-	GetByUserIdAndStateCls(
-		userId int, state string,
-	) ([]model.Project, error)
+	GetByUserIdAndStateCls(userId int, state string) ([]model.Project, error)
 	GetByCdAndUserId(cd string, userId int) (model.Project, error)
-	
 }
 
 

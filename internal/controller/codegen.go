@@ -9,23 +9,23 @@ import (
 )
 
 
-type codegenController struct {
+type CodegenController struct {
 	tableService service.TableService
 	codegenService service.CodegenService
 	urlCheckService service.UrlCheckService
 }
 
 
-func newCodegenController() *codegenController {
+func NewCodegenController() *CodegenController {
 	tableService := service.NewTableService()
 	codegenService := service.NewCodegenService()
 	urlCheckService := service.NewUrlCheckService()
-	return &codegenController{tableService, codegenService, urlCheckService}
+	return &CodegenController{tableService, codegenService, urlCheckService}
 }
 
 
 //GET /:project_cd/codegen
-func (ctr *codegenController) codegenPage(c *gin.Context) {
+func (ctr *CodegenController) codegenPage(c *gin.Context) {
 	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 	
 	tables, _ := ctr.tableService.GetTables(projectId)
@@ -45,7 +45,7 @@ type CodegenPostBody struct {
 
 
 //POST /:project_cd/codegen/goat
-func (ctr *codegenController) codegenGOAT(c *gin.Context) {
+func (ctr *CodegenController) codegenGOAT(c *gin.Context) {
 	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	pb := &CodegenPostBody{} 
@@ -65,7 +65,7 @@ func (ctr *codegenController) codegenGOAT(c *gin.Context) {
 
 
 //POST /:project_cd/codegen/ddl
-func (ctr *codegenController) codegenDDL(c *gin.Context) {
+func (ctr *CodegenController) codegenDDL(c *gin.Context) {
 	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
 
 	pb := &CodegenPostBody{} 

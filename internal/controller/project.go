@@ -10,19 +10,19 @@ import (
 )
 
 
-type projectController struct {
+type ProjectController struct {
 	projectService  service.ProjectService
 }
 
 
-func newProjectController() *projectController {
+func NewProjectController() *ProjectController {
 	projectService  := service.NewProjectService()
-	return &projectController{projectService}
+	return &ProjectController{projectService}
 }
 
 
 //GET /projects
-func (ctr *projectController) projectsPage(c *gin.Context) {
+func (ctr *ProjectController) projectsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	projectCd := c.Query("project_cd")
 	var project model.Project
@@ -44,7 +44,7 @@ func (ctr *projectController) projectsPage(c *gin.Context) {
 
 
 //GET /projects/new
-func (ctr *projectController) createProjectPage(c *gin.Context) {
+func (ctr *ProjectController) createProjectPage(c *gin.Context) {
 	
 	c.HTML(200, "project.html", gin.H{
 		"commons": constant.Commons,
@@ -53,7 +53,7 @@ func (ctr *projectController) createProjectPage(c *gin.Context) {
 
 
 //POST /projects
-func (ctr *projectController) createProject(c *gin.Context) {
+func (ctr *ProjectController) createProject(c *gin.Context) {
 	projectCd := c.PostForm("project_cd")
 	projectName := c.PostForm("project_name")
 	result := ctr.projectService .CreateProject(jwt.GetUserId(c), projectCd, projectName)

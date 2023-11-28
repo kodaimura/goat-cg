@@ -8,7 +8,7 @@ import (
 
 
 func SetRouter(r *gin.Engine) {
-	uc := newUserController()
+	uc := NewUserController()
 
 	//render HTML or redirect
 	r.GET("/signup", uc.signupPage)
@@ -20,17 +20,17 @@ func SetRouter(r *gin.Engine) {
 	//render HTML or redirect (Authorized request)
 	a := r.Group("/", jwt.JwtAuthMiddleware())
 	{
-		rc := newRootController()
+		rc := NewRootController()
 		
 		a.GET("/", rc.indexPage)
 
-		pc := newProjectController()
+		pc := NewProjectController()
 
 		a.GET("/projects", pc.projectsPage)
 		a.GET("/projects/new", pc.createProjectPage)
 		a.POST("/projects", pc.createProject)
 
-		upc := newProjectUserController()
+		upc := NewProjectUserController()
 
 		a.GET("/projects/requests", upc.requestsPage)
 		a.POST("/projects/requests/join", upc.joinRequest)
@@ -40,7 +40,7 @@ func SetRouter(r *gin.Engine) {
 
 		ap := a.Group("/:project_cd")
 		{
-			tc := newTableController()
+			tc := NewTableController()
 
 			ap.GET("/tables", tc.tablesPage)
 			ap.GET("/tables/new", tc.createTablePage)
@@ -51,7 +51,7 @@ func SetRouter(r *gin.Engine) {
 			ap.GET("/tables/:table_id/log", tc.tableLogPage)
 
 
-			cgc := newCodegenController()
+			cgc := NewCodegenController()
 
 			ap.GET("/codegen", cgc.codegenPage)
 			ap.POST("/codegen/goat", cgc.codegenGOAT)
@@ -59,7 +59,7 @@ func SetRouter(r *gin.Engine) {
 
 			aptt := ap.Group("/tables/:table_id")
 			{
-				cc := newColumnController()
+				cc := NewColumnController()
 
 				aptt.GET("/columns", cc.columnsPage)
 				aptt.GET("/columns/new", cc.createColumnPage)
@@ -75,7 +75,7 @@ func SetRouter(r *gin.Engine) {
 	//response JSON
 	api := r.Group("/api")
 	{
-		uac := newUserApiController()
+		uac := NewUserApiController()
 
 		api.POST("/signup", uac.signup)
 		api.POST("/login", uac.login)
