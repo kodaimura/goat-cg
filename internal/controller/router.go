@@ -66,16 +66,6 @@ func SetRouter(r *gin.Engine) {
 			}
 		} 
 		
-
-		//upc := NewProjectMemberController()
-
-		//a.GET("/projects/requests", upc.RequestsPage)
-		//a.POST("/projects/requests/join", upc.JoinRequest)
-		//a.POST("/projects/requests/cancel", upc.CancelJoinRequest)
-		//a.POST("/projects/requests/permit", upc.PermitJoinRequest)
-
-
-
 	}
 
 	//response JSON

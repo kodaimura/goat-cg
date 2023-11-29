@@ -24,7 +24,7 @@ func NewProjectMemberQuery() ProjectMemberQuery {
 	return &projectMemberQuery{db}
 }
 
-
+/*
 func (que *projectMemberQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error){
 
 	var ret []dto.QueOutJoinRequest
@@ -75,3 +75,4 @@ func (que *projectMemberQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReq
 
 	return ret, err
 }
+*/

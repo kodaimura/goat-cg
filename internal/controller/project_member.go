@@ -22,7 +22,7 @@ func NewProjectMemberController() *ProjectMemberController {
 	return &ProjectMemberController{projectMemberService , projectService}
 }
 
-
+/*
 //POST /projects/requests/join
 func (ctr *ProjectMemberController) JoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
@@ -70,3 +70,4 @@ func (ctr *ProjectMemberController) RequestsPage(c *gin.Context) {
 		"joinrequests": joinrequests,
 	})
 }
+*/
