@@ -12,9 +12,10 @@ import (
 type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(id int, p *model.Project) error
-	
-	GetByCd(cd string) (model.Project, error)
-	GetByUserIdAndUserStatus(userId int, state string) ([]model.Project, error)
+
+	GetByUniqueKey(username, projectName string) (model.Project, error)
+	GetByUserId(userId string) ([]model.Project, error)
+	GetMemberProjects(userId int) ([]model.Project, error)
 	GetByCdAndUserId(cd string, userId int) (model.Project, error)
 }
 
@@ -55,49 +56,50 @@ func (rep *projectRepository) Update(id int, p *model.Project) error {
 }
 
 
-func (rep *projectRepository) GetByCd(cd string) (model.Project, error) {
+func (rep *projectRepository) GetByUniqueKey(username, projectName string) (model.Project, error) {
 	var ret model.Project
 	err := rep.db.QueryRow(
 		`SELECT 
 			project_id,
-			project_cd,
 			project_name,
-			created_at 
+			project_memo,
+			user_id,
+			username,
+			created_at,
+			updated_at 
 		 FROM 
 			 project
-		 WHERE 
-			 project_cd = ?`, 
-		 cd,
+		 WHERE username = ?
+		   AND project_name = ?`, 
+		 username,
+		 projectName,
 	).Scan(
 		&ret.ProjectId, 
-		&ret.ProjectCd, 
-		&ret.ProjectName,
+		&ret.ProjectName, 
+		&ret.ProjectMemo,
+		&ret.UserId,
+		&ret.Username,
 		&ret.CreatedAt,
+		&ret.UpdatedAt,
 	)
 
 	return ret, err
 }
 
 
-func (rep *projectRepository) GetByUserIdAndUserStatus(
-	userId int, state string,
-) ([]model.Project, error){
+func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
 	var ret []model.Project
 	rows, err := rep.db.Query(
 		`SELECT 
-		p.project_id,
-		p.project_cd,
-		p.project_name,
-		p.created_at 
+		  project_id,
+		  project_name,
+		  project_memo,
+		  created_at
+		  updated_at 
 		 FROM 
-			 project p,
-			 project_member pu
-		 WHERE 
-			 p.project_id = pu.project_id
-		 AND pu.user_id = ?
-		 AND pu.user_status = ?`, 
+			 project
+		 WHERE user_id = ?`, 
 		 userId,
-		 state,
 	)
 
 	if err != nil {
@@ -108,9 +110,51 @@ func (rep *projectRepository) GetByUserIdAndUserStatus(
 		p := model.Project{}
 		err = rows.Scan(
 			&p.ProjectId, 
-			&p.ProjectCd, 
 			&p.ProjectName,
+			&p.ProjectMemo, 
 			&p.CreatedAt,
+			&p.UpdatedAt,
+		)
+		if err != nil {
+			break
+		}
+		ret = append(ret, p)
+	}
+
+	return ret, err
+}
+
+
+func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, error){
+	var ret []model.Project
+	rows, err := rep.db.Query(
+		`SELECT 
+		p.project_id,
+		p.project_name,
+		p.project_memo,
+		p.created_at
+		p.updated_at 
+		 FROM 
+			 project p,
+			 project_member pm
+		 WHERE 
+			 p.project_id = pm.project_id
+		 AND pm.user_id = ?`, 
+		 userId,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		p := model.Project{}
+		err = rows.Scan(
+			&p.ProjectId, 
+			&p.ProjectName,
+			&p.ProjectMemo, 
+			&p.CreatedAt,
+			&p.UpdatedAt,
 		)
 		if err != nil {
 			break

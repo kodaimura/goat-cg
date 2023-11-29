@@ -26,50 +26,56 @@ func SetRouter(r *gin.Engine) {
 
 		pc := NewProjectController()
 
-		a.GET("/projects", pc.ProjectsPage)
-		a.GET("/projects/new", pc.CreateProjectPage)
-		a.POST("/projects", pc.CreateProject)
-
-		upc := NewProjectMemberController()
-
-		a.GET("/projects/requests", upc.RequestsPage)
-		a.POST("/projects/requests/join", upc.JoinRequest)
-		a.POST("/projects/requests/cancel", upc.CancelJoinRequest)
-		a.POST("/projects/requests/permit", upc.PermitJoinRequest)
-
-
-		ap := a.Group("/:project_cd")
+		au := a.Group("/:username")
 		{
-			tc := NewTableController()
+			au.GET("/projects", pc.ProjectsPage)
+			au.GET("/projects/new", pc.CreateProjectPage)
+			au.POST("/projects", pc.CreateProject)
 
-			ap.GET("/tables", tc.TablesPage)
-			ap.GET("/tables/new", tc.CreateTablePage)
-			ap.POST("/tables/new", tc.CreateTable)
-			ap.GET("/tables/:table_id", tc.UpdateTablePage)
-			ap.POST("/tables/:table_id", tc.UpdateTable)
-			ap.DELETE("/tables/:table_id", tc.DeleteTable)
-			ap.GET("/tables/:table_id/log", tc.TableLogPage)
-
-
-			cgc := NewCodegenController()
-
-			ap.GET("/codegen", cgc.CodegenPage)
-			ap.POST("/codegen/goat", cgc.CodegenGOAT)
-			ap.POST("/codegen/ddl", cgc.CodegenDDL)
-
-			aptt := ap.Group("/tables/:table_id")
+			aup := a.Group("/:project_name")
 			{
-				cc := NewColumnController()
-
-				aptt.GET("/columns", cc.ColumnsPage)
-				aptt.GET("/columns/new", cc.CreateColumnPage)
-				aptt.POST("/columns/new", cc.CreateColumn)
-				aptt.GET("/columns/:column_id", cc.UpdateColumnPage)
-				aptt.POST("/columns/:column_id", cc.UpdateColumn)
-				aptt.DELETE("/columns/:column_id", cc.DeleteColumn)
-				aptt.GET("/columns/:column_id/log", cc.ColumnLogPage)
+				tc := NewTableController()
+	
+				aup.GET("/tables", tc.TablesPage)
+				aup.GET("/tables/new", tc.CreateTablePage)
+				aup.POST("/tables/new", tc.CreateTable)
+				aup.GET("/tables/:table_id", tc.UpdateTablePage)
+				aup.POST("/tables/:table_id", tc.UpdateTable)
+				aup.DELETE("/tables/:table_id", tc.DeleteTable)
+				aup.GET("/tables/:table_id/log", tc.TableLogPage)
+	
+	
+				cgc := NewCodegenController()
+	
+				aup.GET("/codegen", cgc.CodegenPage)
+				aup.POST("/codegen/goat", cgc.CodegenGOAT)
+				aup.POST("/codegen/ddl", cgc.CodegenDDL)
+	
+				aupt := ap.Group("/tables/:table_id")
+				{
+					cc := NewColumnController()
+	
+					aupt.GET("/columns", cc.ColumnsPage)
+					aupt.GET("/columns/new", cc.CreateColumnPage)
+					aupt.POST("/columns/new", cc.CreateColumn)
+					aupt.GET("/columns/:column_id", cc.UpdateColumnPage)
+					aupt.POST("/columns/:column_id", cc.UpdateColumn)
+					aupt.DELETE("/columns/:column_id", cc.DeleteColumn)
+					aupt.GET("/columns/:column_id/log", cc.ColumnLogPage)
+				}
 			}
-		}
+		} 
+		
+
+		//upc := NewProjectMemberController()
+
+		//a.GET("/projects/requests", upc.RequestsPage)
+		//a.POST("/projects/requests/join", upc.JoinRequest)
+		//a.POST("/projects/requests/cancel", upc.CancelJoinRequest)
+		//a.POST("/projects/requests/permit", upc.PermitJoinRequest)
+
+
+
 	}
 
 	//response JSON

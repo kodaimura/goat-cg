@@ -11,9 +11,9 @@ import (
 type ProjectService interface {
 	GetProjectId(userId int, projectCd string) int 
 	GetProjects(userId int) ([]model.Project, error)
-	GetProjectsPendingApproval(userId int) ([]model.Project, error)
+	GetMemberProjects(userId int) ([]model.Project, error)
 	GetProjectByCd(projectCd string) model.Project
-	CreateProject(userId int, projectCd, projectName string) int
+	CreateProject(userId int, username, projectName, projectMemo string) int
 }
 
 
@@ -51,13 +51,9 @@ func (serv *projectService) GetProjectId(
 }
 
 
-// GetProjects get projects: the state user join.
-func (serv *projectService) GetProjects(
-	userId int,
-) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserIdAndUserStatus(
-		userId, constant.STATE_CLS_JOIN,
-	)
+// ログインユーザのプロジェクを取得
+func (serv *projectService) GetProjects(userId int) ([]model.Project, error) {
+	projects, err := serv.projectRepository.GetByUserId(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -67,13 +63,9 @@ func (serv *projectService) GetProjects(
 }
 
 
-// GetProjects get projects: the state user are applying for joinrequest.
-func (serv *projectService) GetProjectsPendingApproval(
-	userId int,
-) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserIdAndUserStatus(
-		userId, constant.STATE_CLS_REQUEST,
-	)
+//参画しているプロジェクトを取得
+func (serv *projectService) GetMemberProjects(userId int) ([]model.Project, error) {
+	projects, err := serv.projectRepository.GetMemberProjects(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -101,10 +93,11 @@ const CREATE_PROJECT_ERROR_INT = 2
 // CreateProject create new Project.
 func (serv *projectService) CreateProject(
 	userId int, 
-	projectCd string, 
-	projectName string,
+	username string,
+	projectName string, 
+	projectMemo string,
 ) int {
-	_, err := serv.projectRepository.GetByCd(projectCd)
+	_, err := serv.projectRepository.GetByUniqueKey(username, projectName)
 	if err == nil {
 		return CREATE_PROJECT_CONFLICT_INT
 	}

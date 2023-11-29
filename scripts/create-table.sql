@@ -16,10 +16,13 @@ END;
 
 CREATE TABLE IF NOT EXISTS project (
 	project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	project_cd TEXT NOT NULL UNIQUE,
-	project_name TEXT,
+	project_name TEXT NOT NULL,
+	project_momo TEXT,
+	user_id INTEGER NOT NULL,
+	username TEXT NOT NULL,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	UNIQUE(project_name, username)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_project_upd AFTER UPDATE ON project

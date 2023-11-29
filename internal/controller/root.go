@@ -2,6 +2,8 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"goat-cg/internal/core/jwt"
 )
 
 
@@ -15,5 +17,6 @@ func NewRootController() *RootController {
 
 //GET /
 func (ctr *RootController) IndexPage(c *gin.Context) {
-	c.Redirect(303, "/projects")
+	username := jwt.GetUsername(c)
+	c.Redirect(303, fmt.Sprintf("/%s/projects", c.Param(username)))
 }
