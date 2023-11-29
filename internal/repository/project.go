@@ -12,9 +12,9 @@ import (
 type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(id int, p *model.Project) error
-
+	
 	GetByCd(cd string) (model.Project, error)
-	GetByUserIdAndStateCls(userId int, state string) ([]model.Project, error)
+	GetByUserIdAndUserStatus(userId int, state string) ([]model.Project, error)
 	GetByCdAndUserId(cd string, userId int) (model.Project, error)
 }
 
@@ -79,23 +79,23 @@ func (rep *projectRepository) GetByCd(cd string) (model.Project, error) {
 }
 
 
-func (rep *projectRepository) GetByUserIdAndStateCls(
+func (rep *projectRepository) GetByUserIdAndUserStatus(
 	userId int, state string,
 ) ([]model.Project, error){
 	var ret []model.Project
 	rows, err := rep.db.Query(
 		`SELECT 
-			p.project_id,
-			p.project_cd,
-			p.project_name,
-			p.created_at 
+		p.project_id,
+		p.project_cd,
+		p.project_name,
+		p.created_at 
 		 FROM 
 			 project p,
-			 project_user pu
+			 project_member pu
 		 WHERE 
 			 p.project_id = pu.project_id
 		 AND pu.user_id = ?
-		 AND pu.state_cls = ?`, 
+		 AND pu.user_status = ?`, 
 		 userId,
 		 state,
 	)
@@ -134,12 +134,12 @@ func (rep *projectRepository) GetByCdAndUserId(
 			p.project_name
 		 FROM 
 			 project p,
-			 project_user pu
+			 project_member pu
 		 WHERE 
 			 p.project_id = pu.project_id
 		 AND p.project_cd = ?
 		 AND pu.user_id = ?
-		 AND pu.state_cls = ?`, 
+		 AND pu.user_status = ?`, 
 		 cd,
 		 userId,
 		 constant.STATE_CLS_JOIN,

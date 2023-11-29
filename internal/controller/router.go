@@ -30,7 +30,7 @@ func SetRouter(r *gin.Engine) {
 		a.GET("/projects/new", pc.CreateProjectPage)
 		a.POST("/projects", pc.CreateProject)
 
-		upc := NewProjectUserController()
+		upc := NewProjectMemberController()
 
 		a.GET("/projects/requests", upc.RequestsPage)
 		a.POST("/projects/requests/join", upc.JoinRequest)

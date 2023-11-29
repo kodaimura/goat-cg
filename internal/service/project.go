@@ -19,14 +19,14 @@ type ProjectService interface {
 
 type projectService struct {
 	projectRepository repository.ProjectRepository
-	projectUserRepository repository.ProjectUserRepository
+	projectMemberRepository repository.ProjectMemberRepository
 }
 
 
 func NewProjectService() ProjectService {
 	projectRepository := repository.NewProjectRepository()
-	projectUserRepository := repository.NewProjectUserRepository()
-	return &projectService{projectRepository, projectUserRepository}
+	projectMemberRepository := repository.NewProjectMemberRepository()
+	return &projectService{projectRepository, projectMemberRepository}
 }
 
 
@@ -55,7 +55,7 @@ func (serv *projectService) GetProjectId(
 func (serv *projectService) GetProjects(
 	userId int,
 ) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserIdAndStateCls(
+	projects, err := serv.projectRepository.GetByUserIdAndUserStatus(
 		userId, constant.STATE_CLS_JOIN,
 	)
 
@@ -71,7 +71,7 @@ func (serv *projectService) GetProjects(
 func (serv *projectService) GetProjectsPendingApproval(
 	userId int,
 ) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserIdAndStateCls(
+	projects, err := serv.projectRepository.GetByUserIdAndUserStatus(
 		userId, constant.STATE_CLS_REQUEST,
 	)
 
@@ -126,12 +126,12 @@ func (serv *projectService) CreateProject(
 		return CREATE_PROJECT_ERROR_INT
 	}
 
-	var up model.ProjectUser
+	var up model.ProjectMember
 	up.UserId = userId
 	up.ProjectId = project.ProjectId
-	up.StateCls = constant.STATE_CLS_JOIN
-	up.RoleCls = constant.ROLE_CLS_OWNER
-	err = serv.projectUserRepository.Upsert(&up)
+	up.UserStatus = constant.STATE_CLS_JOIN
+	up.UserRole = constant.ROLE_CLS_OWNER
+	err = serv.projectMemberRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())

@@ -10,49 +10,49 @@ import (
 )
 
 
-type ProjectUserController struct {
-	projectUserService  service.ProjectUserService
+type ProjectMemberController struct {
+	projectMemberService  service.ProjectMemberService
 	projectService  service.ProjectService
 }
 
 
-func NewProjectUserController() *ProjectUserController {
-	projectUserService  := service.NewProjectUserService()
+func NewProjectMemberController() *ProjectMemberController {
+	projectMemberService  := service.NewProjectMemberService()
 	projectService  := service.NewProjectService()
-	return &ProjectUserController{projectUserService , projectService}
+	return &ProjectMemberController{projectMemberService , projectService}
 }
 
 
 //POST /projects/requests/join
-func (ctr *ProjectUserController) JoinRequest(c *gin.Context) {
+func (ctr *ProjectMemberController) JoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	p := ctr.projectService .GetProjectByCd(c.PostForm("project_cd"))
 
-	ctr.projectUserService .JoinRequest(userId, p.ProjectId)
+	ctr.projectMemberService .JoinRequest(userId, p.ProjectId)
 	
 	c.Redirect(303, "/projects")
 }
 
 
 //POST /projects/requests/cancel
-func (ctr *ProjectUserController) CancelJoinRequest(c *gin.Context) {
+func (ctr *ProjectMemberController) CancelJoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	p := ctr.projectService .GetProjectByCd(c.PostForm("project_cd"))
 
-	ctr.projectUserService .CancelJoinRequest(userId, p.ProjectId)
+	ctr.projectMemberService .CancelJoinRequest(userId, p.ProjectId)
 	
 	c.Redirect(303, "/projects")
 }
 
 
 //POST /projects/requests/permit
-func (ctr *ProjectUserController) PermitJoinRequest(c *gin.Context) {
+func (ctr *ProjectMemberController) PermitJoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	targetUserId, err := strconv.Atoi(c.PostForm("user_id"))
 	projectId := ctr.projectService .GetProjectId(userId, c.PostForm("project_cd"))
 
 	if err == nil && projectId != service.GET_PROJECT_ID_NOT_FOUND_INT {
-		ctr.projectUserService .PermitJoinRequest(targetUserId, projectId)
+		ctr.projectMemberService .PermitJoinRequest(targetUserId, projectId)
 	}
 
 	c.Redirect(303, "/projects/requests")
@@ -60,10 +60,10 @@ func (ctr *ProjectUserController) PermitJoinRequest(c *gin.Context) {
 
 
 //GET /projects/requests
-func (ctr *ProjectUserController) RequestsPage(c *gin.Context) {
+func (ctr *ProjectMemberController) RequestsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 
-	joinrequests, _ := ctr.projectUserService .GetJoinRequests(userId)
+	joinrequests, _ := ctr.projectMemberService .GetJoinRequests(userId)
 	
 	c.HTML(200, "requests.html", gin.H{
 		"commons": constant.Commons,
