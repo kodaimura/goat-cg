@@ -14,45 +14,79 @@ func PathParameterValidationMiddleware() gin.HandlerFunc {
 		username := jwt.GetUsername(c)
 		ownername := c.Param("username")
 		projectName := c.Param("project_name")
-		tableId := c.Param("tableId")
+		tableId := c.Param("table_id")
+		columnId := c.Param("column_id")
 
-		p, _ := searchAccessibleProject(username, ownername, projectName) 
+		project, b := searchAccessibleProject(username, ownername, projectName) 
 		
-		if p.projectId == 0 {
+		if !b {
 			c.HTML(404, "404error.html", gin.H{})
 			c.Abort()
 			return
 		} 
 
-		c.Set("project", p)
+		c.Set("project", project)
 
 		if tableId != "" {
-			t, _ := searchAccessibleTable(p.ProjectId, tableId)
+			table, b := searchAccessibleTable(project.ProjectId, tableId)
 
-			if t.TableId == 0 {
+			if b! {
 				c.HTML(404, "404error.html", gin.H{})
 				c.Abort()
 				return
 			}
 
-			c.Set("table", t)
+			c.Set("table", table)
+		}
+
+		if columnId != "" {
+			column, b := searchAccessibleColumn(tableId, columnId)
+
+			if b! {
+				c.HTML(404, "404error.html", gin.H{})
+				c.Abort()
+				return
+			}
+
+			c.Set("column", column)
 		}
 
 		c.Next()
 	}
 }
 
-func searchAccessibleProject (username, ownername, projectName string) (model.Project, error) {
+func searchAccessibleProject (username, ownername, projectName string) (model.Project, bool) {
+	var p model.Project
 	pr := repository.NewProjectService()
 
 	if username == ownername {
-		return pr.GetByUniqueKey(username, projectName)
+		p, _ = pr.GetByUniqueKey(username, projectName)
 	} else {
-		return pr.GetMemberProject(username, projectName)
+		p, _ = pr.GetMemberProject(username, projectName)
 	}
+
+	if p.projectId == 0 {
+		return p, false
+	}
+	return p, true
 }
 
-func searchAccessibleTable (projectId, tableId string) (model.Table, error) {
+func searchAccessibleTable (projectId, tableId string) (model.Table, bool) {
 	tr := repository.NewTableRepository()
-	return tr.GetByIdAndProjectId(tableId, projectId)
+	t, _ = tr.GetById(tableId)
+
+	if t.ProjectId != projectId {
+		return t, false
+	}
+	return t, true
+}
+
+func searchAccessibleColumn (projectId, tableId string) (model.Column, bool) {
+	cr := repository.NewColumnRepository()
+	c, _ = cr.GetById(columnId)
+	
+	if c.TableId != tableId {
+		return c, false
+	}
+	return c, true
 }

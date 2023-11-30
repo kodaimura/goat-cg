@@ -11,7 +11,6 @@ import (
 
 type TableRepository interface {
 	GetById(id int) (model.Table, error)
-	GetByIdAndProjectId(id, projectId int) (model.Table, error)
 	Insert(t *model.Table) error
 	Update(id int, t *model.Table) error
 	Delete(id int) error
@@ -50,37 +49,6 @@ func (rep *tableRepository) GetById(id int) (model.Table, error){
 		 WHERE 
 			 table_id = ?`,
 		 id,
-	).Scan(
-		&ret.ProjectId, 
-		&ret.TableId, 
-		&ret.TableName,
-		&ret.TableNameLogical,
-		&ret.DelFlg,
-		&ret.CreateUserId,
-		&ret.UpdateUserId,
-	)
-
-	return ret, err
-}
-
-func (rep *tableRepository) GetByIdAndProjectId(id, projectId int) (model.Table, error){
-	
-	var ret model.Table
-	err := rep.db.QueryRow(
-		`SELECT 
-			project_id,
-			table_id,
-			table_name,
-			table_name_logical,
-			del_flg,
-			create_user_id,
-			update_user_id
-		 FROM 
-			 table_def
-		 WHERE project_id = ?
-		   AND table_id = ?`,
-		projectId,
-		id,
 	).Scan(
 		&ret.ProjectId, 
 		&ret.TableId, 
