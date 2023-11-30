@@ -15,15 +15,13 @@ import (
 type TableController struct {
 	projectService service.ProjectService
 	tableService service.TableService
-	urlCheckService service.UrlCheckService
 }
 
 
 func NewTableController() *TableController {
 	projectService := service.NewProjectService()
 	tableService := service.NewTableService()
-	urlCheckService := service.NewUrlCheckService()
-	return &TableController{projectService, tableService, urlCheckService}
+	return &TableController{projectService, tableService}
 }
 
 
