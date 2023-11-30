@@ -13,6 +13,8 @@ type ProjectService interface {
 	GetProjects(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
 	GetProjectByCd(projectCd string) model.Project
+	GetProject(username, projectName string) model.Project
+	GetMemberProject(username, projectName string) model.Project
 	CreateProject(userId int, username, projectName, projectMemo string) int
 }
 
@@ -83,6 +85,18 @@ func (serv *projectService) GetProjectByCd(
 	return project
 }
 
+func (serv *projectService) GetProject(username, projectName string) model.Project {
+	project, _ := serv.projectRepository.GetByUniqueKey(username, projectName)
+
+	return project
+}
+
+func (serv *projectService) GetMemberProject(username, projectName string) model.Project {
+	project, _ := serv.projectRepository.GetMemeberProject(username, projectName)
+
+	return project
+}
+
 
 /*----------------------------------------*/
 const CREATE_PROJECT_SUCCESS_INT = 0
@@ -103,28 +117,11 @@ func (serv *projectService) CreateProject(
 	}
 
 	var p model.Project
-	p.ProjectCd = projectCd
 	p.ProjectName = projectName
+	p.ProjectMemo = projectMemo
+	p.UserId = userId
+	p.Username = username
 	err = serv.projectRepository.Insert(&p)
-
-	if err != nil {
-		logger.Error(err.Error())
-		return CREATE_PROJECT_ERROR_INT
-	}
-
-	project, err := serv.projectRepository.GetByCd(projectCd)
-
-	if err != nil {
-		logger.Error(err.Error())
-		return CREATE_PROJECT_ERROR_INT
-	}
-
-	var up model.ProjectMember
-	up.UserId = userId
-	up.ProjectId = project.ProjectId
-	up.UserStatus = constant.STATE_CLS_JOIN
-	up.UserRole = constant.ROLE_CLS_OWNER
-	err = serv.projectMemberRepository.Upsert(&up)
 
 	if err != nil {
 		logger.Error(err.Error())

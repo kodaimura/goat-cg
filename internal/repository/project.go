@@ -13,9 +13,10 @@ type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(id int, p *model.Project) error
 
-	GetByUniqueKey(username, projectName string) (model.Project, error)
 	GetByUserId(userId string) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
+	GetByUniqueKey(username, projectName string) (model.Project, error)
+	GetMemberProject(username, projectName string) (model.Project, error)
 	GetByCdAndUserId(cd string, userId int) (model.Project, error)
 }
 
@@ -34,11 +35,15 @@ func NewProjectRepository() ProjectRepository {
 func (rep *projectRepository) Insert(p *model.Project) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO project (
-			project_cd, 
-			project_name
-		 ) VALUES(?,?)`,
-		p.ProjectCd, 
-		p.ProjectName,
+			project_name,
+			project_memo,
+			user_id,
+			username 
+		 ) VALUES(?,?,?,?)`,
+		p.ProjectName, 
+		p.ProjectMemo,
+		p.UserId,
+		p.Username,
 	)
 	return err
 }
@@ -53,6 +58,85 @@ func (rep *projectRepository) Update(id int, p *model.Project) error {
 		id,
 	)
 	return err
+}
+
+
+func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
+	var ret []model.Project
+	rows, err := rep.db.Query(
+		`SELECT 
+			project_id,
+			project_name,
+			project_memo,
+			created_at
+			updated_at 
+		 FROM 
+			 project
+		 WHERE user_id = ?`, 
+		 userId,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		p := model.Project{}
+		err = rows.Scan(
+			&p.ProjectId, 
+			&p.ProjectName,
+			&p.ProjectMemo, 
+			&p.CreatedAt,
+			&p.UpdatedAt,
+		)
+		if err != nil {
+			break
+		}
+		ret = append(ret, p)
+	}
+
+	return ret, err
+}
+
+
+func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, error){
+	var ret []model.Project
+	rows, err := rep.db.Query(
+		`SELECT 
+			p.project_id,
+			p.project_name,
+			p.project_memo,
+			p.created_at
+			p.updated_at 
+		 FROM 
+			 project p,
+			 project_member pm
+		 WHERE 
+			 p.project_id = pm.project_id
+		 AND pm.user_id = ?`, 
+		 userId,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		p := model.Project{}
+		err = rows.Scan(
+			&p.ProjectId, 
+			&p.ProjectName,
+			&p.ProjectMemo, 
+			&p.CreatedAt,
+			&p.UpdatedAt,
+		)
+		if err != nil {
+			break
+		}
+		ret = append(ret, p)
+	}
+
+	return ret, err
 }
 
 
@@ -87,80 +171,35 @@ func (rep *projectRepository) GetByUniqueKey(username, projectName string) (mode
 }
 
 
-func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
-	var ret []model.Project
-	rows, err := rep.db.Query(
+func (rep *projectRepository) GetMemberProject(username, projectName string) (model.Project, error) {
+	var ret model.Project
+	err := rep.db.QueryRow(
 		`SELECT 
-		  project_id,
-		  project_name,
-		  project_memo,
-		  created_at
-		  updated_at 
-		 FROM 
-			 project
-		 WHERE user_id = ?`, 
-		 userId,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		p := model.Project{}
-		err = rows.Scan(
-			&p.ProjectId, 
-			&p.ProjectName,
-			&p.ProjectMemo, 
-			&p.CreatedAt,
-			&p.UpdatedAt,
-		)
-		if err != nil {
-			break
-		}
-		ret = append(ret, p)
-	}
-
-	return ret, err
-}
-
-
-func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, error){
-	var ret []model.Project
-	rows, err := rep.db.Query(
-		`SELECT 
-		p.project_id,
-		p.project_name,
-		p.project_memo,
-		p.created_at
-		p.updated_at 
+			p.project_id,
+			p.project_name,
+			p.project_memo,
+			p.user_id,
+			p.username,
+			p.created_at
+			p.updated_at 
 		 FROM 
 			 project p,
 			 project_member pm
 		 WHERE 
 			 p.project_id = pm.project_id
-		 AND pm.user_id = ?`, 
-		 userId,
+		 AND pm.username = ?
+		 AND p.project_name = ?`, 
+		 username,
+		 projectName,
+	).Scan(
+		&ret.ProjectId, 
+		&ret.ProjectName, 
+		&ret.ProjectMemo,
+		&ret.UserId,
+		&ret.Username,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
 	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		p := model.Project{}
-		err = rows.Scan(
-			&p.ProjectId, 
-			&p.ProjectName,
-			&p.ProjectMemo, 
-			&p.CreatedAt,
-			&p.UpdatedAt,
-		)
-		if err != nil {
-			break
-		}
-		ret = append(ret, p)
-	}
 
 	return ret, err
 }

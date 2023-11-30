@@ -3,15 +3,15 @@ package service
 import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model"
-	"goat-cg/internal/repository"
-	"goat-cg/internal/query"
+	"goat-cg/internal/model/entity"
+	"goat-cg/internal/model/dao"
+	"goat-cg/internal/model/query"
 )
 
 
 type TableService interface {
-	GetTables(projectId int) ([]model.Table, error)
-	GetTable(tableId int) (model.Table, error)
+	GetTables(projectId int) ([]entity.Table, error)
+	GetTable(tableId int) (entity.Table, error)
 	CreateTable(
 		projectId, userId int,
 		tableName, tableNameLogical string,
@@ -27,29 +27,29 @@ type TableService interface {
 
 
 type tableService struct {
-	tableRepository repository.TableRepository
-	columnRepository repository.ColumnRepository
-	tableQuery query.TableQuery
+	tDao dao.TableDao
+	cDao dao.ColumnDao
+	tQue query.TableQuery
 }
 
 
 func NewTableService() TableService {
-	tableRepository := repository.NewTableRepository()
-	columnRepository := repository.NewColumnRepository()
-	tableQuery := query.NewTableQuery()
+	tDao := dao.NewTableDao()
+	cDao := dao.NewColumnDao()
+	tQue := query.NewTableQuery()
 
-	return &tableService{tableRepository, columnRepository, tableQuery}
+	return &tableService{tDao, cDao, tQue}
 }
 
 
 // GetTables get tables by projeectId.
 func (serv *tableService) GetTables(
 	projectId int,
-) ([]model.Table, error) {
-	tables, err := serv.tableRepository.GetByProjectId(projectId)
+) ([]entity.Table, error) {
+	tables, err := serv.tDao.SelectByProjectId(projectId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 	}
 
 	return tables, err
@@ -57,11 +57,11 @@ func (serv *tableService) GetTables(
 
 
 // GetTable get table by tableId.
-func (serv *tableService) GetTable(tableId int) (model.Table, error) {
-	table, err := serv.tableRepository.GetById(tableId)
+func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
+	table, err := serv.tDao.Select(tableId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 	}
 
 	return table, err
@@ -80,21 +80,21 @@ func (serv *tableService) CreateTable(
 	tableName, tableNameLogical string, 
 ) int {
 
-	_, err := serv.tableRepository.GetByNameAndProjectId(tableName, projectId)
+	_, err := serv.tDao.SelectByNameAndProjectId(tableName, projectId)
 	if err == nil {
 		return CREATE_TABLE_CONFLICT_INT
 	}
 
-	var t model.Table
+	var t entity.Table
 	t.ProjectId = projectId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
-	err = serv.tableRepository.Insert(&t)
+	err = serv.tDao.Insert(&t)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 		return CREATE_TABLE_ERROR_INT
 	}
 
@@ -116,20 +116,20 @@ func (serv *tableService) UpdateTable(
 	delFlg int,
 ) int {
 
-	t0, err := serv.tableRepository.GetByNameAndProjectId(tableName, projectId)
+	t0, err := serv.tDao.SelectByNameAndProjectId(tableName, projectId)
 	if err == nil && t0.TableId != tableId{
 		return UPDATE_TABLE_CONFLICT_INT
 	}
 
-	var t model.Table
+	var t entity.Table
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
 	t.DelFlg = delFlg
-	err = serv.tableRepository.Update(tableId, &t)
+	err = serv.tDao.Update(tableId, &t)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 		return UPDATE_TABLE_ERROR_INT
 	}
 
@@ -145,17 +145,17 @@ const DELETE_TABLE_ERROR_INT = 1
 // DeleteTable delete Table by tableId.
 // (physical delete)
 func (serv *tableService) DeleteTable(tableId int) int {
-	err := serv.tableRepository.Delete(tableId)
+	err := serv.tDao.Delete(tableId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 		return DELETE_TABLE_ERROR_INT
 	}
 
-	err = serv.columnRepository.DeleteByTableId(tableId)
+	err = serv.cDao.DeleteByTableId(tableId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 		return DELETE_TABLE_ERROR_INT
 	}
 
@@ -165,10 +165,10 @@ func (serv *tableService) DeleteTable(tableId int) int {
 
 // GetTableLog get Table chenge log.
 func (serv *tableService) GetTableLog(tableId int) ([]dto.QueOutTableLog, error) {
-	tableLog, err := serv.tableQuery.QueryTableLog(tableId)
+	tableLog, err := serv.tQue.QueryTableLog(tableId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.LogError(err.Error())
 	}
 
 	return tableLog, err
