@@ -1,5 +1,5 @@
 package controller
-
+/*
 import (
 	"strconv"
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,7 @@ func NewProjectMemberController() *ProjectMemberController {
 	return &ProjectMemberController{projectMemberService , projectService}
 }
 
-/*
+
 //POST /projects/requests/join
 func (ctr *ProjectMemberController) JoinRequest(c *gin.Context) {
 	userId := jwt.GetUserId(c)

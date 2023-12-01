@@ -13,7 +13,7 @@ type ColumnService interface {
 	GetColumn(columnId int) (model.Column, error)
 	GetColumns(tableId int) ([]model.Column, error)
 	CreateColumn(in dto.ServInCreateColumn) int
-	UpdateColumn(columnId int, sin dto.ServInCreateColumn) int
+	UpdateColumn(sin dto.ServInCreateColumn) int
 	DeleteColumn(columnId int) int
 	GetColumnLog(columnId int) ([]dto.QueOutColumnLog, error)
 }
@@ -90,17 +90,15 @@ const UPDATE_COLUMN_ERROR_INT = 2
 /*----------------------------------------*/
 
 // UpdateColumn update Column record by columnId.
-func (serv *columnService) UpdateColumn(
-	columnId int, sin dto.ServInCreateColumn,
-) int {
+func (serv *columnService) UpdateColumn(sin dto.ServInCreateColumn) int {
 	col, err := serv.columnRepository.GetByNameAndTableId(sin.ColumnName, sin.TableId)
 	
-	if err == nil && col.ColumnId != columnId {
+	if err == nil && col.ColumnId != sin.ColumnId {
 		return UPDATE_COLUMN_CONFLICT_INT
 	}
 	
 	column := sin.ToColumn()
-	err = serv.columnRepository.Update(columnId, &column)
+	err = serv.columnRepository.Update(&column)
 
 	if err != nil {
 		logger.Error(err.Error())

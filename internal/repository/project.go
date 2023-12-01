@@ -13,7 +13,7 @@ type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(id int, p *model.Project) error
 
-	GetByUserId(userId string) ([]model.Project, error)
+	GetByUserId(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
 	GetByUniqueKey(username, projectName string) (model.Project, error)
 	GetMemberProject(username, projectName string) (model.Project, error)

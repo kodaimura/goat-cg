@@ -6,6 +6,7 @@ import (
 )
 
 type ServInCreateColumn struct {
+	ColumnId int
 	TableId int
 	ColumnName string
 	ColumnNameLogical string
@@ -27,6 +28,7 @@ type ServInCreateColumn struct {
 func (d ServInCreateColumn) ToColumn() model.Column {
 	var c model.Column
 
+	c.ColumnId = d.ColumnId
 	c.TableId = d.TableId
 	c.ColumnName = d.ColumnName
 	c.ColumnNameLogical = d.ColumnNameLogical

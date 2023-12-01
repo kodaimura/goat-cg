@@ -28,6 +28,7 @@ func (f PostColumnsForm) ToServInCreateColumn(
 ) dto.ServInCreateColumn {
 	var ret dto.ServInCreateColumn
 
+	ret.ColumnId = f.ColumnId
 	ret.TableId = tableId
 	ret.ColumnName = f.ColumnName
 	ret.ColumnNameLogical = f.ColumnNameLogical

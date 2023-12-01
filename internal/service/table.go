@@ -3,15 +3,15 @@ package service
 import (
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model/entity"
-	"goat-cg/internal/model/dao"
-	"goat-cg/internal/model/query"
+	"goat-cg/internal/model"
+	"goat-cg/internal/repository"
+	"goat-cg/internal/query"
 )
 
 
 type TableService interface {
-	GetTables(projectId int) ([]entity.Table, error)
-	GetTable(tableId int) (entity.Table, error)
+	GetTables(projectId int) ([]model.Table, error)
+	GetTable(tableId int) (model.Table, error)
 	CreateTable(
 		projectId, userId int,
 		tableName, tableNameLogical string,
@@ -27,15 +27,15 @@ type TableService interface {
 
 
 type tableService struct {
-	tDao dao.TableDao
-	cDao dao.ColumnDao
+	tDao repository.TableRepository
+	cDao repository.ColumnRepository
 	tQue query.TableQuery
 }
 
 
 func NewTableService() TableService {
-	tDao := dao.NewTableDao()
-	cDao := dao.NewColumnDao()
+	tDao := repository.NewTableRepository()
+	cDao := repository.NewColumnRepository()
 	tQue := query.NewTableQuery()
 
 	return &tableService{tDao, cDao, tQue}
@@ -45,11 +45,11 @@ func NewTableService() TableService {
 // GetTables get tables by projeectId.
 func (serv *tableService) GetTables(
 	projectId int,
-) ([]entity.Table, error) {
-	tables, err := serv.tDao.SelectByProjectId(projectId)
+) ([]model.Table, error) {
+	tables, err := serv.tDao.GetByProjectId(projectId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return tables, err
@@ -57,11 +57,11 @@ func (serv *tableService) GetTables(
 
 
 // GetTable get table by tableId.
-func (serv *tableService) GetTable(tableId int) (entity.Table, error) {
-	table, err := serv.tDao.Select(tableId)
+func (serv *tableService) GetTable(tableId int) (model.Table, error) {
+	table, err := serv.tDao.GetById(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return table, err
@@ -80,12 +80,12 @@ func (serv *tableService) CreateTable(
 	tableName, tableNameLogical string, 
 ) int {
 
-	_, err := serv.tDao.SelectByNameAndProjectId(tableName, projectId)
+	_, err := serv.tDao.GetByNameAndProjectId(tableName, projectId)
 	if err == nil {
 		return CREATE_TABLE_CONFLICT_INT
 	}
 
-	var t entity.Table
+	var t model.Table
 	t.ProjectId = projectId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
@@ -94,7 +94,7 @@ func (serv *tableService) CreateTable(
 	err = serv.tDao.Insert(&t)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return CREATE_TABLE_ERROR_INT
 	}
 
@@ -116,12 +116,12 @@ func (serv *tableService) UpdateTable(
 	delFlg int,
 ) int {
 
-	t0, err := serv.tDao.SelectByNameAndProjectId(tableName, projectId)
+	t0, err := serv.tDao.GetByNameAndProjectId(tableName, projectId)
 	if err == nil && t0.TableId != tableId{
 		return UPDATE_TABLE_CONFLICT_INT
 	}
 
-	var t entity.Table
+	var t model.Table
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
@@ -129,7 +129,7 @@ func (serv *tableService) UpdateTable(
 	err = serv.tDao.Update(tableId, &t)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return UPDATE_TABLE_ERROR_INT
 	}
 
@@ -148,14 +148,14 @@ func (serv *tableService) DeleteTable(tableId int) int {
 	err := serv.tDao.Delete(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_TABLE_ERROR_INT
 	}
 
 	err = serv.cDao.DeleteByTableId(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 		return DELETE_TABLE_ERROR_INT
 	}
 
@@ -168,7 +168,7 @@ func (serv *tableService) GetTableLog(tableId int) ([]dto.QueOutTableLog, error)
 	tableLog, err := serv.tQue.QueryTableLog(tableId)
 
 	if err != nil {
-		logger.LogError(err.Error())
+		logger.Error(err.Error())
 	}
 
 	return tableLog, err

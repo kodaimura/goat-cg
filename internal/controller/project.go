@@ -6,7 +6,6 @@ import (
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
-	"goat-cg/internal/model"
 )
 
 

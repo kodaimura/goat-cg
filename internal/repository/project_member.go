@@ -1,5 +1,5 @@
 package repository
-
+/*
 import (
 	"database/sql"
 
@@ -25,7 +25,7 @@ func NewProjectMemberRepository() ProjectMemberRepository {
 	return &projectMemberRepository{db}
 }
 
-/*
+
 func (rep *projectMemberRepository) GetByPk(userId, projectId int) (model.ProjectMember, error) {
 	var ret model.ProjectMember
 

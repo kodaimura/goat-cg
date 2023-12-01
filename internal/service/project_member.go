@@ -1,34 +1,34 @@
 package service
 
-import (	
-	"goat-cg/internal/shared/constant"
-	"goat-cg/internal/shared/dto"
-	"goat-cg/internal/core/logger"
-	"goat-cg/internal/model"
-	"goat-cg/internal/repository"
-	"goat-cg/internal/query"
-)
-
-
-type ProjectMemberService interface {
-	JoinRequest(userId, projectId int) int
-	CancelJoinRequest(userId, projectId int) int
-	PermitJoinRequest(userId, projectId int) int
-	GetJoinRequests(userId int) ([]dto.QueOutJoinRequest, error)
-}
-
-
-type projectMemberService struct {
-	projectMemberRepository repository.ProjectMemberRepository
-	projectMemberQuery query.ProjectMemberQuery
-}
-
-
-func NewProjectMemberService() ProjectMemberService {
-	projectMemberRepository := repository.NewProjectMemberRepository()
-	projectMemberQuery := query.NewProjectMemberQuery()
-	return &projectMemberService{projectMemberRepository, projectMemberQuery}
-}
+//import (	
+//	"goat-cg/internal/shared/constant"
+//	"goat-cg/internal/shared/dto"
+//	"goat-cg/internal/core/logger"
+//	"goat-cg/internal/model"
+//	"goat-cg/internal/repository"
+//	"goat-cg/internal/query"
+//)
+//
+//
+//type ProjectMemberService interface {
+//	JoinRequest(userId, projectId int) int
+//	CancelJoinRequest(userId, projectId int) int
+//	PermitJoinRequest(userId, projectId int) int
+//	GetJoinRequests(userId int) ([]dto.QueOutJoinRequest, error)
+//}
+//
+//
+//type projectMemberService struct {
+//	projectMemberRepository repository.ProjectMemberRepository
+//	projectMemberQuery query.ProjectMemberQuery
+//}
+//
+//
+//func NewProjectMemberService() ProjectMemberService {
+//	projectMemberRepository := repository.NewProjectMemberRepository()
+//	projectMemberQuery := query.NewProjectMemberQuery()
+//	return &projectMemberService{projectMemberRepository, projectMemberQuery}
+//}
 
 ///*----------------------------------------*/
 //const JOIN_REQUEST_SUCCESS_INT = 0

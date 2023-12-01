@@ -1,7 +1,6 @@
 package service
 
-import (	
-	"goat-cg/internal/shared/constant"
+import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
@@ -12,7 +11,6 @@ type ProjectService interface {
 	GetProjectId(userId int, projectCd string) int 
 	GetProjects(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
-	GetProjectByCd(projectCd string) model.Project
 	GetProject(username, projectName string) model.Project
 	GetMemberProject(username, projectName string) model.Project
 	CreateProject(userId int, username, projectName, projectMemo string) int
@@ -21,14 +19,14 @@ type ProjectService interface {
 
 type projectService struct {
 	projectRepository repository.ProjectRepository
-	projectMemberRepository repository.ProjectMemberRepository
+	//projectMemberRepository repository.ProjectMemberRepository
 }
 
 
 func NewProjectService() ProjectService {
 	projectRepository := repository.NewProjectRepository()
-	projectMemberRepository := repository.NewProjectMemberRepository()
-	return &projectService{projectRepository, projectMemberRepository}
+	//projectMemberRepository := repository.NewProjectMemberRepository()
+	return &projectService{projectRepository}//, projectMemberRepository}
 }
 
 
@@ -77,14 +75,6 @@ func (serv *projectService) GetMemberProjects(userId int) ([]model.Project, erro
 }
 
 
-func (serv *projectService) GetProjectByCd(
-	projectCd string,
-) model.Project {
-	project, _ := serv.projectRepository.GetByCd(projectCd)
-
-	return project
-}
-
 func (serv *projectService) GetProject(username, projectName string) model.Project {
 	project, _ := serv.projectRepository.GetByUniqueKey(username, projectName)
 
@@ -92,7 +82,7 @@ func (serv *projectService) GetProject(username, projectName string) model.Proje
 }
 
 func (serv *projectService) GetMemberProject(username, projectName string) model.Project {
-	project, _ := serv.projectRepository.GetMemeberProject(username, projectName)
+	project, _ := serv.projectRepository.GetMemberProject(username, projectName)
 
 	return project
 }

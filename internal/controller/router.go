@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
-	"goat-cg/internal/middleware/jwt"
+	"goat-cg/internal/middleware"
 )
 
 
@@ -33,7 +33,7 @@ func SetRouter(r *gin.Engine) {
 			au.GET("/projects/new", pc.CreateProjectPage)
 			au.POST("/projects", pc.CreateProject)
 
-			aup := a.Group("/:project_name", middleware.PathParameterValidationMiddleware())
+			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{
 				tc := NewTableController()
 	
@@ -52,7 +52,7 @@ func SetRouter(r *gin.Engine) {
 				aup.POST("/codegen/goat", cgc.CodegenGOAT)
 				aup.POST("/codegen/ddl", cgc.CodegenDDL)
 	
-				aupt := ap.Group("/tables/:table_id")
+				aupt := aup.Group("/tables/:table_id")
 				{
 					cc := NewColumnController()
 	

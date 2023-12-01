@@ -88,7 +88,6 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 
 //GET /:project_cd/tables/:table_id/columns/:column_id
 func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
-	userId := jwt.GetUserId(c)
 	t := c.Keys["table"].(model.Table)
 	col := c.Keys["column"].(model.Column)
 
@@ -105,10 +104,11 @@ func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
 func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	t := c.Keys["table"].(model.Table)
+	col := c.Keys["column"].(model.Column)
 
 	var form form.PostColumnsForm
 	c.Bind(&form)
-	form.ColumnId = c.Param("column_id")
+	form.ColumnId = col.ColumnId
 	result := ctr.columnService.UpdateColumn(
 		form.ToServInCreateColumn(t.TableId, userId),
 	)
@@ -141,8 +141,9 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 //DELETE /:project_cd/tables/:table_id/columns/:column_id
 func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
 	t := c.Keys["table"].(model.Table)
+	col := c.Keys["column"].(model.Column)
 
-	ctr.columnService.DeleteColumn(c.Param("column_id"))
+	ctr.columnService.DeleteColumn(col.ColumnId)
 
 	c.Redirect(303, fmt.Sprintf("/%s/%s/tables/%d/columns", c.Param("username"), c.Param("project_name"), t.TableId))
 
@@ -151,7 +152,8 @@ func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
 
 //GET /:project_cd/tables/:table_id/columns/:column_id/log
 func (ctr *ColumnController) ColumnLogPage(c *gin.Context) {
-	columnLog, _ := ctr.columnService.GetColumnLog(c.Param("column_id"))
+	col := c.Keys["column"].(model.Column)
+	columnLog, _ := ctr.columnService.GetColumnLog(col.ColumnId)
 
 	c.HTML(200, "columnlog.html", gin.H{
 		"commons": constant.Commons,

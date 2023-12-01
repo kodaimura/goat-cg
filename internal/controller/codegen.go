@@ -6,6 +6,7 @@ import (
 	"goat-cg/pkg/utils"
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
+	"goat-cg/internal/model"
 )
 
 
