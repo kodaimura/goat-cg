@@ -10,14 +10,14 @@ import (
 
 type UserRepository interface {
 	Insert(u *model.User) error
+	Get() ([]model.User, error)
 	GetById(id int) (model.User, error)
-	Update(id int, u *model.User) error
-	Delete(id int) error
-	
 	GetByName(name string) (model.User, error)
 	GetByEmail(email string) (model.User, error)
-	UpdatePassword(id int, password string) error
-	UpdateEmail(id int, email string) error
+	Update(u *model.User) error
+	UpdateEmail(u *model.User) error
+	UpdatePassword(u *model.User) error
+	Delete(u *model.User) error
 }
 
 
@@ -29,6 +29,57 @@ type userRepository struct {
 func NewUserRepository() UserRepository {
 	db := db.GetDB()
 	return &userRepository{db}
+}
+
+
+func (rep *userRepository) Insert(u *model.User) error {
+	_, err := rep.db.Exec(
+		`INSERT INTO users (
+			username, 
+			password,
+			email
+		 ) VALUES(?,?, ?)`,
+		u.Username, 
+		u.Password,
+		u.Email,
+	)
+	return err
+}
+
+
+func (ur *userRepository) Get() ([]model.User, error) {
+	var ret []model.User
+
+	rows, err := ur.db.Query(
+		`SELECT 
+			id, 
+			username, 
+			email,
+			created_at, 
+			updated_at 
+		 FROM users`,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		u := model.User{}
+		err = rows.Scan(
+			&u.UserId, 
+			&u.Username,
+			&u.Email,
+			&u.CreatedAt, 
+			&u.UpdatedAt,
+		)
+		if err != nil {
+			break
+		}
+		ret = append(ret, u)
+	}
+
+	return ret, err
 }
 
 
@@ -54,71 +105,6 @@ func (rep *userRepository) GetById(id int) (model.User, error){
 	)
 
 	return ret, err
-}
-
-
-func (rep *userRepository) Insert(u *model.User) error {
-	_, err := rep.db.Exec(
-		`INSERT INTO users (
-			username, 
-			password,
-			email
-		 ) VALUES(?,?, ?)`,
-		u.Username, 
-		u.Password,
-		u.Email
-	)
-	return err
-}
-
-
-func (rep *userRepository) Update(id int, u *model.User) error {
-	_, err := rep.db.Exec(
-		`UPDATE users 
-		 SET username = ? 
-			 password = ?
-			 emial = ?
-		 WHERE user_id = ?`,
-		u.Username,
-		u.Password,
-		u.Email, 
-		id,
-	)
-	return err
-}
-
-
-func (rep *userRepository) Delete(id int) error {
-	_, err := rep.db.Exec(
-		`DELETE FROM users WHERE user_id = ?`, 
-		id,
-	)
-
-	return err
-}
-
-
-func (rep *userRepository) UpdatePassword(id int, password string) error {
-	_, err := rep.db.Exec(
-		`UPDATE users 
-		 SET password = ? 
-		 WHERE user_id = ?`, 
-		 password, 
-		 id,
-	)
-	return err
-}
-
-
-func (rep *userRepository) UpdateEmail(id int, email string) error {
-	_, err := rep.db.Exec(
-		`UPDATE users
-		 SET email = ? 
-		 WHERE user_id = ?`, 
-		email, 
-		id,
-	)
-	return err
 }
 
 
@@ -174,3 +160,55 @@ func (rep *userRepository) GetByEmail(email string) (model.User, error) {
 
 	return ret, err
 }
+
+
+func (rep *userRepository) Update(u *model.User) error {
+	_, err := rep.db.Exec(
+		`UPDATE users 
+		 SET username = ? 
+			 password = ?
+			 email = ?
+		 WHERE user_id = ?`,
+		u.Username,
+		u.Password,
+		u.Email, 
+		u.UserId,
+	)
+	return err
+}
+
+
+func (ur *userRepository) UpdatePassword(u *model.User) error {
+	_, err := ur.db.Exec(
+		`UPDATE users 
+		 SET password = ? 
+		 WHERE user_id = ?`, 
+		 u.Password, 
+		 u.UserId,
+	)
+	return err
+}
+
+
+func (ur *userRepository) UpdateEmail(u *model.User) error {
+	_, err := ur.db.Exec(
+		`UPDATE users
+		 SET email = ? 
+		 WHERE user_id = ?`, 
+		u.Email, 
+		u.UserId,
+	)
+	return err
+}
+
+
+func (rep *userRepository) Delete(u *model.User) error {
+	_, err := rep.db.Exec(
+		`DELETE FROM users WHERE user_id = ?`, 
+		u.UserId,
+	)
+
+	return err
+}
+
+

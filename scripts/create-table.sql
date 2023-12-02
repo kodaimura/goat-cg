@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
 	user_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	username TEXT NOT NULL UNIQUE,
 	password TEXT NOT NULL,
-	email TEXT UNIQUE,
+	email TEXT NOT NULL UNIQUE,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
