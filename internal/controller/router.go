@@ -29,7 +29,7 @@ func SetRouter(r *gin.Engine) {
 
 		au := a.Group("/:username")
 		{
-			au.GET("/", rc.IndexPage)
+			au.GET("", pc.ProjectsPage)
 			au.GET("/projects", pc.ProjectsPage)
 			au.GET("/projects/new", pc.CreateProjectPage)
 			au.POST("/projects", pc.CreateProject)

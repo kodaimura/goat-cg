@@ -2,7 +2,7 @@
 {{template "head" .}}
 <header class="navbar is-dark mb-3">
 	<div class="navbar-brand">
-		<a class="navbar-item is-size-4" href="/{{.username}}/projects">GOAT-CG</a>
+		<a class="navbar-item is-size-4" href="/{{.username}}">GOAT-CG</a>
 		<a role="button" class="navbar-burger" data-target="navbarBurgers" aria-expanded="false">
 			<span aria-hidden="true"></span>
 			<span aria-hidden="true"></span>
@@ -29,7 +29,7 @@
 			</div>
 			{{ else }}
 			<div class="navbar-item">
-				<a href="/{{.username}}/projects" class="button is-small is-warning is-light">
+				<a href="/{{.username}}" class="button is-small is-warning is-light">
 				プロジェクト一覧
 				</a>
 			</div>

@@ -22,7 +22,7 @@ func NewProjectController() *ProjectController {
 }
 
 
-//GET /:username/projects
+//GET /:username or /:username/projects
 func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	username := jwt.GetUsername(c)
@@ -36,7 +36,7 @@ func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
 	projects, _ := ctr.projectService.GetProjects(userId)
 	member_projects, _ := ctr.projectService.GetMemberProjects(userId)
 
-	c.HTML(200, "projects.html", gin.H{
+	c.HTML(200, "index.html", gin.H{
 		"commons": constant.Commons,
 		"username": username,
 		"projects": projects,
@@ -78,7 +78,7 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 	err := ctr.projectService.CreateProject(userId, username, projectName, projectMemo)
 	
 	if err == nil {
-		c.Redirect(303, fmt.Sprintf("/%s/projects", username))
+		c.Redirect(303, fmt.Sprintf("/%s", username))
 
 	} else if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "project.html", gin.H{
