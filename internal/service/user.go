@@ -127,18 +127,18 @@ func (serv *userService) GetProfile(userId int) (model.User, error) {
 
 // ChangeUsername() Return value
 /*----------------------------------------*/
-const CHANGE_USERNAME_SUCCESS_INT = 0
-const CHANGE_USERNAME_FAILURE_INT = 1
+const CHANGE_EMAIL_SUCCESS_INT = 0
+const CHANGE_EMAIL_FAILURE_INT = 1
 /*----------------------------------------*/
-func (serv *userService) ChangeUsername(userId int, username string) int {
-	err := serv.userRepository.UpdateName(userId, username)
+func (serv *userService) ChangeEmail(userId int, email string) int {
+	err := serv.userRepository.UpdateEmail(userId, email)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return CHANGE_USERNAME_FAILURE_INT
+		return CHANGE_EMAIL_FAILURE_INT
 	}
 
-	return CHANGE_USERNAME_SUCCESS_INT
+	return CHANGE_EMAIL_SUCCESS_INT
 }
 
 

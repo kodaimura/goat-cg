@@ -14,10 +14,10 @@ type UserRepository interface {
 	Update(id int, u *model.User) error
 	Delete(id int) error
 	
-	/* 以降に追加 */
 	GetByName(name string) (model.User, error)
+	GetByEmail(email string) (model.User, error)
 	UpdatePassword(id int, password string) error
-	UpdateName(id int, name string) error
+	UpdateEmail(id int, email string) error
 }
 
 
@@ -39,6 +39,7 @@ func (rep *userRepository) GetById(id int) (model.User, error){
 		`SELECT 
 			user_id, 
 			username, 
+			email,
 			created_at , 
 			updated_at 
 		 FROM users 
@@ -47,6 +48,7 @@ func (rep *userRepository) GetById(id int) (model.User, error){
 	).Scan(
 		&ret.UserId, 
 		&ret.Username, 
+		&ret.Email, 
 		&ret.CreatedAt, 
 		&ret.UpdatedAt,
 	)
@@ -59,10 +61,12 @@ func (rep *userRepository) Insert(u *model.User) error {
 	_, err := rep.db.Exec(
 		`INSERT INTO users (
 			username, 
-			password
-		 ) VALUES(?,?)`,
+			password,
+			email
+		 ) VALUES(?,?, ?)`,
 		u.Username, 
 		u.Password,
+		u.Email
 	)
 	return err
 }
@@ -72,10 +76,12 @@ func (rep *userRepository) Update(id int, u *model.User) error {
 	_, err := rep.db.Exec(
 		`UPDATE users 
 		 SET username = ? 
-			  password = ?
+			 password = ?
+			 emial = ?
 		 WHERE user_id = ?`,
 		u.Username,
-		u.Password, 
+		u.Password,
+		u.Email, 
 		id,
 	)
 	return err
@@ -104,17 +110,16 @@ func (rep *userRepository) UpdatePassword(id int, password string) error {
 }
 
 
-func (rep *userRepository) UpdateName(id int, name string) error {
+func (rep *userRepository) UpdateEmail(id int, email string) error {
 	_, err := rep.db.Exec(
 		`UPDATE users
-		 SET username = ? 
+		 SET email = ? 
 		 WHERE user_id = ?`, 
-		name, 
+		email, 
 		id,
 	)
 	return err
 }
-
 
 
 func (rep *userRepository) GetByName(name string) (model.User, error) {
@@ -125,6 +130,7 @@ func (rep *userRepository) GetByName(name string) (model.User, error) {
 			user_id, 
 			username, 
 			password, 
+			email,
 			created_at , 
 			updated_at 
 		 FROM users 
@@ -134,6 +140,34 @@ func (rep *userRepository) GetByName(name string) (model.User, error) {
 		&ret.UserId, 
 		&ret.Username, 
 		&ret.Password, 
+		&ret.Email, 
+		&ret.CreatedAt, 
+		&ret.UpdatedAt,
+	)
+
+	return ret, err
+}
+
+
+func (rep *userRepository) GetByEmail(email string) (model.User, error) {
+	var ret model.User
+
+	err := rep.db.QueryRow(
+		`SELECT 
+			user_id, 
+			username, 
+			password, 
+			email,
+			created_at , 
+			updated_at 
+		 FROM users 
+		 WHERE email = ?`, 
+		 email,
+	).Scan(
+		&ret.UserId, 
+		&ret.Username, 
+		&ret.Password, 
+		&ret.Email, 
 		&ret.CreatedAt, 
 		&ret.UpdatedAt,
 	)
