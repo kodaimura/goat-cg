@@ -4,11 +4,11 @@
 
 <div class="box has-background-light">
 <div class="has-text-danger">{{.error}}</div>
-<form method="post" action="/projects">
+<form method="post" action="/{{.username}}/projects">
 	<div class="columns is-gapless">
 		<div class="column is-3">
 			<label class="label">プロジェクト名</label>
-			<input type="text" name="project_cd" class="input is-danger" 
+			<input type="text" name="project_name" class="input is-danger" 
 			required pattern="[0-9a-zA-Z]{2,}" value="{{.project_name}}">
 			<p class="help is-danger">
 				[0-9a-zA-Z]{2,}
@@ -16,7 +16,7 @@
 		</div>
 		<div class="column is-3">
 			<label class="label">メモ</label>
-			<input type="text" name="project_name" class="input is-danger" 
+			<input type="text" name="project_memo" class="input is-danger" 
 			required value="{{.project_memo}}">
 			<p class="help is-danger">
 			</p>

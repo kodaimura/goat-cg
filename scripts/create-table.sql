@@ -18,7 +18,7 @@ END;
 CREATE TABLE IF NOT EXISTS project (
 	project_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	project_name TEXT NOT NULL,
-	project_momo TEXT,
+	project_memo TEXT,
 	user_id INTEGER NOT NULL,
 	username TEXT NOT NULL,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),

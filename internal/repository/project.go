@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/db"
 	"goat-cg/internal/model"
 )
@@ -11,13 +10,12 @@ import (
 
 type ProjectRepository interface {
 	Insert(p *model.Project) error
-	Update(id int, p *model.Project) error
+	Update(p *model.Project) error
 
 	GetByUserId(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
 	GetByUniqueKey(username, projectName string) (model.Project, error)
 	GetMemberProject(username, projectName string) (model.Project, error)
-	GetByCdAndUserId(cd string, userId int) (model.Project, error)
 }
 
 
@@ -45,18 +43,22 @@ func (rep *projectRepository) Insert(p *model.Project) error {
 		p.UserId,
 		p.Username,
 	)
+
 	return err
 }
 
 
-func (rep *projectRepository) Update(id int, p *model.Project) error {
+func (rep *projectRepository) Update(p *model.Project) error {
 	_, err := rep.db.Exec(
 		`UPDATE project 
 		 SET project_name = ? 
+		 project_memo = ? 
 		 WHERE project_id = ?`,
 		p.ProjectName, 
-		id,
+		p.ProjectMemo,
+		p.ProjectId, 
 	)
+
 	return err
 }
 
@@ -68,7 +70,9 @@ func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
 			project_id,
 			project_name,
 			project_memo,
-			created_at
+			user_id,
+			username,
+			created_at,
 			updated_at 
 		 FROM 
 			 project
@@ -86,6 +90,8 @@ func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
 			&p.ProjectId, 
 			&p.ProjectName,
 			&p.ProjectMemo, 
+			&p.UserId,
+			&p.Username,
 			&p.CreatedAt,
 			&p.UpdatedAt,
 		)
@@ -106,7 +112,9 @@ func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, er
 			p.project_id,
 			p.project_name,
 			p.project_memo,
-			p.created_at
+			p.user_id,
+			p.username,
+			p.created_at,
 			p.updated_at 
 		 FROM 
 			 project p,
@@ -127,6 +135,8 @@ func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, er
 			&p.ProjectId, 
 			&p.ProjectName,
 			&p.ProjectMemo, 
+			&p.UserId,
+			&p.Username,
 			&p.CreatedAt,
 			&p.UpdatedAt,
 		)
@@ -180,7 +190,7 @@ func (rep *projectRepository) GetMemberProject(username, projectName string) (mo
 			p.project_memo,
 			p.user_id,
 			p.username,
-			p.created_at
+			p.created_at,
 			p.updated_at 
 		 FROM 
 			 project p,
@@ -199,36 +209,6 @@ func (rep *projectRepository) GetMemberProject(username, projectName string) (mo
 		&ret.Username,
 		&ret.CreatedAt,
 		&ret.UpdatedAt,
-	)
-
-	return ret, err
-}
-
-
-func (rep *projectRepository) GetByCdAndUserId(
-	cd string,
-	userId int,
-) (model.Project, error) {
-
-	var ret model.Project
-	err := rep.db.QueryRow(
-		`SELECT 
-			p.project_id,
-			p.project_name
-		 FROM 
-			 project p,
-			 project_member pu
-		 WHERE 
-			 p.project_id = pu.project_id
-		 AND p.project_cd = ?
-		 AND pu.user_id = ?
-		 AND pu.user_status = ?`, 
-		 cd,
-		 userId,
-		 constant.STATE_CLS_JOIN,
-	).Scan(
-		&ret.ProjectId, 
-		&ret.ProjectName,
 	)
 
 	return ret, err
