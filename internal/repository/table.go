@@ -17,6 +17,7 @@ type TableRepository interface {
 
 	GetByProjectId(projectId int) ([]model.Table, error)
 	GetByUniqueKey(name string, projectId int) (model.Table, error)
+	DeleteByProjectId(projectId int) error
 }
 
 
@@ -96,7 +97,7 @@ func (rep *tableRepository) Update(t *model.Table) error {
 		t.UpdateUserId,
 		t.TableId,
 	)
-	
+
 	return err
 }
 
@@ -184,4 +185,14 @@ func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error)
 	}
 
 	return ret, err
+}
+
+
+func (rep *tableRepository) DeleteByProjectId(projectId int) error {
+	_, err := rep.db.Exec(
+		`DELETE FROM table_def WHERE project_id = ?`, 
+		projectId,
+	)
+
+	return err
 }

@@ -40,5 +40,15 @@
     </div>
 </form>
 </div>
+
+{{template "modal-del" .}}
+<script type="text/javascript">
+	document.getElementById("modal-del-button").addEventListener("click", (e)=>{
+		fetch("", {method: "DELETE"})
+		.then(data => {
+			window.location = "/"
+		})
+	})
+</script>
 </main>
 {{template "footer"}}

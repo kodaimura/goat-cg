@@ -35,6 +35,7 @@ func SetRouter(r *gin.Engine) {
 			au.POST("/projects/new", pc.CreateProject)
 			au.GET("/projects/:project_id", pc.UpdateProjectPage)
 			au.POST("/projects/:project_id", pc.UpdateProject)
+			au.DELETE("/projects/:project_id", pc.DeleteProject)
 
 			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{

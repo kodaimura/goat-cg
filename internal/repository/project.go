@@ -11,6 +11,7 @@ import (
 type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(p *model.Project) error
+	Delete(p *model.Project) error
 	GetById(projectId int) (model.Project, error)
 	GetByUserId(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
@@ -57,6 +58,16 @@ func (rep *projectRepository) Update(p *model.Project) error {
 		p.ProjectName, 
 		p.ProjectMemo,
 		p.ProjectId, 
+	)
+
+	return err
+}
+
+
+func (rep *projectRepository) Delete(p *model.Project) error {
+	_, err := rep.db.Exec(
+		`DELETE FROM project WHERE project_id = ?`, 
+		p.ProjectId,
 	)
 
 	return err

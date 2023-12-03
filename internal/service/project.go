@@ -14,19 +14,24 @@ type ProjectService interface {
 	GetMemberProjects(userId int) ([]model.Project, error)
 	CreateProject(userId int, username, projectName, projectMemo string) error
 	UpdateProject(username string, projectId int, projectName, projectMemo string) error
+	DeleteProject(projectId int) error
 }
 
 
 type projectService struct {
 	projectRepository repository.ProjectRepository
+	tableRepository repository.TableRepository
+	columnRepository repository.ColumnRepository
 	//projectMemberRepository repository.ProjectMemberRepository
 }
 
 
 func NewProjectService() ProjectService {
 	projectRepository := repository.NewProjectRepository()
+	tableRepository := repository.NewTableRepository()
+	columnRepository := repository.NewColumnRepository()
 	//projectMemberRepository := repository.NewProjectMemberRepository()
-	return &projectService{projectRepository}//, projectMemberRepository}
+	return &projectService{projectRepository, tableRepository, columnRepository}//, projectMemberRepository}
 }
 
 
@@ -97,6 +102,42 @@ func (serv *projectService) UpdateProject(username string, projectId int, projec
 	p.ProjectName = projectName
 	p.ProjectMemo = projectMemo
 	err = serv.projectRepository.Update(&p)
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	return err
+}
+
+
+func (serv *projectService) DeleteProject(projectId int) error {
+	var p model.Project
+	p.ProjectId= projectId
+	err := serv.projectRepository.Delete(&p)
+
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	tables, err := serv.tableRepository.GetByProjectId(projectId)
+
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	for _, table := range tables {
+		err = serv.columnRepository.DeleteByTableId(table.TableId)
+
+		if err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	err = serv.tableRepository.DeleteByProjectId(projectId)
 
 	if err != nil {
 		logger.Error(err.Error())

@@ -170,3 +170,19 @@ func (ctr *ProjectController) UpdateProject(c *gin.Context) {
 	}
 }
 
+
+//DELETE /:username/projects/:project_id
+func (ctr *ProjectController) DeleteProject(c *gin.Context) {
+	username := jwt.GetUsername(c)
+	projectId, err := strconv.Atoi(c.Param("project_id"))
+
+	if err != nil || c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+	ctr.projectService.DeleteProject(projectId)
+
+	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
+
+}
