@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/pkg/utils"
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
 )
@@ -30,7 +29,6 @@ func (ctr *CodegenController) CodegenPage(c *gin.Context) {
 	tables, _ := ctr.tableService.GetTables(p.ProjectId)
 
 	c.HTML(200, "codegen.html", gin.H{
-		"commons": constant.Commons,
 		"project_name": c.Param("project_name"), 
 		"tables": tables,
 	})

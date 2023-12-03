@@ -6,7 +6,6 @@ import (
 
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/core/errs"
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
 )
 
@@ -37,7 +36,6 @@ func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
 	member_projects, _ := ctr.projectService.GetMemberProjects(userId)
 
 	c.HTML(200, "index.html", gin.H{
-		"commons": constant.Commons,
 		"username": username,
 		"projects": projects,
 		"member_projects": member_projects,
@@ -56,7 +54,6 @@ func (ctr *ProjectController) CreateProjectPage(c *gin.Context) {
 	}
 	
 	c.HTML(200, "project.html", gin.H{
-		"commons": constant.Commons,
 		"username": username,
 	})
 }
@@ -82,7 +79,6 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 
 	} else if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "project.html", gin.H{
-			"commons": constant.Commons,
 			"username": username,
 			"error": "プロジェクト名が重複して使われています",
 			"project_name": projectName,
@@ -91,7 +87,6 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 
 	} else {
 		c.HTML(500, "project.html", gin.H{
-			"commons": constant.Commons,
 			"username": username,
 			"error": "登録に失敗しました",
 			"project_name": projectName,

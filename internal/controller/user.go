@@ -6,7 +6,6 @@ import (
 	"goat-cg/config"
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/core/errs"
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
 )
 
@@ -24,16 +23,12 @@ func NewUserController() *UserController {
 
 //GET /signup
 func (ctr *UserController) SignupPage(c *gin.Context) {
-	c.HTML(200, "signup.html", gin.H{
-		"commons": constant.Commons,
-	})
+	c.HTML(200, "signup.html", gin.H{})
 }
 
 //GET /login
 func (ctr *UserController) LoginPage(c *gin.Context) {
-	c.HTML(200, "login.html", gin.H{
-		"commons": constant.Commons,
-	})
+	c.HTML(200, "login.html", gin.H{})
 }
 
 

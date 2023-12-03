@@ -7,7 +7,6 @@ import (
 
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/core/errs"
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
 )
@@ -32,7 +31,6 @@ func (ctr *TableController) TablesPage(c *gin.Context) {
 
 	tables, _ := ctr.tableService.GetTables(project.ProjectId)
 	c.HTML(200, "tables.html", gin.H{
-		"commons": constant.Commons,
 		"project": project, 
 		"tables": tables,
 	})
@@ -44,7 +42,6 @@ func (ctr *TableController) CreateTablePage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 
 	c.HTML(200, "table.html", gin.H{
-		"commons": constant.Commons,
 		"project": project, 
 	})
 }
@@ -71,7 +68,6 @@ func (ctr *TableController) CreateTable(c *gin.Context) {
 
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "table.html", gin.H{
-			"commons": constant.Commons,
 			"project": project, 
 			"table": table,
 			"error": "同一TableNameが既に登録されています",
@@ -79,7 +75,6 @@ func (ctr *TableController) CreateTable(c *gin.Context) {
 
 	} else {
 		c.HTML(500, "table.html", gin.H{
-			"commons": constant.Commons,
 			"project": project, 
 			"table": table,
 			"error": "登録に失敗しました",
@@ -94,7 +89,6 @@ func (ctr *TableController) UpdateTablePage(c *gin.Context) {
 	table := c.Keys["table"].(model.Table)
 
 	c.HTML(200, "table.html", gin.H{
-		"commons": constant.Commons,
 		"project": project, 
 		"table": table,
 	})
@@ -128,14 +122,12 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "table.html", gin.H{
-			"commons": constant.Commons,
 			"project": project, 
 			"taple": table,
 			"error": "同一TableNameが既に登録されています",
 		})
 	} else {
 		c.HTML(500, "table.html", gin.H{
-			"commons": constant.Commons,
 			"project": project, 
 			"taple": table,
 			"error": "更新に失敗しました",
@@ -162,7 +154,6 @@ func (ctr *TableController) TableLogPage(c *gin.Context) {
 	tableLog, _ := ctr.tableService.GetTableLog(table.TableId)
 
 	c.HTML(200, "tablelog.html", gin.H{
-		"commons": constant.Commons,
 		"project": project, 
 		"tablelog": tableLog,
 	})

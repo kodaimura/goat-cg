@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/shared/form"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
@@ -32,7 +31,6 @@ func (ctr *ColumnController) ColumnsPage(c *gin.Context) {
 	columns, _ := ctr.columnService.GetColumns(t.TableId)
 
 	c.HTML(200, "columns.html", gin.H{
-		"commons": constant.Commons,
 		"project_name" : c.Param("project_name"),
 		"table": t,
 		"columns": columns,
@@ -45,7 +43,6 @@ func (ctr *ColumnController) CreateColumnPage(c *gin.Context) {
 	t := c.Keys["table"].(model.Table)
 
 	c.HTML(200, "column.html", gin.H{
-		"commons": constant.Commons,
 		"project_name" : c.Param("project_name"),
 		"table": t,
 	})
@@ -68,7 +65,6 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 
 	if result == service.CREATE_COLUMN_CONFLICT_INT {
 		c.HTML(409, "column.html", gin.H{
-			"commons": constant.Commons,
 			"project_name" : c.Param("project_name"),
 			"table": t,
 			"column": form,
@@ -76,7 +72,6 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
-			"commons": constant.Commons,
 			"project_name" : c.Param("project_name"),
 			"table": t,
 			"column": form,
@@ -92,7 +87,6 @@ func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
 	col := c.Keys["column"].(model.Column)
 
 	c.HTML(200, "column.html", gin.H{
-		"commons": constant.Commons,
 		"project_name" : c.Param("project_name"),
 		"table": t,
 		"column": col,
@@ -120,7 +114,6 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 
 	if result == service.UPDATE_COLUMN_CONFLICT_INT {
 		c.HTML(409, "column.html", gin.H{
-			"commons": constant.Commons,
 			"project_name" : c.Param("project_name"),
 			"table": t,
 			"column": form,
@@ -128,7 +121,6 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
-			"commons": constant.Commons,
 			"project_name" : c.Param("project_name"),
 			"table": t,
 			"column": form,
@@ -156,7 +148,6 @@ func (ctr *ColumnController) ColumnLogPage(c *gin.Context) {
 	columnLog, _ := ctr.columnService.GetColumnLog(col.ColumnId)
 
 	c.HTML(200, "columnlog.html", gin.H{
-		"commons": constant.Commons,
 		"project_name" : c.Param("project_name"),
 		"columnlog": columnLog,
 	})
