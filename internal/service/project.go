@@ -75,8 +75,8 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 
 
 func (serv *projectService) UpdateProject(username string, projectId int, projectName, projectMemo string) error {
-	_, err := serv.projectRepository.GetByUniqueKey(username, projectName)
-	if err == nil {
+	project, err := serv.projectRepository.GetByUniqueKey(username, projectName)
+	if err == nil && project.ProjectId != projectId {
 		return errs.NewUniqueConstraintError("project_name")
 	}
 

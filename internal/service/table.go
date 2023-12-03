@@ -87,8 +87,8 @@ func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNam
 // UpdateTable update Table by tableId.
 // contains logical delete. 
 func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName, tableNameLogical string, delFlg int) error {
-	_, err := serv.tableRepository.GetByUniqueKey(tableName, projectId)
-	if err == nil {
+	table, err := serv.tableRepository.GetByUniqueKey(tableName, projectId)
+	if err == nil && table.TableId != tableId {
 		return errs.NewUniqueConstraintError("table_name")
 	}
 
