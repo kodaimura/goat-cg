@@ -51,7 +51,7 @@ Edit Table
 	{{ end }}
 </form>
 </div>
-{{ if eq .del_flg 1 }}
+{{ if eq .table.DelFlg 1 }}
 {{template "modal-del" .}}
 <script type="text/javascript" src="/js/table.js"></script>
 {{ end }}

@@ -104,6 +104,7 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 	tableName := c.PostForm("table_name")
 	tableNameLogical := c.PostForm("table_name_logical")
 	delFlg, err := strconv.Atoi(c.PostForm("del_flg"))
+
 	if err != nil || delFlg != 1 {
 		delFlg = 0
 	}
@@ -119,6 +120,7 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 
 	table.TableName = tableName
 	table.TableNameLogical = tableNameLogical
+	table.DelFlg = delFlg
 
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "table.html", gin.H{
