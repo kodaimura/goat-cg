@@ -92,11 +92,13 @@ func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName,
 		return errs.NewUniqueConstraintError("table_name")
 	}
 
-	table.TableName = tableName
-	table.TableNameLogical = tableNameLogical
-	table.UpdateUserId = userId
-	table.DelFlg = delFlg
-	err = serv.tableRepository.Update(&table)
+	var t model.Table
+	t.TableId = tableId
+	t.TableName = tableName
+	t.TableNameLogical = tableNameLogical
+	t.UpdateUserId = userId
+	t.DelFlg = delFlg
+	err = serv.tableRepository.Update(&t)
 
 	if err != nil {
 		logger.Error(err.Error())
