@@ -63,7 +63,10 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 	err := ctr.columnService.CreateColumn(form.ToServInCreateColumn(table.TableId, userId))
 
 	if err == nil {
-		c.Redirect(303, fmt.Sprintf("/%s/%s/tables/%s/columns", c.Param("username"), c.Param("project_name"), c.Param("table_id")))
+		c.Redirect(303, fmt.Sprintf(
+			"/%s/%s/tables/%s/columns", 
+			c.Param("username"), c.Param("project_name"), c.Param("table_id"),
+		))
 		return
 	}
 
@@ -112,7 +115,10 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 	err := ctr.columnService.UpdateColumn(form.ToServInCreateColumn(table.TableId, userId))
 
 	if err == nil {
-		c.Redirect(303, fmt.Sprintf("/%s/%s/tables/%s/columns", c.Param("username"), c.Param("project_name"), c.Param("table_id")))
+		c.Redirect(303, fmt.Sprintf(
+			"/%s/%s/tables/%s/columns", 
+			c.Param("username"), c.Param("project_name"), c.Param("table_id"),
+		))
 		return
 	}
 
@@ -140,7 +146,10 @@ func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
 
 	ctr.columnService.DeleteColumn(column.ColumnId)
 
-	c.Redirect(303, fmt.Sprintf("/%s/%s/tables/%s/columns", c.Param("username"), c.Param("project_name"), c.Param("table_id")))
+	c.Redirect(303, fmt.Sprintf(
+		"/%s/%s/tables/%s/columns", 
+		c.Param("username"), c.Param("project_name"), c.Param("table_id"),
+	))
 
 }
 

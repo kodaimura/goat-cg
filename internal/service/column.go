@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"goat-cg/internal/shared/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"

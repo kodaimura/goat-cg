@@ -58,7 +58,7 @@ func (ctr *TableController) CreateTable(c *gin.Context) {
 	err := ctr.tableService.CreateTable(project.ProjectId, userId, tableName, tableNameLogical)
 
 	if err == nil {
-		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), project.ProjectName))
+		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), c.Param("project_name")))
 		return
 	} 
 
@@ -113,7 +113,7 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 	)
 
 	if err == nil {
-		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), project.ProjectName))
+		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), c.Param("project_name")))
 		return
 	} 
 
@@ -138,11 +138,10 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 
 //DELETE /:username/:project_name/tables/:table_id
 func (ctr *TableController) DeleteTable(c *gin.Context) {
-	p := c.Keys["project"].(model.Project)
-	t := c.Keys["table"].(model.Table)
-	ctr.tableService.DeleteTable(t.TableId)
+	table := c.Keys["table"].(model.Table)
+	ctr.tableService.DeleteTable(table.TableId)
 
-	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), p.ProjectName))
+	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
 
 }
 
