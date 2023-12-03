@@ -14,7 +14,7 @@ type ColumnRepository interface {
 	Update(c *model.Column) error
 	Delete(id int) error
 
-	GetByNameAndTableId(name string, tableId int) (model.Column, error)
+	GetByUniqueKey(name string, tableId int) (model.Column, error)
 	GetByTableId(tableId int) ([]model.Column, error)
 	DeleteByTableId(tableId int) error
 }
@@ -170,7 +170,7 @@ func (rep *columnRepository) Delete(id int) error {
 }
 
 
-func (rep *columnRepository) GetByNameAndTableId(
+func (rep *columnRepository) GetByUniqueKey(
 	name string, 
 	tableId int,
 ) (model.Column, error) {

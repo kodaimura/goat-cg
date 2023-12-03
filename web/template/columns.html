@@ -15,7 +15,7 @@
 			<th style="min-width:50px;">UQ</th>
 			<th style="min-width:200px;">更新日</th>
 			<th style="min-width:110px;">
-				<a href="columns/new" class="button is-small is-rounded is-dark">追加</a>
+				<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables/{{.table.TableId}}/columns/new" class="button is-small is-rounded is-dark">追加</a>
 			</th>
 			</tr>
 		</thead>
@@ -77,10 +77,10 @@
 			{{ end }}
 			</td>
 			<td style="min-width:200px;">
-			<a href="./columns/{{$c.ColumnId}}/log" class="has-text-info">{{.UpdatedAt}}</a>
+			<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$.table.TableId}}/columns/{{$c.ColumnId}}/log" class="has-text-info">{{.UpdatedAt}}</a>
 			</td>
 			<td style="min-width:110px;" class="py-1">
-				<a href="./columns/{{$c.ColumnId}}">
+				<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$.table.TableId}}/columns/{{$c.ColumnId}}">
 					<i class="fa-sharp fa-solid fa-pen-to-square fa-xl has-text-black"></i>
 				</a>
 			</td>

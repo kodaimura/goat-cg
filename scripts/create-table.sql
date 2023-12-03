@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS table_def (
 	del_flg INTEGER NOT NULL DEFAULT 0,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	UNIQUE(project_name, table_name)
+	UNIQUE(project_id, table_name)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_table_def_upd AFTER UPDATE ON table_def
@@ -118,7 +118,8 @@ CREATE TABLE IF NOT EXISTS column_def (
 	create_user_id INTEGER,
 	update_user_id INTEGER,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	UNIQUE(table_id, column_name)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_column_def_upd AFTER UPDATE ON column_def
