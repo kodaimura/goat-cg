@@ -17,9 +17,9 @@ type QueOutColumnLog struct {
 	AlignSeq int
 	DelFlg int
 	CreateUserId int
-	CreateUserName string
+	CreateUsername string
 	UpdateUserId int
-	UpdateUserName string
+	UpdateUsername string
 	CreatedAt string
 	UpdatedAt string
 }

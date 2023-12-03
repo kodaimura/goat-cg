@@ -1,21 +1,26 @@
 {{template "header" .}}
 <main>
-<h1 class="title">カラム更新履歴</h1>
-<div style="height: 450px; overflow-y:scroll;">
+<div class="mb-3">
+	<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables/{{.table.TableId}}/columns" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+<h1 class="title">Column Change Log</h1>
+<div style="height: 350px; overflow-y:scroll;">
 	<table class="table is-fullwidth mb-1 has-background-light is-narrow">
 		<thead>
 			<tr>
-			<th style="min-width:50px;">順</th>
-			<th style="min-width:200px;">カラム名</th>
-			<th style="min-width:200px;">カラム名（JP）</th>
-			<th style="min-width:140px;">型</th>
-			<th style="min-width:100px;">デフォ値</th>	
+			<th style="min-width:50px;"></th>
+			<th style="min-width:200px;">Column Name</th>
+			<th style="min-width:200px;">Column Name（JP）</th>
+			<th style="min-width:140px;">Type</th>
+			<th style="min-width:100px;">Default</th>	
 			<th style="min-width:50px;">PK</th>
 			<th style="min-width:50px;">NN</th>
 			<th style="min-width:50px;">UQ</th>
-			<th style="min-width:60px;">削除</th>
-			<th style="min-width:150px;">更新日</th>
-			<th style="min-width:150px;">更新者</th>
+			<th style="min-width:60px;">Del</th>
+			<th style="min-width:150px;">UpdatedAt</th>
+			<th style="min-width:150px;">UpdatedBy</th>
 			</tr>
 		</thead>
 	</table>
@@ -80,15 +85,12 @@
 			{{$c.UpdatedAt}}
 			</td>
 			<td style="min-width:150px;">
-			{{$c.UpdateUserName}}
+			{{$c.UpdateUsername}}
 			</td>
 			</tr>
 			{{ end }}
 		</tbody>
 	</table>
-</div>
-<div class="mt-5">
-	<a href="../">カラム一覧</a>
 </div>
 </main>
 {{template "footer"}}

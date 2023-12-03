@@ -6,6 +6,6 @@ type QueOutJoinRequest struct {
 	ProjectCd string
 	ProjectName string
 	UserId int
-	UserName string
+	Username string
 	UpdatedAt string
 }

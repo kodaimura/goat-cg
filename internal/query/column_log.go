@@ -44,9 +44,9 @@ func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
 			cl.align_seq,
 			cl.del_flg,
 			cl.create_user_id,
-			u1.user_name create_user_name,
+			u1.username create_username,
 			cl.update_user_id,
-			u2.user_name update_user_name,
+			u2.username update_username,
 			cl.created_at ,
 			cl.updated_at
 		 FROM
@@ -81,9 +81,9 @@ func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
 			&x.AlignSeq,
 			&x.DelFlg,
 			&x.CreateUserId,
-			&x.CreateUserName,
+			&x.CreateUsername,
 			&x.UpdateUserId,
-			&x.UpdateUserName,
+			&x.UpdateUsername,
 			&x.CreatedAt,
 			&x.UpdatedAt,
 		)

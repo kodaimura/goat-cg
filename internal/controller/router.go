@@ -4,93 +4,83 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
+	"goat-cg/internal/middleware"
 )
 
 
 func SetRouter(r *gin.Engine) {
-	uc := newUserController()
+	uc := NewUserController()
 
 	//render HTML or redirect
-	r.GET("/signup", uc.signupPage)
-	r.GET("/login", uc.loginPage)
-	r.GET("/logout", uc.logout)
-	r.POST("/signup", uc.signup)
-	r.POST("/login", uc.login)
+	r.GET("/signup", uc.SignupPage)
+	r.POST("/signup", uc.Signup)
+	r.GET("/login", uc.LoginPage)
+	r.POST("/login", uc.Login)
+	r.GET("/logout", uc.Logout)
 
 	//render HTML or redirect (Authorized request)
 	a := r.Group("/", jwt.JwtAuthMiddleware())
 	{
-		rc := newRootController()
+		rc := NewRootController()
 		
-		a.GET("/", rc.indexPage)
+		a.GET("/", rc.IndexPage)
 
-		pc := newProjectController()
+		pc := NewProjectController()
 
-		a.GET("/projects", pc.projectsPage)
-		a.GET("/projects/new", pc.createProjectPage)
-		a.POST("/projects", pc.createProject)
-
-		upc := newProjectUserController()
-
-		a.GET("/projects/requests", upc.requestsPage)
-		a.POST("/projects/requests/join", upc.joinRequest)
-		a.POST("/projects/requests/cancel", upc.cancelJoinRequest)
-		a.POST("/projects/requests/permit", upc.permitJoinRequest)
-
-
-		ap := a.Group("/:project_cd")
+		au := a.Group("/:username")
 		{
-			tc := newTableController()
+			au.GET("", pc.ProjectsPage)
+			au.GET("/projects", pc.ProjectsPage)
+			au.GET("/projects/new", pc.CreateProjectPage)
+			au.POST("/projects/new", pc.CreateProject)
+			au.GET("/projects/:project_id", pc.UpdateProjectPage)
+			au.POST("/projects/:project_id", pc.UpdateProject)
+			au.DELETE("/projects/:project_id", pc.DeleteProject)
 
-			ap.GET("/tables", tc.tablesPage)
-			ap.GET("/tables/new", tc.createTablePage)
-			ap.POST("/tables/new", tc.createTable)
-			ap.GET("/tables/:table_id", tc.updateTablePage)
-			ap.POST("/tables/:table_id", tc.updateTable)
-			ap.DELETE("/tables/:table_id", tc.deleteTable)
-			ap.GET("/tables/:table_id/log", tc.tableLogPage)
-
-
-			cgc := newCodegenController()
-
-			ap.GET("/codegen", cgc.codegenPage)
-			ap.POST("/codegen/goat", cgc.codegenGOAT)
-			ap.POST("/codegen/ddl", cgc.codegenDDL)
-
-			aptt := ap.Group("/tables/:table_id")
+			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{
-				cc := newColumnController()
+				tc := NewTableController()
 
-				aptt.GET("/columns", cc.columnsPage)
-				aptt.GET("/columns/new", cc.createColumnPage)
-				aptt.POST("/columns/new", cc.createColumn)
-				aptt.GET("/columns/:column_id", cc.updateColumnPage)
-				aptt.POST("/columns/:column_id", cc.updateColumn)
-				aptt.DELETE("/columns/:column_id", cc.deleteColumn)
-				aptt.GET("/columns/:column_id/log", cc.columnLogPage)
+				aup.GET("", tc.TablesPage)
+				aup.GET("/tables", tc.TablesPage)
+				aup.GET("/tables/new", tc.CreateTablePage)
+				aup.POST("/tables/new", tc.CreateTable)
+				aup.GET("/tables/:table_id", tc.UpdateTablePage)
+				aup.POST("/tables/:table_id", tc.UpdateTable)
+				aup.DELETE("/tables/:table_id", tc.DeleteTable)
+				aup.GET("/tables/:table_id/log", tc.TableLogPage)
+	
+	
+				cgc := NewCodegenController()
+	
+				aup.GET("/codegen", cgc.CodegenPage)
+				aup.POST("/codegen/goat", cgc.CodegenGOAT)
+				aup.POST("/codegen/ddl", cgc.CodegenDDL)
+	
+				aupt := aup.Group("/tables/:table_id")
+				{
+					cc := NewColumnController()
+	
+					aupt.GET("/columns", cc.ColumnsPage)
+					aupt.GET("/columns/new", cc.CreateColumnPage)
+					aupt.POST("/columns/new", cc.CreateColumn)
+					aupt.GET("/columns/:column_id", cc.UpdateColumnPage)
+					aupt.POST("/columns/:column_id", cc.UpdateColumn)
+					aupt.DELETE("/columns/:column_id", cc.DeleteColumn)
+					aupt.GET("/columns/:column_id/log", cc.ColumnLogPage)
+				}
 			}
-		}
+		} 
+		
 	}
 
-	//response JSON
-	api := r.Group("/api")
+	//response JSON (Authorized request)
+	api := r.Group("/api", jwt.JwtAuthApiMiddleware())
 	{
-		uac := newUserApiController()
-
-		api.POST("/signup", uac.signup)
-		api.POST("/login", uac.login)
-		api.GET("/logout", uac.logout)
-
-
-		//response JSON (Authorized request)
-		a := api.Group("/", jwt.JwtAuthApiMiddleware())
-		{
-			a.GET("/profile", uac.getProfile)
-			a.PUT("/username", uac.changeUsername)
-			a.POST("/username", uac.changeUsername)
-			a.PUT("/password", uac.changePassword)
-			a.POST("/password", uac.changePassword)
-			a.DELETE("/account", uac.deleteUser)
-		}
+		api.GET("/account/profile", uc.GetProfile)
+		//api.PUT("/account/username", uc.UpdateUsername)
+		api.PUT("/account/password", uc.UpdatePassword)
+		api.PUT("/account/email", uc.UpdateEmail)
+		api.DELETE("/account", uc.DeleteAccount)
 	}
 }

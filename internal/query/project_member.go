@@ -1,5 +1,5 @@
 package query
-
+/*
 import (
 	"database/sql"
 
@@ -9,42 +9,42 @@ import (
 )
 
 
-type ProjectUserQuery interface {
+type ProjectMemberQuery interface {
 	QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error)
 }
 
 
-type projectUserQuery struct {
+type projectMemberQuery struct {
 	db *sql.DB
 }
 
 
-func NewProjectUserQuery() ProjectUserQuery {
+func NewProjectMemberQuery() ProjectMemberQuery {
 	db := db.GetDB()
-	return &projectUserQuery{db}
+	return &projectMemberQuery{db}
 }
 
 
-func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error){
+func (que *projectMemberQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error){
 
 	var ret []dto.QueOutJoinRequest
 	rows, err := que.db.Query(
 		`SELECT
 			u.user_id,
-			u.user_name,
+			u.username,
 			p.project_id,
 			p.project_cd,
 			p.project_name,
 			pu2.updated_at
 		 FROM 
-			 project_user pu1,
-			 project_user pu2,
+			 project_member pu1,
+			 project_member pu2,
 			 users u,
 			 project p
 		 WHERE pu1.user_id = ?
-		  AND pu1.role_cls in (?, ?)
+		  AND pu1.user_role in (?, ?)
 		  AND pu2.project_id = pu1.project_id
-		  AND pu2.state_cls = ?
+		  AND pu2.user_status = ?
 		  AND u.user_id = pu2.user_id
 		  AND p.project_id = pu2.project_id `, 
 		 userId,
@@ -61,7 +61,7 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 		x := dto.QueOutJoinRequest{}
 		err = rows.Scan(
 			&x.UserId,
-			&x.UserName,
+			&x.Username,
 			&x.ProjectId,
 			&x.ProjectCd,
 			&x.ProjectName,
@@ -75,3 +75,4 @@ func (que *projectUserQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReque
 
 	return ret, err
 }
+*/

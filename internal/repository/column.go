@@ -11,10 +11,10 @@ import (
 type ColumnRepository interface {
 	GetById(id int) (model.Column, error)
 	Insert(c *model.Column) error
-	Update(id int, c *model.Column) error
-	Delete(id int) error
+	Update(c *model.Column) error
+	Delete(c *model.Column) error
 
-	GetByNameAndTableId(name string, tableId int) (model.Column, error)
+	GetByUniqueKey(name string, tableId int) (model.Column, error)
 	GetByTableId(tableId int) ([]model.Column, error)
 	DeleteByTableId(tableId int) error
 }
@@ -119,11 +119,12 @@ func (rep *columnRepository) Insert(c *model.Column) error {
 		c.CreateUserId,
 		c.CreateUserId,
 	)
+
 	return err
 }
 
 
-func (rep *columnRepository) Update(id int, c *model.Column) error {
+func (rep *columnRepository) Update(c *model.Column) error {
 	_, err := rep.db.Exec(
 		`UPDATE column_def
 		 SET 
@@ -154,26 +155,24 @@ func (rep *columnRepository) Update(id int, c *model.Column) error {
 		c.AlignSeq,
 		c.DelFlg,
 		c.UpdateUserId,
-		id,
+		c.ColumnId,
 	)
+
 	return err
 }
 
 
-func (rep *columnRepository) Delete(id int) error {
+func (rep *columnRepository) Delete(c *model.Column) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM column_def WHERE column_id = ?`, 
-		id,
+		c.ColumnId,
 	)
 
 	return err
 }
 
 
-func (rep *columnRepository) GetByNameAndTableId(
-	name string, 
-	tableId int,
-) (model.Column, error) {
+func (rep *columnRepository) GetByUniqueKey(name string, tableId int) (model.Column, error) {
 	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 

@@ -1,11 +1,11 @@
 package model
 
 
-type ProjectUser struct {
-	UserId int `db:"user_id" json:"user_id"`
+type ProjectMember struct {
 	ProjectId int `db:"project_id" json:"project_id"`
-	StateCls string `db:"state_cls" json:"state_cls"`
-	RoleCls string `db:"role_cls" json:"role_cls"`
+	UserId int `db:"user_id" json:"user_id"`
+	UserStatus string `db:"user_status" json:"user_status"`
+	UserRole string `db:"user_role" json:"user_role"`
 	CreatedAt string `db:"created_at " json:"created_at "`
 	UpdatedAt string `db:"created_at " json:"created_at "`
 }

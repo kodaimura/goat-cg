@@ -4,21 +4,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"goat-cg/internal/core/jwt"
-	
 	"goat-cg/internal/core/logger"
+	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
 )
 
 
 type UserService interface {
-	Signup(username, password string) int
-	Login(username, password string) int
-	GenerateJWT(userId int) string
-	GetProfile(userId int) (model.User, error)
-	ChangeUsername(userId int, username string) int
-	ChangePassword(userId int, password string) int
-	DeleteUser(userId int) int
+	Signup(username, password, email string) error
+	Login(username, password string) (model.User, error)
+	GenerateJWT(id int) (string, error)
+	GetProfile(id int) (model.User, error)
+	UpdateEmail(id int, email string) error
+	UpdatePassword(id int, password string) error
+	DeleteUser(id int) error
 }
 
 
@@ -26,96 +26,83 @@ type userService struct {
 	userRepository repository.UserRepository
 }
 
-
 func NewUserService() UserService {
-	userRepository := repository.NewUserRepository()
-	return &userService{userRepository}
+	return &userService{
+		userRepository: repository.NewUserRepository(),
+	}
 }
 
 
-// Signup() Return value
-/*----------------------------------------*/
-const SIGNUP_SUCCESS_INT = 0
-const SIGNUP_CONFLICT_INT = 1
-const SIGNUP_ERROR_INT = 2
-/*----------------------------------------*/
-
-func (serv *userService) Signup(username, password string) int {
-	_, err := serv.userRepository.GetByName(username)
+func (us *userService) Signup(username, password, email string) error {
+	_, err := us.userRepository.GetByName(username)
 
 	if err == nil {
-		return SIGNUP_CONFLICT_INT
+		return errs.NewUniqueConstraintError("username")
+	}
+
+	_, err = us.userRepository.GetByEmail(email)
+
+	if err == nil {
+		return errs.NewUniqueConstraintError("email")
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return SIGNUP_ERROR_INT
+		return err
 	}
 
 	var user model.User
-	user.UserName = username
+	user.Username = username
 	user.Password = string(hashed)
+	user.Email = email
 
-	err = serv.userRepository.Insert(&user)
+	err = us.userRepository.Insert(&user)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return SIGNUP_ERROR_INT
 	}
 
-	return SIGNUP_SUCCESS_INT
+	return err
 }
 
 
-// Login() Return value
-/*----------------------------------------*/
-const LOGIN_FAILURE_INT = -1
-// 正常時: ユーザ識別ID
-/*----------------------------------------*/
-
-func (serv *userService) Login(username, password string) int {
-	user, err := serv.userRepository.GetByName(username)
+func (us *userService) Login(username, password string) (model.User, error) {
+	user, err := us.userRepository.GetByName(username)
 
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return LOGIN_FAILURE_INT
+		return model.User{}, err
 	}
 
-	return user.UserId
+	return user, nil
 }
 
 
-// GenerateJWT() Return value
-/*----------------------------------------*/
-const GENERATE_JWT_FAILURE_STR = ""
-// 正常時: jwt文字列
-/*----------------------------------------*/
-
-func (serv *userService) GenerateJWT(userId int) string {
-	user, err := serv.userRepository.GetById(userId)
+func (us *userService) GenerateJWT(id int) (string, error) {
+	user, err := us.userRepository.GetById(id)
 	
 	if err != nil {
 		logger.Error(err.Error())
-		return GENERATE_JWT_FAILURE_STR
+		return "", err
 	}
 
 	var cc jwt.CustomClaims
 	cc.UserId = user.UserId
-	cc.UserName = user.UserName
+	cc.Username = user.Username
 	jwtStr, err := jwt.GenerateJWT(cc)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return GENERATE_JWT_FAILURE_STR
+		return "", err
 	}
 
-	return jwtStr
+	return jwtStr, nil
 }
 
 
-func (serv *userService) GetProfile(userId int) (model.User, error) {
-	user, err := serv.userRepository.GetById(userId)
+func (us *userService) GetProfile(id int) (model.User, error) {
+	user, err := us.userRepository.GetById(id)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -125,59 +112,55 @@ func (serv *userService) GetProfile(userId int) (model.User, error) {
 }
 
 
-// ChangeUsername() Return value
-/*----------------------------------------*/
-const CHANGE_USERNAME_SUCCESS_INT = 0
-const CHANGE_USERNAME_FAILURE_INT = 1
-/*----------------------------------------*/
-func (serv *userService) ChangeUsername(userId int, username string) int {
-	err := serv.userRepository.UpdateName(userId, username)
+func (us *userService) UpdateEmail(id int, email string) error {
+	u, err := us.userRepository.GetByEmail(email)
+
+	if err == nil && u.UserId != id{
+		return errs.NewUniqueConstraintError("email")
+	}
+
+	var user model.User
+	user.UserId = id
+	user.Email = email
+	err = us.userRepository.UpdateEmail(&user)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return CHANGE_USERNAME_FAILURE_INT
 	}
 
-	return CHANGE_USERNAME_SUCCESS_INT
+	return err
 }
 
 
-// ChangePassword() Return value
-/*----------------------------------------*/
-const CHANGE_PASSWORD_SUCCESS_INT = 0
-const CHANGE_PASSWORD_FAILURE_INT = 1
-/*----------------------------------------*/
-func (serv *userService) ChangePassword(userId int, password string) int {
+func (us *userService) UpdatePassword(id int, password string) error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return CHANGE_PASSWORD_FAILURE_INT
+		return err
 	}
 
-	err = serv.userRepository.UpdatePassword(userId, string(hashed))
+	var user model.User
+	user.UserId = id
+	user.Password = string(hashed)
+	err = us.userRepository.UpdatePassword(&user)
 	
 	if err != nil {
 		logger.Error(err.Error())
-		return CHANGE_PASSWORD_FAILURE_INT
 	}
 
-	return CHANGE_PASSWORD_SUCCESS_INT
+	return err
 }
 
 
-// DeleteUser() Return value
-/*----------------------------------------*/
-const DELETE_USER_SUCCESS_INT = 0
-const DELETE_USER_FAILURE_INT = 1
-/*----------------------------------------*/
-func (serv *userService) DeleteUser(userId int) int {
-	err := serv.userRepository.Delete(userId)
+func (us *userService) DeleteUser(id int) error {
+	var user model.User
+	user.UserId = id
+	err := us.userRepository.Delete(&user)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return DELETE_USER_FAILURE_INT
 	}
 
-	return DELETE_USER_SUCCESS_INT
+	return err
 }

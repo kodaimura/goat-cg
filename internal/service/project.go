@@ -1,63 +1,54 @@
 package service
 
-import (	
-	"goat-cg/internal/shared/constant"
+import (
 	"goat-cg/internal/core/logger"
+	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
 )
 
 
 type ProjectService interface {
-	GetProjectId(userId int, projectCd string) int 
+	GetProject(projectId int) (model.Project, error)
 	GetProjects(userId int) ([]model.Project, error)
-	GetProjectsPendingApproval(userId int) ([]model.Project, error)
-	GetProjectByCd(projectCd string) model.Project
-	CreateProject(userId int, projectCd, projectName string) int
+	GetMemberProjects(userId int) ([]model.Project, error)
+	CreateProject(userId int, username, projectName, projectMemo string) error
+	UpdateProject(username string, projectId int, projectName, projectMemo string) error
+	DeleteProject(projectId int) error
 }
 
 
 type projectService struct {
 	projectRepository repository.ProjectRepository
-	projectUserRepository repository.ProjectUserRepository
+	tableRepository repository.TableRepository
+	columnRepository repository.ColumnRepository
+	//projectMemberRepository repository.ProjectMemberRepository
 }
 
 
 func NewProjectService() ProjectService {
 	projectRepository := repository.NewProjectRepository()
-	projectUserRepository := repository.NewProjectUserRepository()
-	return &projectService{projectRepository, projectUserRepository}
+	tableRepository := repository.NewTableRepository()
+	columnRepository := repository.NewColumnRepository()
+	//projectMemberRepository := repository.NewProjectMemberRepository()
+	return &projectService{projectRepository, tableRepository, columnRepository}//, projectMemberRepository}
 }
 
 
-/*----------------------------------------*/
-const GET_PROJECT_ID_NOT_FOUND_INT = -1
-// 正常時: プロジェクトID
-/*----------------------------------------*/
-
-// GetProjectId get projectId by userId and projectCd.
-// if not return -1.  
-func (serv *projectService) GetProjectId(
-	userId int, 
-	projectCd string,
-) int {
-	project, err := serv.projectRepository.GetByCdAndUserId(projectCd, userId)
+func (serv *projectService) GetProject(projectId int) (model.Project, error) {
+	project, err := serv.projectRepository.GetById(projectId)
 
 	if err != nil {
-		return GET_PROJECT_ID_NOT_FOUND_INT
+		logger.Error(err.Error())
 	}
 
-	return project.ProjectId
+	return project, err
 }
 
 
-// GetProjects get projects: the state user join.
-func (serv *projectService) GetProjects(
-	userId int,
-) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserIdAndStateCls(
-		userId, constant.STATE_CLS_JOIN,
-	)
+// ログインユーザのプロジェクを取得
+func (serv *projectService) GetProjects(userId int) ([]model.Project, error) {
+	projects, err := serv.projectRepository.GetByUserId(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -67,13 +58,9 @@ func (serv *projectService) GetProjects(
 }
 
 
-// GetProjects get projects: the state user are applying for joinrequest.
-func (serv *projectService) GetProjectsPendingApproval(
-	userId int,
-) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserIdAndStateCls(
-		userId, constant.STATE_CLS_REQUEST,
-	)
+//参画しているプロジェクトを取得
+func (serv *projectService) GetMemberProjects(userId int) ([]model.Project, error) {
+	projects, err := serv.projectRepository.GetMemberProjects(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -83,60 +70,78 @@ func (serv *projectService) GetProjectsPendingApproval(
 }
 
 
-func (serv *projectService) GetProjectByCd(
-	projectCd string,
-) model.Project {
-	project, _ := serv.projectRepository.GetByCd(projectCd)
-
-	return project
-}
-
-
-/*----------------------------------------*/
-const CREATE_PROJECT_SUCCESS_INT = 0
-const CREATE_PROJECT_CONFLICT_INT = 1
-const CREATE_PROJECT_ERROR_INT = 2
-/*----------------------------------------*/
-
-// CreateProject create new Project.
-func (serv *projectService) CreateProject(
-	userId int, 
-	projectCd string, 
-	projectName string,
-) int {
-	_, err := serv.projectRepository.GetByCd(projectCd)
+func (serv *projectService) CreateProject(userId int, username, projectName, projectMemo string) error {
+	_, err := serv.projectRepository.GetByUniqueKey(username, projectName)
 	if err == nil {
-		return CREATE_PROJECT_CONFLICT_INT
+		return errs.NewUniqueConstraintError("project_name")
 	}
 
 	var p model.Project
-	p.ProjectCd = projectCd
 	p.ProjectName = projectName
+	p.ProjectMemo = projectMemo
+	p.UserId = userId
+	p.Username = username
 	err = serv.projectRepository.Insert(&p)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return CREATE_PROJECT_ERROR_INT
 	}
 
-	project, err := serv.projectRepository.GetByCd(projectCd)
+	return err
+}
+
+
+func (serv *projectService) UpdateProject(username string, projectId int, projectName, projectMemo string) error {
+	project, err := serv.projectRepository.GetByUniqueKey(username, projectName)
+	if err == nil && project.ProjectId != projectId {
+		return errs.NewUniqueConstraintError("project_name")
+	}
+
+	var p model.Project
+	p.ProjectId = projectId
+	p.ProjectName = projectName
+	p.ProjectMemo = projectMemo
+	err = serv.projectRepository.Update(&p)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return CREATE_PROJECT_ERROR_INT
 	}
 
-	var up model.ProjectUser
-	up.UserId = userId
-	up.ProjectId = project.ProjectId
-	up.StateCls = constant.STATE_CLS_JOIN
-	up.RoleCls = constant.ROLE_CLS_OWNER
-	err = serv.projectUserRepository.Upsert(&up)
+	return err
+}
+
+
+func (serv *projectService) DeleteProject(projectId int) error {
+	var p model.Project
+	p.ProjectId= projectId
+	err := serv.projectRepository.Delete(&p)
 
 	if err != nil {
 		logger.Error(err.Error())
-		return CREATE_PROJECT_ERROR_INT
+		return err
 	}
 
-	return CREATE_PROJECT_SUCCESS_INT
+	tables, err := serv.tableRepository.GetByProjectId(projectId)
+
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	for _, table := range tables {
+		err = serv.columnRepository.DeleteByTableId(table.TableId)
+
+		if err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	err = serv.tableRepository.DeleteByProjectId(projectId)
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	return err
 }

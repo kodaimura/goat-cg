@@ -1,83 +1,188 @@
 package controller
 
 import (
+	"fmt"
+	"strconv"
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
-	"goat-cg/internal/shared/constant"
+	"goat-cg/internal/core/errs"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
 )
 
 
-type projectController struct {
+type ProjectController struct {
 	projectService  service.ProjectService
 }
 
 
-func newProjectController() *projectController {
+func NewProjectController() *ProjectController {
 	projectService  := service.NewProjectService()
-	return &projectController{projectService}
+	return &ProjectController{projectService}
 }
 
 
-//GET /projects
-func (ctr *projectController) projectsPage(c *gin.Context) {
+//GET /:username or /:username/projects
+func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	projectCd := c.Query("project_cd")
-	var project model.Project
+	username := jwt.GetUsername(c)
 
-	projects, _ := ctr.projectService .GetProjects(userId)
-	projects2, _ := ctr.projectService .GetProjectsPendingApproval(userId)
-	
-	if projectCd != "" {
-		project = ctr.projectService .GetProjectByCd(projectCd)
-	}
-
-	c.HTML(200, "projects.html", gin.H{
-		"commons": constant.Commons,
-		"projects": projects,
-		"projects2": projects2,
-		"project":project,
-	})
-}
-
-
-//GET /projects/new
-func (ctr *projectController) createProjectPage(c *gin.Context) {
-	
-	c.HTML(200, "project.html", gin.H{
-		"commons": constant.Commons,
-	})
-}
-
-
-//POST /projects
-func (ctr *projectController) createProject(c *gin.Context) {
-	projectCd := c.PostForm("project_cd")
-	projectName := c.PostForm("project_name")
-	result := ctr.projectService .CreateProject(jwt.GetUserId(c), projectCd, projectName)
-	
-	if result == service.CREATE_PROJECT_SUCCESS_INT {
-		c.Redirect(303, "/projects")
+	if c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
 		return
 	}
 
-	if result == service.CREATE_PROJECT_CONFLICT_INT {
+	projects, _ := ctr.projectService.GetProjects(userId)
+	member_projects, _ := ctr.projectService.GetMemberProjects(userId)
+
+	c.HTML(200, "index.html", gin.H{
+		"username": username,
+		"projects": projects,
+		"member_projects": member_projects,
+	})
+}
+
+
+//GET /:username/projects/new
+func (ctr *ProjectController) CreateProjectPage(c *gin.Context) {
+	username := jwt.GetUsername(c)
+
+	if c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+	
+	c.HTML(200, "project.html", gin.H{
+		"username": username,
+	})
+}
+
+
+//POST /:username/projects
+func (ctr *ProjectController) CreateProject(c *gin.Context) {
+	userId := jwt.GetUserId(c)
+	username := jwt.GetUsername(c)
+
+	if c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	projectName := c.PostForm("project_name")
+	projectMemo := c.PostForm("project_memo")
+
+	err := ctr.projectService.CreateProject(userId, username, projectName, projectMemo)
+	if err == nil {
+		c.Redirect(303, fmt.Sprintf("/%s", username))
+		return
+	}
+
+	var project model.Project
+	project.ProjectName = projectName
+	project.ProjectMemo= projectMemo
+	
+	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "project.html", gin.H{
-			"commons": constant.Commons,
-			"error": "ProjectCd が既に使われています",
-			"project_cd": projectCd,
-			"project_name": projectName,
-		})
-	} else {
-		c.HTML(500, "project.html", gin.H{
-			"commons": constant.Commons,
-			"error": "登録に失敗しました",
-			"project_cd": projectCd,
-			"project_name": projectName,
+			"username": username,
+			"error": "プロジェクト名が重複して使われています",
+			"project": project,
 		})
 
+	} else {
+		c.HTML(500, "project.html", gin.H{
+			"username": username,
+			"error": "登録に失敗しました",
+			"project": project,
+		})
 	}
 }
 
+
+//GET /:username/projects/:project_id
+func (ctr *ProjectController) UpdateProjectPage(c *gin.Context) {
+	userId := jwt.GetUserId(c)
+	username := jwt.GetUsername(c)
+	projectId, err := strconv.Atoi(c.Param("project_id"))
+
+	if err != nil || c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	project, err := ctr.projectService.GetProject(projectId)
+
+	if err != nil || project.UserId != userId {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	c.HTML(200, "project.html", gin.H{
+		"username": username,
+		"project": project, 
+	})
+}
+
+
+//POST /:username/projects/:project_id
+func (ctr *ProjectController) UpdateProject(c *gin.Context) {
+	username := jwt.GetUsername(c)
+	projectId, err := strconv.Atoi(c.Param("project_id"))
+
+	if err != nil || c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	projectName := c.PostForm("project_name")
+	projectMemo := c.PostForm("project_memo")
+
+	err = ctr.projectService.UpdateProject(username, projectId, projectName, projectMemo)
+	if err == nil {
+		c.Redirect(303, fmt.Sprintf("/%s", username))
+		return
+	} 
+	
+	var project model.Project
+	project.ProjectName = projectName
+	project.ProjectMemo= projectMemo
+	project.Username= username
+
+	if _, ok := err.(errs.UniqueConstraintError); ok {
+		c.HTML(409, "project.html", gin.H{
+			"username": username,
+			"error": "プロジェクト名が重複して使われています",
+			"project": project,
+		})
+
+	} else {
+		c.HTML(500, "project.html", gin.H{
+			"username": username,
+			"error": "登録に失敗しました",
+			"project": project,
+		})
+	}
+}
+
+
+//DELETE /:username/projects/:project_id
+func (ctr *ProjectController) DeleteProject(c *gin.Context) {
+	username := jwt.GetUsername(c)
+	projectId, err := strconv.Atoi(c.Param("project_id"))
+
+	if err != nil || c.Param("username") != username {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+	ctr.projectService.DeleteProject(projectId)
+
+	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
+
+}

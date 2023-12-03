@@ -4,35 +4,32 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/pkg/utils"
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
+	"goat-cg/internal/model"
 )
 
 
-type codegenController struct {
+type CodegenController struct {
 	tableService service.TableService
 	codegenService service.CodegenService
-	urlCheckService service.UrlCheckService
 }
 
 
-func newCodegenController() *codegenController {
+func NewCodegenController() *CodegenController {
 	tableService := service.NewTableService()
 	codegenService := service.NewCodegenService()
-	urlCheckService := service.NewUrlCheckService()
-	return &codegenController{tableService, codegenService, urlCheckService}
+	return &CodegenController{tableService, codegenService}
 }
 
 
-//GET /:project_cd/codegen
-func (ctr *codegenController) codegenPage(c *gin.Context) {
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
+//GET /:username/:project_name/codegen
+func (ctr *CodegenController) CodegenPage(c *gin.Context) {
+	project := c.Keys["project"].(model.Project)
 	
-	tables, _ := ctr.tableService.GetTables(projectId)
+	tables, _ := ctr.tableService.GetTables(project.ProjectId)
 
 	c.HTML(200, "codegen.html", gin.H{
-		"commons": constant.Commons,
-		"project_cd": c.Param("project_cd"), 
+		"project": project,
 		"tables": tables,
 	})
 }
@@ -44,10 +41,8 @@ type CodegenPostBody struct {
 }
 
 
-//POST /:project_cd/codegen/goat
-func (ctr *codegenController) codegenGOAT(c *gin.Context) {
-	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-
+//POST /:username/:project_name/codegen/goat
+func (ctr *CodegenController) CodegenGOAT(c *gin.Context) {
 	pb := &CodegenPostBody{} 
 	c.BindJSON(&pb)
 
@@ -65,9 +60,7 @@ func (ctr *codegenController) codegenGOAT(c *gin.Context) {
 
 
 //POST /:project_cd/codegen/ddl
-func (ctr *codegenController) codegenDDL(c *gin.Context) {
-	ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-
+func (ctr *CodegenController) CodegenDDL(c *gin.Context) {
 	pb := &CodegenPostBody{} 
 	c.BindJSON(&pb)
 

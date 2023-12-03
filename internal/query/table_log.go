@@ -33,9 +33,9 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 			tl.table_name_logical,
 			tl.del_flg,
 			tl.create_user_id,
-			u1.user_name create_user_name,
+			u1.username create_username,
 			tl.update_user_id,
-			u2.user_name update_user_name,
+			u2.username update_username,
 			tl.created_at ,
 			tl.updated_at
 		 FROM 
@@ -60,9 +60,9 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 			&x.TableNameLogical,
 			&x.DelFlg,
 			&x.CreateUserId,
-			&x.CreateUserName,
+			&x.CreateUsername,
 			&x.UpdateUserId,
-			&x.UpdateUserName,
+			&x.UpdateUsername,
 			&x.CreatedAt,
 			&x.UpdatedAt,
 		)

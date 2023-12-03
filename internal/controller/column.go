@@ -5,88 +5,81 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
-	"goat-cg/internal/shared/constant"
+	"goat-cg/internal/core/errs"
 	"goat-cg/internal/shared/form"
 	"goat-cg/internal/service"
+	"goat-cg/internal/model"
 )
 
 
-type columnController struct {
+type ColumnController struct {
 	columnService  service.ColumnService
 	tableService service.TableService
-	urlCheckService service.UrlCheckService
 }
 
 
-func newColumnController() *columnController {
+func NewColumnController() *ColumnController {
 	columnService  := service.NewColumnService()
 	tableService := service.NewTableService()
-	urlCheckService := service.NewUrlCheckService()
-	return &columnController{columnService , tableService, urlCheckService}
+	return &ColumnController{columnService , tableService}
 }
 
 
-//GET /:project_cd/tables/:table_id/columns
-func (ctr *columnController) columnsPage(c *gin.Context) {
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
+//GET /:username/:project_name/tables/:table_id/columns
+func (ctr *ColumnController) ColumnsPage(c *gin.Context) {
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
 
-	table, _ := ctr.tableService.GetTable(tableId)
-	columns, _ := ctr.columnService .GetColumns(tableId)
+	columns, _ := ctr.columnService.GetColumns(table.TableId)
 
 	c.HTML(200, "columns.html", gin.H{
-		"commons": constant.Commons,
-		"project_cd" : c.Param("project_cd"),
+		"project": project,
 		"table": table,
 		"columns": columns,
 	})
 }
 
 
-//GET /:project_cd/tables/:table_id/columns/new
-func (ctr *columnController) createColumnPage(c *gin.Context) {
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
-
-	table, _ := ctr.tableService.GetTable(tableId)
+//GET /:username/:project_name/tables/:table_id/columns/new
+func (ctr *ColumnController) CreateColumnPage(c *gin.Context) {
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
 
 	c.HTML(200, "column.html", gin.H{
-		"commons": constant.Commons,
-		"project_cd" : c.Param("project_cd"),
+		"project": project,
 		"table": table,
 	})
 }
 
 
-//POST /:project_cd/tables/:table_id/columns/new
-func (ctr *columnController) createColumn(c *gin.Context) {
+//POST /:username/:project_name/tables/:table_id/columns/new
+func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
 
 	var form form.PostColumnsForm
 	c.Bind(&form)
-	result := ctr.columnService .CreateColumn(form.ToServInCreateColumn(tableId, userId))
+	err := ctr.columnService.CreateColumn(form.ToServInCreateColumn(table.TableId, userId))
 
-	if result == service.CREATE_COLUMN_SUCCESS_INT {
-		c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+	if err == nil {
+		c.Redirect(303, fmt.Sprintf(
+			"/%s/%s/tables/%s/columns", 
+			c.Param("username"), c.Param("project_name"), c.Param("table_id"),
+		))
 		return
 	}
 
-	table, _ := ctr.tableService.GetTable(tableId)
-
-	if result == service.CREATE_COLUMN_CONFLICT_INT {
+	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "column.html", gin.H{
-			"commons": constant.Commons,
-			"project_cd" : c.Param("project_cd"),
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "同一ColumnNameが既に登録されています",
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
-			"commons": constant.Commons,
-			"project_cd" : c.Param("project_cd"),
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "登録に失敗しました",
@@ -96,17 +89,13 @@ func (ctr *columnController) createColumn(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *columnController) updateColumnPage(c *gin.Context) {
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
-	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)
-
-	table, _ := ctr.tableService.GetTable(tableId)
-	column, _ := ctr.columnService .GetColumn(columnId)
+func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
+	column := c.Keys["column"].(model.Column)
 
 	c.HTML(200, "column.html", gin.H{
-		"commons": constant.Commons,
-		"project_cd" : c.Param("project_cd"),
+		"project": project,
 		"table": table,
 		"column": column,
 	})
@@ -114,37 +103,35 @@ func (ctr *columnController) updateColumnPage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *columnController) updateColumn(c *gin.Context) {
+func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
-	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
+	column := c.Keys["column"].(model.Column)
 
 	var form form.PostColumnsForm
 	c.Bind(&form)
-	result := ctr.columnService .UpdateColumn(
-		columnId, form.ToServInCreateColumn(tableId, userId),
-	)
+	form.ColumnId = column.ColumnId
+	err := ctr.columnService.UpdateColumn(form.ToServInCreateColumn(table.TableId, userId))
 
-	if result == service.UPDATE_COLUMN_SUCCESS_INT {
-		c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+	if err == nil {
+		c.Redirect(303, fmt.Sprintf(
+			"/%s/%s/tables/%s/columns", 
+			c.Param("username"), c.Param("project_name"), c.Param("table_id"),
+		))
 		return
 	}
 
-	table, _ := ctr.tableService.GetTable(tableId)
-
-	if result == service.UPDATE_COLUMN_CONFLICT_INT {
+	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "column.html", gin.H{
-			"commons": constant.Commons,
-			"project_cd" : c.Param("project_cd"),
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "同一ColumnNameが既に登録されています",
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
-			"commons": constant.Commons,
-			"project_cd" : c.Param("project_cd"),
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "更新に失敗しました",
@@ -154,29 +141,29 @@ func (ctr *columnController) updateColumn(c *gin.Context) {
 
 
 //DELETE /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *columnController) deleteColumn(c *gin.Context) {
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
-	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)
+func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
+	column := c.Keys["column"].(model.Column)
 
-	ctr.columnService .DeleteColumn(columnId)
+	ctr.columnService.DeleteColumn(column.ColumnId)
 
-	c.Redirect(303, fmt.Sprintf("/%s/tables/%d/columns", c.Param("project_cd"), tableId))
+	c.Redirect(303, fmt.Sprintf(
+		"/%s/%s/tables/%s/columns", 
+		c.Param("username"), c.Param("project_name"), c.Param("table_id"),
+	))
 
 }
 
 
 //GET /:project_cd/tables/:table_id/columns/:column_id/log
-func (ctr *columnController) columnLogPage(c *gin.Context) {
-	projectId := ctr.urlCheckService.CheckProjectCdAndGetProjectId(c)
-	tableId := ctr.urlCheckService.CheckTableIdAndGetTableId(c, projectId)
-	columnId := ctr.urlCheckService.CheckColumnIdAndGetColumnId(c, tableId)
-
-	columnLog, _ := ctr.columnService .GetColumnLog(columnId)
+func (ctr *ColumnController) ColumnLogPage(c *gin.Context) {
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
+	column := c.Keys["column"].(model.Column)
+	columnLog, _ := ctr.columnService.GetColumnLog(column.ColumnId)
 
 	c.HTML(200, "columnlog.html", gin.H{
-		"commons": constant.Commons,
-		"project_cd" : c.Param("project_cd"),
+		"project": project,
+		"table": table,
 		"columnlog": columnLog,
 	})
 }

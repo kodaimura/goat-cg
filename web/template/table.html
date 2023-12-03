@@ -1,10 +1,16 @@
 {{template "header" .}}
 <main>
+<div class="mb-3">
+	<a href="/{{.project.Username}}/{{.project.ProjectName}}" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
 <h1 class="title">
-{{ if eq .table_id nil }}
-テーブル作成
+{{ if eq .table nil }}
+New Table
 {{ else }}
-テーブル編集
+Edit Table
 {{ end }}
 </h1>
 <div class="box has-background-light">
@@ -12,41 +18,43 @@
 <form method="post">
 	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">テーブル名</label>
+			<label class="label">Table Name</label>
 			<input type="text" name="table_name" class="input is-danger" 
-			value="{{.table_name}}" required pattern="[a-z0-9_]{1,}">
+			value="{{.table.TableName}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
 				[a-z0-9_]{1,}
 			</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">テーブル名（JP）</label>
-			<input type="text" name="table_name_logical" class="input" value="{{.table_name_logical}}">
+			<label class="label">Table Name（JP）</label>
+			<input type="text" name="table_name_logical" class="input" value="{{.table.TableNameLogical}}">
 		</div>
 	</div>
 
-	{{ if ne .table_id nil }}
+	{{ if ne .table.TableId nil }}
 	<div class="columns">
 		<div class="column">
-			{{ if eq .del_flg 1 }}
+			{{ if eq .table.DelFlg 1 }}
 			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
 			{{ else }}
 			<input type="checkbox" name="del_flg" value="1" id="del_flg">
 			{{ end }}
-			<label class="checkbox has-text-grey" for="del_flg">論理削除</label>
+			<label class="checkbox has-text-grey" for="del_flg">disable</label>
 		</div>
 	</div>
 	{{ end }}
-	<input type="submit" value="登録" class="button is-dark">
+
+	{{ if eq .table nil }}
+	<input type="submit" value="Create" class="button is-dark">
+	{{ else }}
+	<input type="submit" value="Update" class="button is-dark">
+	{{ end }}
 </form>
 </div>
-{{ if eq .del_flg 1 }}
+{{ if eq .table.DelFlg 1 }}
 {{template "modal-del" .}}
 <script type="text/javascript" src="/js/table.js"></script>
 {{ end }}
 
-<div class="mt-5">
-	<a href="../tables">テーブル一覧</a>
-</div>
 </main>
 {{template "footer"}}

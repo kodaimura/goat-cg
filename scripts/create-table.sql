@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS users (
 	user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	user_name TEXT NOT NULL UNIQUE,
+	username TEXT NOT NULL UNIQUE,
 	password TEXT NOT NULL,
+	email TEXT NOT NULL UNIQUE,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
 );
@@ -16,10 +17,13 @@ END;
 
 CREATE TABLE IF NOT EXISTS project (
 	project_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	project_cd TEXT NOT NULL UNIQUE,
-	project_name TEXT,
+	project_name TEXT NOT NULL,
+	project_memo TEXT,
+	user_id INTEGER NOT NULL,
+	username TEXT NOT NULL,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	UNIQUE(project_name, username)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_project_upd AFTER UPDATE ON project
@@ -29,20 +33,19 @@ BEGIN
     	WHERE rowid == NEW.rowid;
 END;
 
-
-CREATE TABLE IF NOT EXISTS project_user (
-	user_id INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS project_member (
 	project_id INTEGER NOT NULL,
-	state_cls TEXT NOT NULL,
-	role_cls TEXT,
+	user_id INTEGER NOT NULL,
+	user_status TEXT NOT NULL,
+	user_role TEXT NOT NULL,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
 	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	PRIMARY KEY(user_id, project_id)
+	PRIMARY KEY(project_id, user_id)
 );
 
-CREATE TRIGGER IF NOT EXISTS trg_project_user_upd AFTER UPDATE ON project_user
+CREATE TRIGGER IF NOT EXISTS trg_project_member_upd AFTER UPDATE ON project_member
 BEGIN
-    UPDATE project_user
+    UPDATE project_member
     	SET updated_at = DATETIME('now', 'localtime') 
     	WHERE rowid == NEW.rowid;
 END;
@@ -57,7 +60,8 @@ CREATE TABLE IF NOT EXISTS table_def (
 	update_user_id INTEGER,
 	del_flg INTEGER NOT NULL DEFAULT 0,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	UNIQUE(project_id, table_name)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_table_def_upd AFTER UPDATE ON table_def
@@ -114,7 +118,8 @@ CREATE TABLE IF NOT EXISTS column_def (
 	create_user_id INTEGER,
 	update_user_id INTEGER,
 	created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
-	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime'))
+	updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
+	UNIQUE(table_id, column_name)
 );
 
 CREATE TRIGGER IF NOT EXISTS trg_column_def_upd AFTER UPDATE ON column_def
