@@ -99,7 +99,9 @@ func (serv *columnService) UpdateColumn(sin dto.ServInCreateColumn) error {
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
 func (serv *columnService) DeleteColumn(columnId int) error {
-	err := serv.columnRepository.Delete(columnId)
+	var c model.Column
+	c.ColumnId= columnId
+	err := serv.columnRepository.Delete(&c)
 
 	if err != nil {
 		logger.Error(err.Error())

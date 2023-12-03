@@ -12,7 +12,7 @@ type ColumnRepository interface {
 	GetById(id int) (model.Column, error)
 	Insert(c *model.Column) error
 	Update(c *model.Column) error
-	Delete(id int) error
+	Delete(c *model.Column) error
 
 	GetByUniqueKey(name string, tableId int) (model.Column, error)
 	GetByTableId(tableId int) ([]model.Column, error)
@@ -119,6 +119,7 @@ func (rep *columnRepository) Insert(c *model.Column) error {
 		c.CreateUserId,
 		c.CreateUserId,
 	)
+
 	return err
 }
 
@@ -156,24 +157,22 @@ func (rep *columnRepository) Update(c *model.Column) error {
 		c.UpdateUserId,
 		c.ColumnId,
 	)
+
 	return err
 }
 
 
-func (rep *columnRepository) Delete(id int) error {
+func (rep *columnRepository) Delete(c *model.Column) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM column_def WHERE column_id = ?`, 
-		id,
+		c.ColumnId,
 	)
 
 	return err
 }
 
 
-func (rep *columnRepository) GetByUniqueKey(
-	name string, 
-	tableId int,
-) (model.Column, error) {
+func (rep *columnRepository) GetByUniqueKey(name string, tableId int) (model.Column, error) {
 	var ret model.Column
 	err := rep.db.QueryRow(
 		`SELECT 
