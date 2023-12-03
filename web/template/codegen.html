@@ -1,26 +1,30 @@
 {{template "header" .}}
 <main>
+<div class="mb-3">
+	<a href="/{{.project.Username}}/{{.project.ProjectName}}" class="button has-text-weight-bold">TOP</a>
+</div>
+<hr class="hr is-marginless mb-4">
 <div class="level">
 	<div class="level-left">
-		<h1 class="title">自動生成</h1>
+		<h1 class="title">Code Generate</h1>
 	</div>
 	<div class="level-right">
-		<input type="button" class="button is-small is-rounded is-dark is-outlined" value="一括選択" id="all">
-		<input type="button" class="button is-small is-rounded is-dark is-outlined" value="クリア" id="clear">
+		<input type="button" class="button is-small is-rounded is-dark is-outlined" value="Select All" id="all">
+		<input type="button" class="button is-small is-rounded is-dark is-outlined" value="Clear" id="clear">
 	</div>
 </div>
 
 <form method="post" action="./codegen/goat" name="cg">
 <div class="box has-background-light">
-	<div style="height: 360px; overflow-y:scroll;">
+	<div style="height: 300px; overflow-y:scroll;">
 	<table class="table is-fullwidth mb-1 has-background-light is-narrow">
 		<thead>
 			<tr>
 			<th style="min-width:50px;"></th>
-			<th style="min-width:200px;">テーブル名</th>
-			<th style="min-width:200px;">テーブル名（JP）</th>
-			<th style="min-width:180px;">登録日</th>
-			<th style="min-width:180px;">更新日</th>
+			<th style="min-width:200px;">Table Name</th>
+			<th style="min-width:200px;">Table Name（JP）</th>
+			<th style="min-width:180px;">CreatedAt</th>
+			<th style="min-width:180px;">UpdatedAt</th>
 			<th style="min-width:100px;"></th>
 			</tr>
 		</thead>

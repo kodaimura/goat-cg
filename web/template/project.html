@@ -1,33 +1,32 @@
 {{template "header" .}}
 <main>
-<h1 class="title">プロジェクト作成</h1>
+<div class="mb-3">
+    <a href="/{{.project.Username}}" 
+    class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
+<h1 class="title">New Project</h1>
 
 <div class="box has-background-light">
 <div class="has-text-danger">{{.error}}</div>
 <form method="post" action="/{{.username}}/projects">
-	<div class="columns is-gapless">
-		<div class="column is-3">
-			<label class="label">プロジェクト名</label>
-			<input type="text" name="project_name" class="input is-danger" 
-			required pattern="[0-9a-zA-Z]{2,}" value="{{.project_name}}">
-			<p class="help is-danger">
-				[0-9a-zA-Z]{2,}
-			</p>
-		</div>
-		<div class="column is-3">
-			<label class="label">メモ</label>
-			<input type="text" name="project_memo" class="input is-danger" 
-			required value="{{.project_memo}}">
-			<p class="help is-danger">
-			</p>
-		</div>
+	<div class="column is-one-third">
+		<label class="label">project name</label>
+		<input type="text" name="project_name" class="input is-danger" 
+		required pattern="[0-9a-zA-Z]{2,}" value="{{.project_name}}">
+		<p class="help is-danger">
+			[0-9a-zA-Z]{2,}
+		</p>
 	</div>
-	<input type="submit" value="登録" class="button is-dark">
+	<div class="column is-one-third">
+		<label class="label">memo</label>
+		<textarea rows="4" name="project_memo" class="textarea" value="{{.project_memo}}"></textarea>
+	</div>
+    <div class="column">
+        <input type="submit" value="Create" class="button is-dark">
+    </div>
 </form>
-</div>
-
-<div class="mt-5">
-	<a href="/{{.username}}">トップへ</a>
 </div>
 </main>
 {{template "footer"}}

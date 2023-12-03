@@ -1,17 +1,25 @@
 {{template "header" .}}
 <main>
-<h1 class="title">テーブル一覧</h1>
-<div style="height: 450px; overflow-y:scroll;">
+<div class="mb-3">
+	<a href="/{{.project.Username}}" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+    <a href="/{{.project.Username}}/{{.project.ProjectName}}/codegen" 
+	class="button is-danger has-text-weight-bold">Code Generate</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
+<h1 class="title">Table List</h1>
+<div style="height: 350px; overflow-y:scroll;">
 <table class="table is-fullwidth mb-1 has-background-light is-narrow">
   	<thead>
 		<tr>
 			<th style="min-width:50px;"></th>
-			<th style="min-width:200px;">テーブル名</th>
-			<th style="min-width:200px;">テーブル名（JP）</th>
-			<th style="min-width:200px;">登録日</th>
-			<th style="min-width:200px;">更新日</th>
+			<th style="min-width:200px;">Table Name</th>
+			<th style="min-width:200px;">Table Name（JP）</th>
+			<th style="min-width:200px;">CreatedAt</th>
+			<th style="min-width:200px;">UpdatedAt</th>
 			<th style="min-width:180px;">
-				<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables/new" class="button is-small is-rounded is-dark">追加</a>
+				<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables/new" class="button is-small is-rounded is-dark">Add New</a>
 			</th>
 		</tr>
 	</thead>
@@ -40,10 +48,9 @@
 					<i class="fa-sharp fa-solid fa-pen-to-square fa-xl has-text-black"></i>
 				</a>&nbsp;&nbsp;
 				<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$t.TableId}}/columns" 
-				class="button is-small is-info">カラム一覧</a>
+				class="button is-small is-info">Columns</a>
 			</td>
 		</tr>
-		
 		{{ end }}
 	</tbody>
 </table>

@@ -1,8 +1,8 @@
 {{define "header"}}
 {{template "head" .}}
-<header class="navbar is-dark mb-3">
+<header class="navbar has-background-light mb-3">
 	<div class="navbar-brand">
-		<a class="navbar-item is-size-4" href="/">GOAT-CG</a>
+		<a class="navbar-item is-size-4 has-text-weight-bold" href="/">GOAT-CG</a>
 		<a role="button" class="navbar-burger" data-target="navbarBurgers" aria-expanded="false">
 			<span aria-hidden="true"></span>
 			<span aria-hidden="true"></span>
@@ -11,43 +11,23 @@
 	</div>
 	<div id="navbarBurgers" class="navbar-menu">
 		<div class="navbar-start">
-			{{ if ne .project nil }}
 			<div class="navbar-item">
-				<em class="has-text-info is-size-4">{{.project.ProjectName}}</em>
-			</div>
-			{{ end }}
-			{{ if eq .project nil }}
-			<div class="navbar-item">
-				<a href="/{{.username}}/projects/new" class="button is-small is-warning is-light">
-				プロジェクト作成
+				{{ if ne .project nil }}
+				<a href="/{{.project.Username}}" class="has-text-black-ter is-size-5">
+					{{.project.Username}}
 				</a>
-			</div>
-			<div class="navbar-item">
-				<a href="/{{.username}}/projects/requests" class="button is-small is-warning is-light">
-				メンバー管理
+				&nbsp;&nbsp;/&nbsp;&nbsp; 
+				<a href="/{{.project.Username}}/{{.project.ProjectName}}" class="has-text-black-ter is-size-5">
+					{{.project.ProjectName}}
 				</a>
+				{{ else }}
+				<a href="/{{.username}}" class="has-text-black-ter is-size-5">{{.username}}</a>
+				{{ end }}
 			</div>
-			{{ else }}
-			<div class="navbar-item">
-				<a href="/{{.project.Username}}" class="button is-small is-warning is-light">
-				プロジェクト一覧
-				</a>
-			</div>
-			<div class="navbar-item">
-				<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables" class="button is-small is-info is-light">
-				テーブル一覧
-				</a>
-			</div>
-			<div class="navbar-item">
-				<a href="/{{.project.Username}}/{{.project.ProjectName}}/codegen" class="button is-small is-danger is-light">
-				自動生成
-				</a>
-			</div>
-			{{ end }}
 		</div>
 		<div class="navbar-end">
 			<div class="navbar-item">
-				<a class="button is-small" href="/logout">ログアウト</a>
+				<a class="button is-small" href="/logout">Logout</a>
 			</div>
 		</div>
 	</div>

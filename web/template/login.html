@@ -1,7 +1,7 @@
 {{template "head" .}}
 <header class="navbar is-dark mb-3">
 	<div class="navbar-brand">
-		<a class="navbar-item is-size-4" href="/">GOAT-CG</a>
+		<a class="navbar-item has-text-weight-bold is-size-4" href="/">GOAT-CG</a>
 		<a role="button" class="navbar-burger" data-target="navbarBurgers">
 			<span aria-hidden="true"></span>
 			<span aria-hidden="true"></span>
@@ -11,7 +11,7 @@
 	<div id="navbarBurgers" class="navbar-menu">
 		<div class="navbar-end">
 			<div class="navbar-item">
-				<a class="button is-small" href="/signup">サインアップ</a>
+				<a class="button is-small" href="/signup">Signup</a>
 			</div>
 		</div>
 	</div>
@@ -28,7 +28,7 @@
 	<span class="has-text-danger">{{.error}}</span>
 	<div class="field">
 		<p class="control has-icons-left">
-		<input class="input" type="text" name="username" placeholder="ユーザ名">
+		<input class="input" type="text" name="username" placeholder="User Name">
 		<span class="icon is-small is-left">
 		<i class="fas fa-user"></i>
 		</span>
@@ -36,7 +36,7 @@
 	</div>
 	<div class="field">
 		<p class="control has-icons-left">
-		<input class="input" type="password" name="password" placeholder="パスワード">
+		<input class="input" type="password" name="password" placeholder="Password">
 		<span class="icon is-small is-left">
 		<i class="fas fa-lock"></i>
 		</span>
@@ -44,7 +44,7 @@
 	</div>
 	<div class="field">
 		<p class="control">
-			<input class="button is-success" type="submit" id="signup" value="ログイン">
+			<input class="button is-success" type="submit" id="signup" value="Login">
 		</p>
 	</div>
 </form>

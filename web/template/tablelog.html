@@ -1,18 +1,24 @@
 {{template "header" .}}
 <main>
-<h1 class="title">テーブル更新履歴</h1>
-<div style="height: 450px; overflow-y:scroll;">
+<div class="mb-3">
+	<a href="/{{.project.Username}}/{{.project.ProjectName}}" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
+<h1 class="title">Table Change Log</h1>
+<div style="height: 350px; overflow-y:scroll;">
 <table class="table is-fullwidth mb-1 has-background-light is-narrow">
   	<thead>
 		<tr>
 			<th style="min-width:50px;"></th>
-			<th style="min-width:200px;">テーブル名</th>
-			<th style="min-width:200px;">テーブル名（JP）</th>
-			<th style="min-width:60px;">削除</th>
-			<th style="min-width:150px;">登録日</th>
-			<th style="min-width:150px;">登録者</th>
-			<th style="min-width:150px;">更新日</th>
-			<th style="min-width:150px;">更新者</th>
+			<th style="min-width:200px;">Table Name</th>
+			<th style="min-width:200px;">Table Name（JP）</th>
+			<th style="min-width:60px;">Del</th>
+			<th style="min-width:150px;">CreatedAt</th>
+			<th style="min-width:150px;">CreatedBy</th>
+			<th style="min-width:150px;">UpdatedAt</th>
+			<th style="min-width:150px;">UpdatedBy</th>
 		</tr>
 	</thead>
 </table>

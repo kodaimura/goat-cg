@@ -33,7 +33,7 @@ func (ctr *ColumnController) ColumnsPage(c *gin.Context) {
 	columns, _ := ctr.columnService.GetColumns(table.TableId)
 
 	c.HTML(200, "columns.html", gin.H{
-		"project" : project,
+		"project": project,
 		"table": table,
 		"columns": columns,
 	})
@@ -46,7 +46,7 @@ func (ctr *ColumnController) CreateColumnPage(c *gin.Context) {
 	table := c.Keys["table"].(model.Table)
 
 	c.HTML(200, "column.html", gin.H{
-		"project" : project,
+		"project": project,
 		"table": table,
 	})
 }
@@ -72,14 +72,14 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "column.html", gin.H{
-			"project" : project,
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "同一ColumnNameが既に登録されています",
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
-			"project" : project,
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "登録に失敗しました",
@@ -95,7 +95,7 @@ func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
 	column := c.Keys["column"].(model.Column)
 
 	c.HTML(200, "column.html", gin.H{
-		"project" : project,
+		"project": project,
 		"table": table,
 		"column": column,
 	})
@@ -124,14 +124,14 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "column.html", gin.H{
-			"project" : project,
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "同一ColumnNameが既に登録されています",
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
-			"project" : project,
+			"project": project,
 			"table": table,
 			"column": form,
 			"error": "更新に失敗しました",
@@ -157,11 +157,13 @@ func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
 //GET /:project_cd/tables/:table_id/columns/:column_id/log
 func (ctr *ColumnController) ColumnLogPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
 	column := c.Keys["column"].(model.Column)
 	columnLog, _ := ctr.columnService.GetColumnLog(column.ColumnId)
 
 	c.HTML(200, "columnlog.html", gin.H{
-		"project" : project,
+		"project": project,
+		"table": table,
 		"columnlog": columnLog,
 	})
 }

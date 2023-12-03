@@ -24,12 +24,12 @@ func NewCodegenController() *CodegenController {
 
 //GET /:username/:project_name/codegen
 func (ctr *CodegenController) CodegenPage(c *gin.Context) {
-	p := c.Keys["project"].(model.Project)
+	project := c.Keys["project"].(model.Project)
 	
-	tables, _ := ctr.tableService.GetTables(p.ProjectId)
+	tables, _ := ctr.tableService.GetTables(project.ProjectId)
 
 	c.HTML(200, "codegen.html", gin.H{
-		"project_name": c.Param("project_name"), 
+		"project": project,
 		"tables": tables,
 	})
 }

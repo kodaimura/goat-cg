@@ -1,5 +1,11 @@
 {{template "header" .}}
 <main>
+<div class="mb-3">
+	<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables/{{.table.TableId}}/columns" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
 <h1 class="title">{{ .table.TableName }}</h1>
 
 <div class="box has-background-light">
@@ -7,7 +13,7 @@
 <form method="post">
 	<div class="columns is-gapless">
 		<div class="column is-3">
-			<label class="label">カラム名</label>
+			<label class="label">Column Name</label>
 			<input type="text" name="column_name" class="input is-danger"
 			value="{{.column.ColumnName}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
@@ -15,19 +21,19 @@
 			</p>
 		</div>
 		<div class="column is-3">
-			<label class="label">カラム名（JP）</label>
+			<label class="label">Column Name（JP）</label>
 			<input type="text" name="column_name_logical" class="input" value="{{.column.ColumnNameLogical}}">
 		</div>
 		<div class="column is-1"></div>
 		<div class="column is-1">
-			<label class="label">カラム順</label>
+			<label class="label">Sort</label>
 			<input type="number" name="align_seq" class="input is-success" 
 			value="{{.column.AlignSeq}}" min="0">
 		</div>
 	</div>
 	<div class="columns is-gapless">
 		<div class="column is-2">
-			<label class="label">データ型</label>
+			<label class="label">Type</label>
 			<div class="control">
 			<div class="select">
 				<select name="data_type_cls" id="data_type_cls" 
@@ -65,7 +71,7 @@
 			</div>
 		</div>
 		<div class="column is-1">
-			<label class="label">全体桁</label>
+			<label class="label">Digits (P)</label>
 			<input type="number" name="precision" class="input is-success" 
 			value="{{.column.Precision}}" id="precision" disabled min="0">
 			<p class="help is-success">
@@ -73,7 +79,7 @@
 			</p>
 		</div>
 		<div class="column is-1">
-			<label class="label">少数桁</label>
+			<label class="label">Digits (S)</label>
 			<input type="number" name="scale" class="input is-success"
 			value="{{.column.Scale}}" id="scale" disabled min="0">
 			<p class="help is-success">
@@ -82,7 +88,7 @@
 		</div>
 		<div class="column is-1"></div>
 		<div class="column is-1">
-			<label class="label">デフォルト値</label>
+			<label class="label">Default</label>
 			<input type="text" name="default_value" class="input"
 			value="{{.column.DefaultValue}}">
 		</div>
@@ -123,12 +129,16 @@
 			{{ else }}
 			<input type="checkbox" name="del_flg" value="1" id="del_flg">
 			{{ end }}
-			<label class="checkbox has-text-grey" for="del_flg">論理削除</label>
+			<label class="checkbox has-text-grey" for="del_flg">disable</label>
 		</div>
 	</div>
 	{{ end }}
 
-	<input type="submit" value="登録" class="button is-dark">
+	{{ if eq .column nil }}
+	<input type="submit" value="Create" class="button is-dark">
+	{{ else }}
+	<input type="submit" value="Update" class="button is-dark">
+	{{ end }}
 </form>
 </div>
 
@@ -143,10 +153,6 @@
 	})
 </script>
 {{ end }}
-
-<div class="mt-5">
-	<a href="../columns">カラム一覧</a>
-</div>
 <script type="text/javascript" src="/js/column.js"></script>
 </main>
 {{template "footer"}}
