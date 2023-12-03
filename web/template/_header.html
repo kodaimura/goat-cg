@@ -2,7 +2,7 @@
 {{template "head" .}}
 <header class="navbar is-dark mb-3">
 	<div class="navbar-brand">
-		<a class="navbar-item is-size-4" href="/{{.username}}">GOAT-CG</a>
+		<a class="navbar-item is-size-4" href="/">GOAT-CG</a>
 		<a role="button" class="navbar-burger" data-target="navbarBurgers" aria-expanded="false">
 			<span aria-hidden="true"></span>
 			<span aria-hidden="true"></span>
@@ -11,12 +11,12 @@
 	</div>
 	<div id="navbarBurgers" class="navbar-menu">
 		<div class="navbar-start">
-			{{ if ne .project_name nil }}
+			{{ if ne .project nil }}
 			<div class="navbar-item">
-				<em class="has-text-info is-size-4">{{.project_name}}</em>
+				<em class="has-text-info is-size-4">{{.project.ProjectName}}</em>
 			</div>
 			{{ end }}
-			{{ if eq .project_name nil }}
+			{{ if eq .project nil }}
 			<div class="navbar-item">
 				<a href="/{{.username}}/projects/new" class="button is-small is-warning is-light">
 				プロジェクト作成
@@ -29,17 +29,17 @@
 			</div>
 			{{ else }}
 			<div class="navbar-item">
-				<a href="/{{.username}}" class="button is-small is-warning is-light">
+				<a href="/{{.project.Username}}" class="button is-small is-warning is-light">
 				プロジェクト一覧
 				</a>
 			</div>
 			<div class="navbar-item">
-				<a href="/{{.username}}/{{.project_name}}/tables" class="button is-small is-info is-light">
+				<a href="/{{.project.Username}}/{{.project.ProjectName}}/tables" class="button is-small is-info is-light">
 				テーブル一覧
 				</a>
 			</div>
 			<div class="navbar-item">
-				<a href="/{{.username}}/{{.project_name}}/codegen" class="button is-small is-danger is-light">
+				<a href="/{{.project.Username}}/{{.project.ProjectName}}/codegen" class="button is-small is-danger is-light">
 				自動生成
 				</a>
 			</div>

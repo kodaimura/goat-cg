@@ -9,26 +9,26 @@
 </h1>
 <div class="box has-background-light">
 <div class="has-text-danger">{{.error}}</div>
-<form method="post">
+<form method="post" action="/{{.project.Username}}/{{.project.ProjectName}}">
 	<div class="columns is-gapless">
 		<div class="column is-3">
 			<label class="label">テーブル名</label>
 			<input type="text" name="table_name" class="input is-danger" 
-			value="{{.table_name}}" required pattern="[a-z0-9_]{1,}">
+			value="{{.table.TableName}}" required pattern="[a-z0-9_]{1,}">
 			<p class="help is-danger">
 				[a-z0-9_]{1,}
 			</p>
 		</div>
 		<div class="column is-3">
 			<label class="label">テーブル名（JP）</label>
-			<input type="text" name="table_name_logical" class="input" value="{{.table_name_logical}}">
+			<input type="text" name="table_name_logical" class="input" value="{{.table.TableName}}">
 		</div>
 	</div>
 
-	{{ if ne .table_id nil }}
+	{{ if ne .table.TableId nil }}
 	<div class="columns">
 		<div class="column">
-			{{ if eq .del_flg 1 }}
+			{{ if eq .table.DelFlg 1 }}
 			<input type="checkbox" checked name="del_flg" value="1" id="del_flg">
 			{{ else }}
 			<input type="checkbox" name="del_flg" value="1" id="del_flg">

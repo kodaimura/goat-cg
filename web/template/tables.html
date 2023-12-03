@@ -11,7 +11,7 @@
 			<th style="min-width:200px;">登録日</th>
 			<th style="min-width:200px;">更新日</th>
 			<th style="min-width:180px;">
-				<a href="tables/new" class="button is-small is-rounded is-dark">追加</a>
+				<a href="/tables/new" class="button is-small is-rounded is-dark">追加</a>
 			</th>
 		</tr>
 	</thead>
@@ -28,17 +28,18 @@
 			<td style="min-width:200px;">{{$t.TableName}}</td>
 			<td style="min-width:200px;">{{$t.TableNameLogical}}</td>
 			
+			
 			<td style="min-width:200px;">
-				<a href="./tables/{{$t.TableId}}/log" class="has-text-info">{{$t.CreatedAt}}</a>
+				<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$t.TableId}}/log" class="has-text-info">{{$t.CreatedAt}}</a>
 			</td>
 			<td style="min-width:200px;">
-				<a href="./tables/{{$t.TableId}}/log" class="has-text-info">{{$t.UpdatedAt}}</a>
+				<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$t.TableId}}/log" class="has-text-info">{{$t.UpdatedAt}}</a>
 			</td>
 			<td style="min-width:180px;" class="py-1" >
-				<a href="./tables/{{$t.TableId}}">
+				<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$t.TableId}}">
 					<i class="fa-sharp fa-solid fa-pen-to-square fa-xl has-text-black"></i>
 				</a>&nbsp;&nbsp;
-				<a href="./tables/{{$t.TableId}}/columns" 
+				<a href="/{{$.project.Username}}/{{$.project.ProjectName}}/tables/{{$t.TableId}}/columns" 
 				class="button is-small is-info">カラム一覧</a>
 			</td>
 		</tr>

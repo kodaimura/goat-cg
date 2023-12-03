@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
+	"goat-cg/internal/core/errs"
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
@@ -25,14 +26,14 @@ func NewTableController() *TableController {
 }
 
 
-//GET /:username/:project_name/tables
+//GET /:username/:project_name or /:username/:project_name/tables
 func (ctr *TableController) TablesPage(c *gin.Context) {
-	p := c.Keys["project_id"].(model.Project)
+	project := c.Keys["project"].(model.Project)
 
-	tables, _ := ctr.tableService.GetTables(p.ProjectId)
+	tables, _ := ctr.tableService.GetTables(project.ProjectId)
 	c.HTML(200, "tables.html", gin.H{
 		"commons": constant.Commons,
-		"project_name": c.Param("project_name"), 
+		"project": project, 
 		"tables": tables,
 	})
 }
@@ -40,10 +41,11 @@ func (ctr *TableController) TablesPage(c *gin.Context) {
 
 //GET /:username/:project_name/tables/new
 func (ctr *TableController) CreateTablePage(c *gin.Context) {
+	project := c.Keys["project"].(model.Project)
 
 	c.HTML(200, "table.html", gin.H{
 		"commons": constant.Commons,
-		"project_name": c.Param("project_name"), 
+		"project": project, 
 	})
 }
 
@@ -51,33 +53,35 @@ func (ctr *TableController) CreateTablePage(c *gin.Context) {
 //POST /:username/:project_name/tables/new
 func (ctr *TableController) CreateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	projectName := c.Param("project_name")
-	p := c.Keys["project"].(model.Project)
+	project := c.Keys["project"].(model.Project)
 
 	tableName := c.PostForm("table_name")
 	tableNameLogical := c.PostForm("table_name_logical")
 
-	result := ctr.tableService.CreateTable(p.ProjectId, userId, tableName, tableNameLogical)
+	err := ctr.tableService.CreateTable(project.ProjectId, userId, tableName, tableNameLogical)
 
-	if result == service.CREATE_TABLE_SUCCESS_INT {
-		c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), projectName))
+	if err == nil {
+		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), project.ProjectName))
 		return
-	}
+	} 
 
-	if result == service.CREATE_TABLE_CONFLICT_INT {
+	var table model.Table
+	table.TableName = tableName
+	table.TableNameLogical = tableNameLogical
+
+	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "table.html", gin.H{
 			"commons": constant.Commons,
-			"project_name": projectName, 
-			"table_name": tableName,
-			"table_name_logical": tableNameLogical,
+			"project": project, 
+			"table": table,
 			"error": "同一TableNameが既に登録されています",
 		})
+
 	} else {
 		c.HTML(500, "table.html", gin.H{
 			"commons": constant.Commons,
-			"project_name": projectName, 
-			"table_name": tableName,
-			"table_name_logical": tableNameLogical,
+			"project": project, 
+			"table": table,
 			"error": "登録に失敗しました",
 		})
 	}
@@ -86,15 +90,13 @@ func (ctr *TableController) CreateTable(c *gin.Context) {
 
 //GET /:username/:project_name/tables/:table_id
 func (ctr *TableController) UpdateTablePage(c *gin.Context) {
-	t := c.Keys["table"].(model.Table)
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
 
 	c.HTML(200, "table.html", gin.H{
 		"commons": constant.Commons,
-		"project_name": c.Param("project_name"), 
-		"table_id": t.TableId,
-		"table_name": t.TableName,
-		"table_name_logical": t.TableNameLogical,
-		"del_flg": t.DelFlg,
+		"project": project, 
+		"table": table,
 	})
 }
 
@@ -102,8 +104,8 @@ func (ctr *TableController) UpdateTablePage(c *gin.Context) {
 //POST /:username/:project_name/tables/:table_id
 func (ctr *TableController) UpdateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
-	p := c.Keys["project"].(model.Project)
-	t := c.Keys["table"].(model.Table)
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
 
 	tableName := c.PostForm("table_name")
 	tableNameLogical := c.PostForm("table_name_logical")
@@ -112,31 +114,30 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 		delFlg = 0
 	}
 
-	result := ctr.tableService.UpdateTable(
-		p.ProjectId, t.TableId, userId, tableName, tableNameLogical, delFlg,
+	err = ctr.tableService.UpdateTable(
+		project.ProjectId, table.TableId, userId, tableName, tableNameLogical, delFlg,
 	)
 
-	if result == service.UPDATE_TABLE_SUCCESS_INT {
-		c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), p.ProjectName))
+	if err == nil {
+		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), project.ProjectName))
+		return
+	} 
 
-	} else if result == service.UPDATE_TABLE_CONFLICT_INT {
+	table.TableName = tableName
+	table.TableNameLogical = tableNameLogical
+
+	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "table.html", gin.H{
 			"commons": constant.Commons,
-			"project_name": c.Param("project_name"), 
-			"table_id": t.TableId,
-			"table_name": tableName,
-			"table_name_logical": tableNameLogical,
-			"del_flg": delFlg,
+			"project": project, 
+			"taple": table,
 			"error": "同一TableNameが既に登録されています",
 		})
 	} else {
 		c.HTML(500, "table.html", gin.H{
 			"commons": constant.Commons,
-			"project_name": c.Param("project_name"), 
-			"table_id": t.TableId,
-			"table_name": tableName,
-			"table_name_logical": tableNameLogical,
-			"del_flg": delFlg,
+			"project": project, 
+			"taple": table,
 			"error": "更新に失敗しました",
 		})
 	}
@@ -156,12 +157,13 @@ func (ctr *TableController) DeleteTable(c *gin.Context) {
 
 //GET /:username/:project_name/tables/:table_id/log
 func (ctr *TableController) TableLogPage(c *gin.Context) {
-	t := c.Keys["table"].(model.Table)
-	tableLog, _ := ctr.tableService.GetTableLog(t.TableId)
+	project := c.Keys["project"].(model.Project)
+	table := c.Keys["table"].(model.Table)
+	tableLog, _ := ctr.tableService.GetTableLog(table.TableId)
 
 	c.HTML(200, "tablelog.html", gin.H{
 		"commons": constant.Commons,
-		"project_name": c.Param("project_name"), 
+		"project": project, 
 		"tablelog": tableLog,
 	})
 }

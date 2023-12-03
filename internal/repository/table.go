@@ -12,11 +12,11 @@ import (
 type TableRepository interface {
 	GetById(id int) (model.Table, error)
 	Insert(t *model.Table) error
-	Update(id int, t *model.Table) error
-	Delete(id int) error
+	Update(t *model.Table) error
+	Delete(t *model.Table) error
 
 	GetByProjectId(projectId int) ([]model.Table, error)
-	GetByNameAndProjectId(name string, projectId int) (model.Table, error)
+	GetByUniqueKey(name string, projectId int) (model.Table, error)
 	UpdateDelFlg(id, delFlg int) error
 }
 
@@ -33,7 +33,6 @@ func NewTableRepository() TableRepository {
 
 
 func (rep *tableRepository) GetById(id int) (model.Table, error){
-	
 	var ret model.Table
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -83,11 +82,10 @@ func (rep *tableRepository) Insert(t *model.Table) error {
 	return err
 }
 
-func (rep *tableRepository) Update(id int, t *model.Table) error {
+func (rep *tableRepository) Update(t *model.Table) error {
 	_, err := rep.db.Exec(
 		`UPDATE table_def
-		 SET 
-			 table_name = ?,
+		 SET table_name = ?,
 			 table_name_logical = ?,
 			 del_flg = ?,
 			 update_user_id = ?
@@ -96,26 +94,23 @@ func (rep *tableRepository) Update(id int, t *model.Table) error {
 		t.TableNameLogical,
 		t.DelFlg,
 		t.UpdateUserId,
-		id,
+		t.TableId,
 	)
 	return err
 }
 
 
-func (rep *tableRepository) Delete(id int) error {
+func (rep *tableRepository) Delete(t *model.Table) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM table_def WHERE table_id = ?`, 
-		id,
+		t.TableId,
 	)
 
 	return err
 }
 
 
-func (rep *tableRepository) GetByNameAndProjectId(
-	name string, projectId int,
-) (model.Table, error){
-	
+func (rep *tableRepository) GetByUniqueKey(name string, projectId int) (model.Table, error){
 	var ret model.Table
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -147,7 +142,6 @@ func (rep *tableRepository) GetByNameAndProjectId(
 
 
 func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error){
-	
 	var ret []model.Table
 	rows, err := rep.db.Query(
 		`SELECT 
