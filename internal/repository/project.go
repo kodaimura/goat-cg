@@ -11,7 +11,7 @@ import (
 type ProjectRepository interface {
 	Insert(p *model.Project) error
 	Update(p *model.Project) error
-
+	GetById(projectId int) (model.Project, error)
 	GetByUserId(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
 	GetByUniqueKey(username, projectName string) (model.Project, error)
@@ -51,8 +51,8 @@ func (rep *projectRepository) Insert(p *model.Project) error {
 func (rep *projectRepository) Update(p *model.Project) error {
 	_, err := rep.db.Exec(
 		`UPDATE project 
-		 SET project_name = ? 
-		 project_memo = ? 
+		 SET project_name = ?,
+		 	 project_memo = ? 
 		 WHERE project_id = ?`,
 		p.ProjectName, 
 		p.ProjectMemo,
@@ -60,6 +60,35 @@ func (rep *projectRepository) Update(p *model.Project) error {
 	)
 
 	return err
+}
+
+
+func (rep *projectRepository) GetById(projectId int) (model.Project, error) {
+	var ret model.Project
+	err := rep.db.QueryRow(
+		`SELECT 
+			project_id,
+			project_name,
+			project_memo,
+			user_id,
+			username,
+			created_at,
+			updated_at 
+		 FROM 
+			 project
+		 WHERE project_id = ?`, 
+		 projectId,
+	).Scan(
+		&ret.ProjectId, 
+		&ret.ProjectName, 
+		&ret.ProjectMemo,
+		&ret.UserId,
+		&ret.Username,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
+	)
+
+	return ret, err
 }
 
 

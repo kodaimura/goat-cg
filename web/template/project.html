@@ -1,30 +1,42 @@
 {{template "header" .}}
 <main>
 <div class="mb-3">
-    <a href="/{{.project.Username}}" 
+    <a href="/{{.username}}" 
     class="button is-link is-light has-text-weight-bold">Back</a>
 </div>
 <hr class="hr is-marginless mb-4">
 
-<h1 class="title">New Project</h1>
+<h1 class="title">
+    {{ if eq .project nil }}
+    New Project
+    {{ else }}
+    Edit Project
+    {{ end }}
+</h1>
 
 <div class="box has-background-light">
 <div class="has-text-danger">{{.error}}</div>
-<form method="post" action="/{{.username}}/projects">
+<form method="post">
 	<div class="column is-one-third">
 		<label class="label">project name</label>
 		<input type="text" name="project_name" class="input is-danger" 
-		required pattern="[0-9a-zA-Z]{2,}" value="{{.project_name}}">
+		required pattern="[0-9a-zA-Z]{2,}" value="{{.project.ProjectName}}">
 		<p class="help is-danger">
 			[0-9a-zA-Z]{2,}
 		</p>
 	</div>
 	<div class="column is-one-third">
 		<label class="label">memo</label>
-		<textarea rows="4" name="project_memo" class="textarea" value="{{.project_memo}}"></textarea>
+		<textarea rows="4" name="project_memo" class="textarea">{{.project.ProjectMemo}}</textarea>
 	</div>
     <div class="column">
-        <input type="submit" value="Create" class="button is-dark">
+        <h1 class="title">
+            {{ if eq .project nil }}
+            <input type="submit" value="Create" class="button is-dark">
+            {{ else }}
+            <input type="submit" value="Update" class="button is-dark">
+            {{ end }}
+        </h1>
     </div>
 </form>
 </div>

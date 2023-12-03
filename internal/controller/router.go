@@ -32,7 +32,9 @@ func SetRouter(r *gin.Engine) {
 			au.GET("", pc.ProjectsPage)
 			au.GET("/projects", pc.ProjectsPage)
 			au.GET("/projects/new", pc.CreateProjectPage)
-			au.POST("/projects", pc.CreateProject)
+			au.POST("/projects/new", pc.CreateProject)
+			au.GET("/projects/:project_id", pc.UpdateProjectPage)
+			au.POST("/projects/:project_id", pc.UpdateProject)
 
 			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{

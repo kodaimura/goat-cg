@@ -11,7 +11,16 @@
 		{{ range .projects }}
         <div class="column is-half">
 		<div class="box">
-			<a class="has-text-weight-bold" href="/{{.Username}}/{{.ProjectName}}">{{.ProjectName}}</a>
+            <div class="level mb-1">
+                <div class="level-left">
+			        <a class="has-text-weight-bold" href="/{{.Username}}/{{.ProjectName}}">{{.ProjectName}}</a>
+                </div>
+                <div class="level-right">
+                    <a href="/{{.Username}}/projects/{{.ProjectId}}">
+                    <i class="fa-sharp fa-solid fa-pen-to-square has-text-black"></i>
+                    </a>
+                </div>
+            </div>
             <hr class="hr is-marginless">
 			<div class="mt-2 is-size-7" style="min-height: 2em;">{{.ProjectMemo}}</div>
 			<div class="has-text-right is-size-7">{{.CreatedAt}}~</div>

@@ -9,6 +9,7 @@ import (
 
 
 type ProjectService interface {
+	GetProject(projectId int) (model.Project, error)
 	GetProjects(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
 	CreateProject(userId int, username, projectName, projectMemo string) error
@@ -26,6 +27,17 @@ func NewProjectService() ProjectService {
 	projectRepository := repository.NewProjectRepository()
 	//projectMemberRepository := repository.NewProjectMemberRepository()
 	return &projectService{projectRepository}//, projectMemberRepository}
+}
+
+
+func (serv *projectService) GetProject(projectId int) (model.Project, error) {
+	project, err := serv.projectRepository.GetById(projectId)
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	return project, err
 }
 
 
