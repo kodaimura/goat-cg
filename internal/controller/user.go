@@ -43,13 +43,13 @@ func (uc *UserController) Signup(c *gin.Context) {
 	if err != nil {
 		if _, ok := err.(errs.UniqueConstraintError); ok {
 			if err.(errs.UniqueConstraintError).Column == "username" {
-				c.HTML(409, "signup.html", gin.H{"error": "ユーザ名が既に使われています。"})
+				c.HTML(409, "signup.html", gin.H{"error": "This Username is already taken."})
 			} else {
-				c.HTML(409, "signup.html", gin.H{"error": "メールアドレスが既に使われています。"})
+				c.HTML(409, "signup.html", gin.H{"error": "This Email is already taken."})
 			}
 			
 		} else {
-			c.HTML(500, "signup.html", gin.H{"error": "登録に失敗しました。"})
+			c.HTML(500, "signup.html", gin.H{"error": "error occurred."})
 		}
 		c.Abort()
 		return
@@ -67,7 +67,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	user, err := uc.userService.Login(name, pass)
 
 	if err != nil {
-		c.HTML(401, "login.html", gin.H{"error": "ユーザ名またはパスワードが異なります。"})
+		c.HTML(401, "login.html", gin.H{"error": "Incorrect Username or Password."})
 		c.Abort()
 		return
 	}
@@ -75,7 +75,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	jwtStr, err := uc.userService.GenerateJWT(user.UserId)
 
 	if err != nil {
-		c.HTML(500, "login.html", gin.H{"error": "ログインに失敗しました。"})
+		c.HTML(500, "login.html", gin.H{"error": "error occurred."})
 		c.Abort()
 		return
 	}
@@ -117,7 +117,7 @@ func (uc *UserController) UpdatePassword(c *gin.Context) {
 	pass := m["password"]
 
 	if uc.userService.UpdatePassword(id, pass) != nil {
-		c.JSON(500, gin.H{"error": "変更に失敗しました。"})
+		c.JSON(500, gin.H{"error": "error occurred."})
 		c.Abort()
 		return
 	}
@@ -137,9 +137,9 @@ func (uc *UserController) UpdateEmail(c *gin.Context) {
 	err := uc.userService.UpdateEmail(id, email)
 	if err != nil {
 		if _, ok := err.(errs.UniqueConstraintError); ok {
-			c.JSON(409, gin.H{"error": "メールアドレスが既に使われています。"})
+			c.JSON(409, gin.H{"error": "This Email is already taken."})
 		} else {
-			c.JSON(500, gin.H{"error": "変更に失敗しました。"})
+			c.JSON(500, gin.H{"error": "error occurred."})
 		}
 		c.Abort()
 		return
@@ -154,7 +154,7 @@ func (uc *UserController) DeleteAccount(c *gin.Context) {
 	id := jwt.GetUserId(c)
 
 	if uc.userService.DeleteUser(id) != nil {
-		c.JSON(500, gin.H{"error": "削除に失敗しました。"})
+		c.JSON(500, gin.H{"error": "error occurred."})
 		c.Abort()
 		return
 	}
