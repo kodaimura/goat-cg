@@ -43,13 +43,28 @@ func (uc *UserController) Signup(c *gin.Context) {
 	if err != nil {
 		if _, ok := err.(errs.UniqueConstraintError); ok {
 			if err.(errs.UniqueConstraintError).Column == "username" {
-				c.HTML(409, "signup.html", gin.H{"error": "This Username is already taken."})
+				c.HTML(409, "signup.html", gin.H{
+					"username": name,
+					"password": pass,
+					"email": email,
+					"error": "This Username is already taken.",
+				})
 			} else {
-				c.HTML(409, "signup.html", gin.H{"error": "This Email is already taken."})
+				c.HTML(409, "signup.html", gin.H{
+					"username": name,
+					"password": pass,
+					"email": email,
+					"error": "This Email is already taken.",
+				})
 			}
 			
 		} else {
-			c.HTML(500, "signup.html", gin.H{"error": "error occurred."})
+			c.HTML(500, "signup.html", gin.H{
+				"username": name,
+				"password": pass,
+				"email": email,
+				"error": "error occurred.",
+			})
 		}
 		c.Abort()
 		return
@@ -67,7 +82,11 @@ func (uc *UserController) Login(c *gin.Context) {
 	user, err := uc.userService.Login(name, pass)
 
 	if err != nil {
-		c.HTML(401, "login.html", gin.H{"error": "Incorrect Username or Password."})
+		c.HTML(401, "login.html", gin.H{
+			"username": name,
+			"password": pass,
+			"error": "Incorrect Username or Password.",
+		})
 		c.Abort()
 		return
 	}
@@ -75,7 +94,11 @@ func (uc *UserController) Login(c *gin.Context) {
 	jwtStr, err := uc.userService.GenerateJWT(user.UserId)
 
 	if err != nil {
-		c.HTML(500, "login.html", gin.H{"error": "error occurred."})
+		c.HTML(500, "login.html", gin.H{
+			"username": name,
+			"password": pass,
+			"error": "error occurred.",
+		})
 		c.Abort()
 		return
 	}

@@ -70,8 +70,12 @@ func (us *userService) Signup(username, password, email string) error {
 
 func (us *userService) Login(username, password string) (model.User, error) {
 	user, err := us.userRepository.GetByName(username)
+	if err != nil {
+		return model.User{}, err
+	}
 
-	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
 		return model.User{}, err
 	}
 
