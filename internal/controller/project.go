@@ -88,14 +88,14 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "project.html", gin.H{
 			"username": username,
-			"error": "プロジェクト名が重複して使われています",
+			"error": "ProjectName must be unique.",
 			"project": project,
 		})
 
 	} else {
 		c.HTML(500, "project.html", gin.H{
 			"username": username,
-			"error": "登録に失敗しました",
+			"error": "error occurred.",
 			"project": project,
 		})
 	}
@@ -157,14 +157,14 @@ func (ctr *ProjectController) UpdateProject(c *gin.Context) {
 	if _, ok := err.(errs.UniqueConstraintError); ok {
 		c.HTML(409, "project.html", gin.H{
 			"username": username,
-			"error": "プロジェクト名が重複して使われています",
+			"error": "ProjectName must be unique.",
 			"project": project,
 		})
 
 	} else {
 		c.HTML(500, "project.html", gin.H{
 			"username": username,
-			"error": "登録に失敗しました",
+			"error": "error occurred.",
 			"project": project,
 		})
 	}

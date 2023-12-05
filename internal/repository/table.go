@@ -14,10 +14,11 @@ type TableRepository interface {
 	Insert(t *model.Table) error
 	Update(t *model.Table) error
 	Delete(t *model.Table) error
+	DeleteTx(t *model.Table, tx *sql.Tx) error
 
 	GetByProjectId(projectId int) ([]model.Table, error)
 	GetByUniqueKey(name string, projectId int) (model.Table, error)
-	DeleteByProjectId(projectId int) error
+	DeleteByProjectIdTx(projectId int, tx *sql.Tx) error
 }
 
 
@@ -112,6 +113,16 @@ func (rep *tableRepository) Delete(t *model.Table) error {
 }
 
 
+func (rep *tableRepository) DeleteTx(t *model.Table, tx *sql.Tx) error {
+	_, err := tx.Exec(
+		`DELETE FROM table_def WHERE table_id = ?`, 
+		t.TableId,
+	)
+
+	return err
+}
+
+
 func (rep *tableRepository) GetByUniqueKey(name string, projectId int) (model.Table, error){
 	var ret model.Table
 	err := rep.db.QueryRow(
@@ -188,8 +199,8 @@ func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error)
 }
 
 
-func (rep *tableRepository) DeleteByProjectId(projectId int) error {
-	_, err := rep.db.Exec(
+func (rep *tableRepository) DeleteByProjectIdTx(projectId int, tx *sql.Tx) error {
+	_, err := tx.Exec(
 		`DELETE FROM table_def WHERE project_id = ?`, 
 		projectId,
 	)

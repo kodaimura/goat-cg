@@ -6,6 +6,7 @@ import (
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
+	"goat-cg/internal/core/db"
 	"goat-cg/internal/query"
 )
 
@@ -37,9 +38,7 @@ func NewTableService() TableService {
 
 
 // GetTables get tables by projeectId.
-func (serv *tableService) GetTables(
-	projectId int,
-) ([]model.Table, error) {
+func (serv *tableService) GetTables(projectId int) ([]model.Table, error) {
 	tables, err := serv.tableRepository.GetByProjectId(projectId)
 
 	if err != nil {
@@ -74,13 +73,13 @@ func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNam
 	t.TableNameLogical = tableNameLogical
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
-	err = serv.tableRepository.Insert(&t)
 
-	if err != nil {
+	if err = serv.tableRepository.Insert(&t); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -98,13 +97,13 @@ func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName,
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
 	t.DelFlg = delFlg
-	err = serv.tableRepository.Update(&t)
 
-	if err != nil {
+	if err = serv.tableRepository.Update(&t); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -113,20 +112,31 @@ func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName,
 func (serv *tableService) DeleteTable(tableId int) error {
 	var t model.Table
 	t.TableId= tableId
-	err := serv.tableRepository.Delete(&t)
 
+	tx, err := db.GetDB().Begin()
 	if err != nil {
+		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 
-	err = serv.columnRepository.DeleteByTableId(tableId)
-
-	if err != nil {
+	if err = serv.tableRepository.DeleteTx(&t, tx); err != nil {
+		tx.Rollback()
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	if err = serv.columnRepository.DeleteByTableIdTx(tableId, tx); err != nil {
+		tx.Rollback()
+		logger.Error(err.Error())
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 

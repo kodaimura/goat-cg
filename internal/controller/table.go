@@ -70,14 +70,14 @@ func (ctr *TableController) CreateTable(c *gin.Context) {
 		c.HTML(409, "table.html", gin.H{
 			"project": project, 
 			"table": table,
-			"error": "同一TableNameが既に登録されています",
+			"error": "TableName must be unique.",
 		})
 
 	} else {
 		c.HTML(500, "table.html", gin.H{
 			"project": project, 
 			"table": table,
-			"error": "登録に失敗しました",
+			"error": "error occurred.",
 		})
 	}
 }
@@ -126,13 +126,13 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 		c.HTML(409, "table.html", gin.H{
 			"project": project, 
 			"taple": table,
-			"error": "同一TableNameが既に登録されています",
+			"error": "TableName must be unique.",
 		})
 	} else {
 		c.HTML(500, "table.html", gin.H{
 			"project": project, 
 			"taple": table,
-			"error": "更新に失敗しました",
+			"error": "error occurred.",
 		})
 	}
 }

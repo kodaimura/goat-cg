@@ -75,14 +75,14 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 			"project": project,
 			"table": table,
 			"column": form,
-			"error": "同一ColumnNameが既に登録されています",
+			"error": "ColumnName must be unique.",
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
 			"project": project,
 			"table": table,
 			"column": form,
-			"error": "登録に失敗しました",
+			"error": "error occurred.",
 		})
 	}
 }
@@ -127,14 +127,14 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 			"project": project,
 			"table": table,
 			"column": form,
-			"error": "同一ColumnNameが既に登録されています",
+			"error": "ColumnName must be unique.",
 		})
 	} else {
 		c.HTML(500, "column.html", gin.H{
 			"project": project,
 			"table": table,
 			"column": form,
-			"error": "更新に失敗しました",
+			"error": "error occurred.",
 		})
 	}
 }

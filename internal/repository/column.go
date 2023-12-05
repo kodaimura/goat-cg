@@ -13,10 +13,11 @@ type ColumnRepository interface {
 	Insert(c *model.Column) error
 	Update(c *model.Column) error
 	Delete(c *model.Column) error
+	DeleteTx(c *model.Column, tx *sql.Tx) error
 
 	GetByUniqueKey(name string, tableId int) (model.Column, error)
 	GetByTableId(tableId int) ([]model.Column, error)
-	DeleteByTableId(tableId int) error
+	DeleteByTableIdTx(tableId int, tx *sql.Tx) error
 }
 
 
@@ -172,6 +173,16 @@ func (rep *columnRepository) Delete(c *model.Column) error {
 }
 
 
+func (rep *columnRepository) DeleteTx(c *model.Column, tx *sql.Tx) error {
+	_, err := tx.Exec(
+		`DELETE FROM column_def WHERE column_id = ?`, 
+		c.ColumnId,
+	)
+
+	return err
+}
+
+
 func (rep *columnRepository) GetByUniqueKey(name string, tableId int) (model.Column, error) {
 	var ret model.Column
 	err := rep.db.QueryRow(
@@ -294,8 +305,8 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 }
 
 
-func (rep *columnRepository) DeleteByTableId(tableId int) error {
-	_, err := rep.db.Exec(
+func (rep *columnRepository) DeleteByTableIdTx(tableId int, tx *sql.Tx) error {
+	_, err := tx.Exec(
 		`DELETE FROM column_def WHERE table_id = ?`, 
 		tableId,
 	)

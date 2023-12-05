@@ -27,7 +27,7 @@
 	<span class="has-text-danger" id="error">{{.error}}</span>
 	<div class="field">
 		<p class="control has-icons-left">
-		<input class="input" type="text" name="username" placeholder="User Name" required="required">
+		<input class="input" type="text" name="username" placeholder="User Name" value="{{.username}}" required>
 		<span class="icon is-small is-left">
 		<i class="fas fa-user"></i>
 		</span>
@@ -35,7 +35,7 @@
 	</div>
 	<div class="field">
 		<p class="control has-icons-left">
-		<input class="input" type="password" name="password" id="pw1" placeholder="Password" required="required">
+		<input class="input" type="password" name="password" id="pw1" placeholder="Password" value="{{.password}}" required>
 		<span class="icon is-small is-left">
 		<i class="fas fa-lock"></i>
 		</span>
@@ -43,7 +43,7 @@
 	</div>
 	<div class="field">
 		<p class="control has-icons-left">
-		<input class="input" type="password" id="pw2" placeholder="Password（Confirm）" required="required">
+		<input class="input" type="password" id="pw2" placeholder="Password（Confirm）" value="{{.password}}" required>
 		<span class="icon is-small is-left">
 		<i class="fas fa-lock"></i>
 		</span>
@@ -51,7 +51,7 @@
 	</div>
 	<div class="field">
 		<p class="control has-icons-left">
-		<input class="input" type="email" name="email" placeholder="Email" required="required">
+		<input class="input" type="email" name="email" placeholder="Email" value="{{.email}}" required>
 		<span class="icon is-small is-left">
 		<i class="fas fa-envelope"></i>
 		</span>
