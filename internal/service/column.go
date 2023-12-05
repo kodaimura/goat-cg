@@ -67,13 +67,13 @@ func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) error {
 	}
 	
 	column := sin.ToColumn()
-	err = serv.columnRepository.Insert(&column)
-
-	if err != nil {
+	
+	if err = serv.columnRepository.Insert(&column); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -86,13 +86,13 @@ func (serv *columnService) UpdateColumn(sin dto.ServInCreateColumn) error {
 	}
 	
 	column := sin.ToColumn()
-	err = serv.columnRepository.Update(&column)
 
-	if err != nil {
+	if err = serv.columnRepository.Update(&column); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -101,13 +101,13 @@ func (serv *columnService) UpdateColumn(sin dto.ServInCreateColumn) error {
 func (serv *columnService) DeleteColumn(columnId int) error {
 	var c model.Column
 	c.ColumnId= columnId
-	err := serv.columnRepository.Delete(&c)
 
-	if err != nil {
+	if err := serv.columnRepository.Delete(&c); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 

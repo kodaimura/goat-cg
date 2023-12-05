@@ -82,13 +82,13 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 	p.ProjectMemo = projectMemo
 	p.UserId = userId
 	p.Username = username
-	err = serv.projectRepository.Insert(&p)
 
-	if err != nil {
+	if err = serv.projectRepository.Insert(&p); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -102,13 +102,13 @@ func (serv *projectService) UpdateProject(username string, projectId int, projec
 	p.ProjectId = projectId
 	p.ProjectName = projectName
 	p.ProjectMemo = projectMemo
-	err = serv.projectRepository.Update(&p)
 
-	if err != nil {
+	if err = serv.projectRepository.Update(&p); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 

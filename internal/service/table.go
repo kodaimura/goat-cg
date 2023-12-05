@@ -38,9 +38,7 @@ func NewTableService() TableService {
 
 
 // GetTables get tables by projeectId.
-func (serv *tableService) GetTables(
-	projectId int,
-) ([]model.Table, error) {
+func (serv *tableService) GetTables(projectId int) ([]model.Table, error) {
 	tables, err := serv.tableRepository.GetByProjectId(projectId)
 
 	if err != nil {
@@ -75,13 +73,13 @@ func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNam
 	t.TableNameLogical = tableNameLogical
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
-	err = serv.tableRepository.Insert(&t)
 
-	if err != nil {
+	if err = serv.tableRepository.Insert(&t); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -99,13 +97,13 @@ func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName,
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
 	t.DelFlg = delFlg
-	err = serv.tableRepository.Update(&t)
 
-	if err != nil {
+	if err = serv.tableRepository.Update(&t); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 

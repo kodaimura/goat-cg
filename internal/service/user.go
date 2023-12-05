@@ -58,13 +58,12 @@ func (us *userService) Signup(username, password, email string) error {
 	user.Password = string(hashed)
 	user.Email = email
 
-	err = us.userRepository.Insert(&user)
-
-	if err != nil {
+	if err = us.userRepository.Insert(&user); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -126,13 +125,13 @@ func (us *userService) UpdateEmail(id int, email string) error {
 	var user model.User
 	user.UserId = id
 	user.Email = email
-	err = us.userRepository.UpdateEmail(&user)
 
-	if err != nil {
+	if err = us.userRepository.UpdateEmail(&user); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
@@ -147,24 +146,24 @@ func (us *userService) UpdatePassword(id int, password string) error {
 	var user model.User
 	user.UserId = id
 	user.Password = string(hashed)
-	err = us.userRepository.UpdatePassword(&user)
 	
-	if err != nil {
+	if err = us.userRepository.UpdatePassword(&user); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
 
 
 func (us *userService) DeleteUser(id int) error {
 	var user model.User
 	user.UserId = id
-	err := us.userRepository.Delete(&user)
 
-	if err != nil {
+	if err := us.userRepository.Delete(&user); err != nil {
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	return nil
 }
