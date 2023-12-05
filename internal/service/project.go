@@ -3,6 +3,7 @@ package service
 import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
+	"goat-cg/internal/core/db"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
 )
@@ -114,34 +115,42 @@ func (serv *projectService) UpdateProject(username string, projectId int, projec
 func (serv *projectService) DeleteProject(projectId int) error {
 	var p model.Project
 	p.ProjectId= projectId
-	err := serv.projectRepository.Delete(&p)
 
+	tables, err := serv.tableRepository.GetByProjectId(projectId)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
 	}
 
-	tables, err := serv.tableRepository.GetByProjectId(projectId)
-
+	tx, err := db.GetDB().Begin()
 	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	if err = serv.projectRepository.DeleteTx(&p, tx); err != nil {
+		tx.Rollback()
+		logger.Error(err.Error())
+		return err
+	}
+	
+	if err = serv.tableRepository.DeleteByProjectIdTx(projectId, tx); err != nil {
+		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 
 	for _, table := range tables {
-		err = serv.columnRepository.DeleteByTableId(table.TableId)
-
-		if err != nil {
+		if err = serv.columnRepository.DeleteByTableIdTx(table.TableId, tx); err != nil {
+			tx.Rollback()
 			logger.Error(err.Error())
 			return err
 		}
 	}
 
-	err = serv.tableRepository.DeleteByProjectId(projectId)
-
-	if err != nil {
-		logger.Error(err.Error())
+	if err = tx.Commit(); err != nil {
+		return err
 	}
 
-	return err
+	return nil
 }

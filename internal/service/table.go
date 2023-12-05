@@ -6,6 +6,7 @@ import (
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
+	"goat-cg/internal/core/db"
 	"goat-cg/internal/query"
 )
 
@@ -113,20 +114,31 @@ func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName,
 func (serv *tableService) DeleteTable(tableId int) error {
 	var t model.Table
 	t.TableId= tableId
-	err := serv.tableRepository.Delete(&t)
 
+	tx, err := db.GetDB().Begin()
 	if err != nil {
+		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 
-	err = serv.columnRepository.DeleteByTableId(tableId)
-
-	if err != nil {
+	if err = serv.tableRepository.DeleteTx(&t, tx); err != nil {
+		tx.Rollback()
 		logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	if err = serv.columnRepository.DeleteByTableIdTx(tableId, tx); err != nil {
+		tx.Rollback()
+		logger.Error(err.Error())
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 
