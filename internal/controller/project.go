@@ -67,7 +67,7 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 	username := jwt.GetUsername(c)
 
 	if c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
+		c.HTML(400, "400error.html", gin.H{})
 		c.Abort()
 		return
 	}
@@ -135,7 +135,7 @@ func (ctr *ProjectController) UpdateProject(c *gin.Context) {
 	projectId, err := strconv.Atoi(c.Param("project_id"))
 
 	if err != nil || c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
+		c.HTML(400, "400error.html", gin.H{})
 		c.Abort()
 		return
 	}
@@ -177,7 +177,7 @@ func (ctr *ProjectController) DeleteProject(c *gin.Context) {
 	projectId, err := strconv.Atoi(c.Param("project_id"))
 
 	if err != nil || c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
+		c.HTML(400, "400error.html", gin.H{})
 		c.Abort()
 		return
 	}
