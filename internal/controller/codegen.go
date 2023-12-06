@@ -23,10 +23,10 @@ func NewCodegenController() *CodegenController {
 
 
 //GET /:username/:project_name/codegen
-func (ctr *CodegenController) CodegenPage(c *gin.Context) {
+func (cc *CodegenController) CodegenPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	
-	tables, _ := ctr.tableService.GetTables(project.ProjectId)
+	tables, _ := cc.tableService.GetTables(project.ProjectId)
 
 	c.HTML(200, "codegen.html", gin.H{
 		"project": project,
@@ -42,7 +42,7 @@ type CodegenPostBody struct {
 
 
 //POST /:username/:project_name/codegen/goat
-func (ctr *CodegenController) CodegenGOAT(c *gin.Context) {
+func (cc *CodegenController) CodegenGOAT(c *gin.Context) {
 	pb := &CodegenPostBody{} 
 	c.BindJSON(&pb)
 
@@ -53,14 +53,14 @@ func (ctr *CodegenController) CodegenGOAT(c *gin.Context) {
 		return
 	}
 
-	fpath := ctr.codegenService.CodeGenerateGoat(pb.DbType, tableIds)
+	fpath := cc.codegenService.CodeGenerateGoat(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }
 
 
 //POST /:project_cd/codegen/ddl
-func (ctr *CodegenController) CodegenDDL(c *gin.Context) {
+func (cc *CodegenController) CodegenDDL(c *gin.Context) {
 	pb := &CodegenPostBody{} 
 	c.BindJSON(&pb)
 
@@ -71,7 +71,7 @@ func (ctr *CodegenController) CodegenDDL(c *gin.Context) {
 		return
 	}
 
-	fpath := ctr.codegenService.CodeGenerateDdl(pb.DbType, tableIds)
+	fpath := cc.codegenService.CodeGenerateDdl(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }

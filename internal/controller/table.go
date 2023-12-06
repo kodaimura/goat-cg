@@ -26,10 +26,10 @@ func NewTableController() *TableController {
 
 
 //GET /:username/:project_name or /:username/:project_name/tables
-func (ctr *TableController) TablesPage(c *gin.Context) {
+func (tc *TableController) TablesPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 
-	tables, _ := ctr.tableService.GetTables(project.ProjectId)
+	tables, _ := tc.tableService.GetTables(project.ProjectId)
 	c.HTML(200, "tables.html", gin.H{
 		"project": project, 
 		"tables": tables,
@@ -38,7 +38,7 @@ func (ctr *TableController) TablesPage(c *gin.Context) {
 
 
 //GET /:username/:project_name/tables/new
-func (ctr *TableController) CreateTablePage(c *gin.Context) {
+func (tc *TableController) CreateTablePage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 
 	c.HTML(200, "table.html", gin.H{
@@ -48,14 +48,14 @@ func (ctr *TableController) CreateTablePage(c *gin.Context) {
 
 
 //POST /:username/:project_name/tables/new
-func (ctr *TableController) CreateTable(c *gin.Context) {
+func (tc *TableController) CreateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	project := c.Keys["project"].(model.Project)
 
 	tableName := c.PostForm("table_name")
 	tableNameLogical := c.PostForm("table_name_logical")
 
-	err := ctr.tableService.CreateTable(project.ProjectId, userId, tableName, tableNameLogical)
+	err := tc.tableService.CreateTable(project.ProjectId, userId, tableName, tableNameLogical)
 
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf("/%s/%s", c.Param("username"), c.Param("project_name")))
@@ -84,7 +84,7 @@ func (ctr *TableController) CreateTable(c *gin.Context) {
 
 
 //GET /:username/:project_name/tables/:table_id
-func (ctr *TableController) UpdateTablePage(c *gin.Context) {
+func (tc *TableController) UpdateTablePage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 
@@ -96,7 +96,7 @@ func (ctr *TableController) UpdateTablePage(c *gin.Context) {
 
 
 //POST /:username/:project_name/tables/:table_id
-func (ctr *TableController) UpdateTable(c *gin.Context) {
+func (tc *TableController) UpdateTable(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
@@ -109,7 +109,7 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 		delFlg = 0
 	}
 
-	err = ctr.tableService.UpdateTable(
+	err = tc.tableService.UpdateTable(
 		project.ProjectId, table.TableId, userId, tableName, tableNameLogical, delFlg,
 	)
 
@@ -139,9 +139,9 @@ func (ctr *TableController) UpdateTable(c *gin.Context) {
 
 
 //DELETE /:username/:project_name/tables/:table_id
-func (ctr *TableController) DeleteTable(c *gin.Context) {
+func (tc *TableController) DeleteTable(c *gin.Context) {
 	table := c.Keys["table"].(model.Table)
-	ctr.tableService.DeleteTable(table.TableId)
+	tc.tableService.DeleteTable(table.TableId)
 
 	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
 
@@ -149,10 +149,10 @@ func (ctr *TableController) DeleteTable(c *gin.Context) {
 
 
 //GET /:username/:project_name/tables/:table_id/log
-func (ctr *TableController) TableLogPage(c *gin.Context) {
+func (tc *TableController) TableLogPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
-	tableLog, _ := ctr.tableService.GetTableLog(table.TableId)
+	tableLog, _ := tc.tableService.GetTableLog(table.TableId)
 
 	c.HTML(200, "tablelog.html", gin.H{
 		"project": project, 
