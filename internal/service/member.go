@@ -32,8 +32,8 @@ func (serv *memberService) Invite(projectId int, email string) error {
 	}
 
 	_, err = serv.memberRepository.GetByPk(projectId, user.UserId)
-	if err != nil {
-		return errs.NewNotFoundError()
+	if err == nil {
+		return errs.NewAlreadyRegisteredError()
 	}
 
 	var m model.Member
