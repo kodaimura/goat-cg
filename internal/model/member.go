@@ -1,7 +1,7 @@
 package model
 
 
-type ProjectMember struct {
+type Member struct {
 	ProjectId int `db:"project_id" json:"project_id"`
 	UserId int `db:"user_id" json:"user_id"`
 	UserStatus string `db:"user_status" json:"user_status"`

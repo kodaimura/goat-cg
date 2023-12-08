@@ -43,6 +43,7 @@ func SetRouter(r *gin.Engine) {
 			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{
 				tc := NewTableController()
+				mc := NewMemberController()
 
 				aup.GET("", tc.TablesPage)
 				aup.GET("/tables", tc.TablesPage)
@@ -52,6 +53,7 @@ func SetRouter(r *gin.Engine) {
 				aup.POST("/tables/:table_id", tc.UpdateTable)
 				aup.DELETE("/tables/:table_id", tc.DeleteTable)
 				aup.GET("/tables/:table_id/log", tc.TableLogPage)
+				aup.GET("/members", mc.MemberPage)
 	
 	
 				cgc := NewCodegenController()

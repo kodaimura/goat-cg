@@ -1,5 +1,5 @@
 package repository
-/*
+
 import (
 	"database/sql"
 
@@ -8,26 +8,26 @@ import (
 )
 
 
-type ProjectMemberRepository interface {
-	GetByPk(userId, projectId int) (model.ProjectMember, error)
-	Upsert(up *model.ProjectMember) error
+type MemberRepository interface {
+	GetByPk(userId, projectId int) (model.Member, error)
+	Upsert(up *model.Member) error
 	Delete(userId, projectId int) error
 }
 
 
-type projectMemberRepository struct {
+type memberRepository struct {
 	db *sql.DB
 }
 
 
-func NewProjectMemberRepository() ProjectMemberRepository {
+func NewMemberRepository() MemberRepository {
 	db := db.GetDB()
-	return &projectMemberRepository{db}
+	return &memberRepository{db}
 }
 
 
-func (rep *projectMemberRepository) GetByPk(userId, projectId int) (model.ProjectMember, error) {
-	var ret model.ProjectMember
+func (rep *memberRepository) GetByPk(userId, projectId int) (model.Member, error) {
+	var ret model.Member
 
 	err := rep.db.QueryRow(
 		`SELECT
@@ -51,7 +51,7 @@ func (rep *projectMemberRepository) GetByPk(userId, projectId int) (model.Projec
 }
 
 
-func (rep *projectMemberRepository) Upsert(up *model.ProjectMember) error {
+func (rep *memberRepository) Upsert(up *model.Member) error {
 	_, err := rep.db.Exec(
 		`REPLACE INTO project_member (
 			user_id, 
@@ -70,7 +70,7 @@ func (rep *projectMemberRepository) Upsert(up *model.ProjectMember) error {
 }
 
 
-func (rep *projectMemberRepository) Delete(userId, projectId int) error {
+func (rep *memberRepository) Delete(userId, projectId int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM project_member
 		 WHERE 
@@ -81,4 +81,3 @@ func (rep *projectMemberRepository) Delete(userId, projectId int) error {
 	)
 	return err
 }
-*/
