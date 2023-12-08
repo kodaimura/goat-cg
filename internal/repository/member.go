@@ -9,8 +9,9 @@ import (
 
 
 type MemberRepository interface {
-	GetByPk(userId, projectId int) (model.Member, error)
-	Upsert(up *model.Member) error
+	GetByPk(projectId, userId int) (model.Member, error)
+	Insert(m *model.Member) error
+	Upsert(m *model.Member) error
 	Delete(userId, projectId int) error
 }
 
@@ -26,13 +27,13 @@ func NewMemberRepository() MemberRepository {
 }
 
 
-func (rep *memberRepository) GetByPk(userId, projectId int) (model.Member, error) {
+func (rep *memberRepository) GetByPk(projectId, userId int) (model.Member, error) {
 	var ret model.Member
 
 	err := rep.db.QueryRow(
 		`SELECT
-			user_id, 
 			project_id, 
+			user_id, 
 			user_status, 
 			user_role
 		 FROM project_member
@@ -41,13 +42,32 @@ func (rep *memberRepository) GetByPk(userId, projectId int) (model.Member, error
 		 userId,
 		 projectId,
 	).Scan(
-		&ret.UserId, 
 		&ret.ProjectId, 
+		&ret.UserId, 
 		&ret.UserStatus, 
 		&ret.UserRole,
 	)
 
 	return ret, err
+}
+
+
+func (rep *memberRepository) Insert(m *model.Member) error {
+	_, err := rep.db.Exec(
+		`INSERT INTO project_member (
+			project_id,
+			user_id, 
+			user_status, 
+			user_role
+		 ) 
+		 VALUES(?,?,?,?)`,
+		m.ProjectId,
+		m.UserId, 
+		m.UserStatus,
+		m.UserRole,
+	)
+
+	return err
 }
 
 
