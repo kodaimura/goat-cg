@@ -1,28 +1,33 @@
 package service
 
 import (
-	"goat-cg/internal/model"
-	"goat-cg/internal/repository"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/core/logger"
+	"goat-cg/internal/model"
+	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/repository"
+	"goat-cg/internal/query"
 )
 
 
 type MemberService interface {
 	Invite(projectId int, email string) error
+	GetMembers(projectId int) ([]dto.ProjectMember, error)
 }
 
 
 type memberService struct {
 	memberRepository repository.MemberRepository
 	userRepository repository.UserRepository
+	projectMemberQuery query.ProjectMemberQuery
 }
 
 
 func NewMemberService() MemberService {
 	memberRepository := repository.NewMemberRepository()
 	userRepository := repository.NewUserRepository()
-	return &memberService{memberRepository, userRepository}
+	projectMemberQuery := query.NewProjectMemberQuery()
+	return &memberService{memberRepository, userRepository, projectMemberQuery}
 }
 
 func (serv *memberService) Invite(projectId int, email string) error {
@@ -48,4 +53,8 @@ func (serv *memberService) Invite(projectId int, email string) error {
 	}
 
 	return nil
+}
+
+func (serv *memberService) GetMembers(projectId int) ([]dto.ProjectMember, error) {
+	return serv.projectMemberQuery.GetProjectMember(projectId)
 }

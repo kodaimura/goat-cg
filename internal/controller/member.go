@@ -27,8 +27,11 @@ func NewMemberController() *MemberController {
 func (mc *MemberController) MemberPage (c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 
+	members, _ := mc.memberService.GetMembers(project.ProjectId)
+
 	c.HTML(200, "members.html", gin.H{
 		"project": project, 
+		"members": members,
 	})
 }
 
