@@ -1,7 +1,7 @@
 package service
 
 import (
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"

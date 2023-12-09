@@ -1,7 +1,7 @@
 package form
 
 import (
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 )
 
 

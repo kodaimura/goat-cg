@@ -3,7 +3,7 @@ package query
 import (
 	"database/sql"
 
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/core/db"
 )
 

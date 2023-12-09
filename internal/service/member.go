@@ -4,7 +4,7 @@ import (
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model"
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/repository"
 	"goat-cg/internal/query"
 )
