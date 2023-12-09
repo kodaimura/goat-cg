@@ -1,0 +1,94 @@
+{{template "header" .}}
+<main>
+<div class="mb-3">
+    <a href="/{{.username}}" 
+    class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
+<h1 class="title">
+    Account Setting
+</h1>
+
+<div class="columns is-centered pb-5">
+<div class="column is-half box px-5 pb-5">
+    <div class="mb-3 mt-1">
+    <p class="">Account Name</p>
+    </div>
+	<div class="field">
+		<p class="control has-icons-left">
+		<input class="input" type="text" value="{{.username}}" disabled>
+		<span class="icon is-small is-left">
+		<i class="fas fa-user"></i>
+		</span>
+		</p>
+	</div>
+</div>
+</div>
+
+<div class="columns is-centered pb-5">
+<div class="column is-half box px-5 pb-5">
+    <div class="mb-3 mt-1">
+    <p class="">Password</p>
+    </div>
+    <form method="post" action="/{{.username}}/account/password" onsubmit="return checkPassword();">
+        <span class="has-text-danger" id="error">{{.password_error}}</span>
+        <div class="field">
+            <p class="control has-icons-left">
+            <input class="input" type="password" name="password" placeholder="Current Password" required>
+            <span class="icon is-small is-left">
+            <i class="fas fa-lock"></i>
+            </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left">
+            <input class="input" type="password" name="new_password" id="pw1" placeholder="New Password" required>
+            <span class="icon is-small is-left">
+            <i class="fas fa-lock"></i>
+            </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left">
+            <input class="input" type="password" id="pw2" placeholder="New Password（Confirm）" required>
+            <span class="icon is-small is-left">
+            <i class="fas fa-lock"></i>
+            </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control">
+            <input class="button is-info" type="submit" value="Update">
+            </p>
+        </div>
+    </form>
+</div>
+</div>
+
+<div class="columns is-centered pb-5">
+    <div class="column is-half box px-5 pb-5">
+        <div class="mb-3 mt-1">
+        <p class="">Email</p>
+        </div>
+        <form method="post" action="/{{.username}}/account/email">
+            <span class="has-text-danger">{{.email_error}}</span>
+            <div class="field">
+                <p class="control has-icons-left">
+                <input class="input" type="email" name="email" placeholder="Email" value="{{.email}}" required>
+                <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+                </span>
+                </p>
+            </div>
+            <div class="field">
+                <p class="control">
+                <input class="button is-info" type="submit" value="Update">
+                </p>
+            </div>
+        </form>
+    </div>
+    </div>
+</main>
+<script type="text/javascript" src="/js/signup.js"></script>
+{{template "footer"}}

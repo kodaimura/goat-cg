@@ -1,0 +1,63 @@
+{{template "header" .}}
+<main>
+<div class="mb-3">
+	<a href="/{{.project.Username}}/{{.project.ProjectName}}" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+<h1 class="title">Member Management</h1>
+
+<div class="columns is-centered pb-5">
+    <div class="column is-half box px-5 pb-5">
+        <div class="mb-3 mt-1">
+        <p class="">Invite to "{{.project.ProjectName}}"</p>
+        </div>
+        <form method="post" action="/{{.project.Username}}/{{.project.ProjectName}}/members/invite">
+            <span class="has-text-danger">{{.error}}</span>
+            <div class="field">
+                <p class="control has-icons-left">
+                <input class="input" type="email" name="email" placeholder="Email" value="{{.email}}" required>
+                <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+                </span>
+                </p>
+            </div>
+            <div class="field">
+                <p class="control">
+                <input class="button is-info" type="submit" value="Invite">
+                </p>
+            </div>
+        </form>
+    </div>
+    </div>
+</div>
+
+<div style="height: 350px; overflow-y:scroll;">
+    <table class="table is-fullwidth mb-1 has-background-light is-narrow">
+          <thead>
+            <tr>
+                <th style="min-width:200px;">Username</th>
+                <th style="min-width:200px;">Email</th>
+                <th style="min-width:100px;">Status</th>
+                <th style="min-width:100px;">Role</th>
+                <th style="min-width:200px;">CreatedAt</th>
+                <th style="min-width:200px;">UpdatedAt</th>
+            </tr>
+        </thead>
+    </table>
+    <table class="table is-fullwidth is-hoverable is-bordered is-striped">
+        <tbody>
+            {{ range $i, $m := .members }}
+            <tr>
+                <td style="min-width:200px;">{{$m.Username}}</td>
+                <td style="min-width:200px;">{{$m.Email}}</td>
+                <td style="min-width:100px;">{{$m.UserStatus}}</td>
+                <td style="min-width:100px;">{{$m.UserRole}}</td>
+                <td style="min-width:200px;">{{$m.CreatedAt}}</td>
+                <td style="min-width:200px;">{{$m.UpdatedAt}}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+</main>
+{{template "footer"}}

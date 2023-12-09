@@ -17,6 +17,6 @@ func NewRootController() *RootController {
 
 
 //GET /
-func (ctr *RootController) IndexPage(c *gin.Context) {
+func (rc *RootController) IndexPage(c *gin.Context) {
 	c.Redirect(303, fmt.Sprintf("/%s", jwt.GetUsername(c)))
 }

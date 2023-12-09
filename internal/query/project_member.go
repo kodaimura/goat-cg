@@ -1,16 +1,15 @@
 package query
-/*
+
 import (
 	"database/sql"
 
-	"goat-cg/internal/shared/dto"
-	"goat-cg/internal/shared/constant"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/core/db"
 )
 
 
 type ProjectMemberQuery interface {
-	QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error)
+	GetProjectMember(projectId int) ([]dto.ProjectMember, error)
 }
 
 
@@ -25,32 +24,25 @@ func NewProjectMemberQuery() ProjectMemberQuery {
 }
 
 
-func (que *projectMemberQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinRequest, error){
+func (que *projectMemberQuery)GetProjectMember(projectId int) ([]dto.ProjectMember, error){
 
-	var ret []dto.QueOutJoinRequest
+	var ret []dto.ProjectMember
 	rows, err := que.db.Query(
 		`SELECT
-			u.user_id,
+			pm.project_id,
+			pm.user_id,
 			u.username,
-			p.project_id,
-			p.project_cd,
-			p.project_name,
-			pu2.updated_at
+			u.email,
+			pm.user_status,
+			pm.user_role,
+			pm.created_at,
+			pm.updated_at
 		 FROM 
-			 project_member pu1,
-			 project_member pu2,
-			 users u,
-			 project p
-		 WHERE pu1.user_id = ?
-		  AND pu1.user_role in (?, ?)
-		  AND pu2.project_id = pu1.project_id
-		  AND pu2.user_status = ?
-		  AND u.user_id = pu2.user_id
-		  AND p.project_id = pu2.project_id `, 
-		 userId,
-		 constant.ROLE_CLS_ADMIN,
-		 constant.ROLE_CLS_OWNER,
-		 constant.STATE_CLS_REQUEST,
+			 project_member pm,
+			 users u
+		 WHERE pm.project_id = ?
+		  AND u.user_id = pm.user_id`, 
+		 projectId,
 	)
 
 	if err != nil {
@@ -58,13 +50,15 @@ func (que *projectMemberQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReq
 	}
 
 	for rows.Next() {
-		x := dto.QueOutJoinRequest{}
+		x := dto.ProjectMember{}
 		err = rows.Scan(
+			&x.ProjectId,
 			&x.UserId,
 			&x.Username,
-			&x.ProjectId,
-			&x.ProjectCd,
-			&x.ProjectName,
+			&x.Email,
+			&x.UserStatus,
+			&x.UserRole,
+			&x.CreatedAt,
 			&x.UpdatedAt,
 		)
 		if err != nil {
@@ -75,4 +69,3 @@ func (que *projectMemberQuery)QueryJoinRequests(userId int) ([]dto.QueOutJoinReq
 
 	return ret, err
 }
-*/

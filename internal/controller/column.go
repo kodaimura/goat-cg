@@ -26,11 +26,11 @@ func NewColumnController() *ColumnController {
 
 
 //GET /:username/:project_name/tables/:table_id/columns
-func (ctr *ColumnController) ColumnsPage(c *gin.Context) {
+func (cc *ColumnController) ColumnsPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 
-	columns, _ := ctr.columnService.GetColumns(table.TableId)
+	columns, _ := cc.columnService.GetColumns(table.TableId)
 
 	c.HTML(200, "columns.html", gin.H{
 		"project": project,
@@ -41,7 +41,7 @@ func (ctr *ColumnController) ColumnsPage(c *gin.Context) {
 
 
 //GET /:username/:project_name/tables/:table_id/columns/new
-func (ctr *ColumnController) CreateColumnPage(c *gin.Context) {
+func (cc *ColumnController) CreateColumnPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 
@@ -53,14 +53,14 @@ func (ctr *ColumnController) CreateColumnPage(c *gin.Context) {
 
 
 //POST /:username/:project_name/tables/:table_id/columns/new
-func (ctr *ColumnController) CreateColumn(c *gin.Context) {
+func (cc *ColumnController) CreateColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 
 	var form form.PostColumnsForm
 	c.Bind(&form)
-	err := ctr.columnService.CreateColumn(form.ToServInCreateColumn(table.TableId, userId))
+	err := cc.columnService.CreateColumn(form.ToCreateColumn(table.TableId, userId))
 
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf(
@@ -89,7 +89,7 @@ func (ctr *ColumnController) CreateColumn(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
+func (cc *ColumnController) UpdateColumnPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 	column := c.Keys["column"].(model.Column)
@@ -103,7 +103,7 @@ func (ctr *ColumnController) UpdateColumnPage(c *gin.Context) {
 
 
 //POST /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
+func (cc *ColumnController) UpdateColumn(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
@@ -112,7 +112,7 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 	var form form.PostColumnsForm
 	c.Bind(&form)
 	form.ColumnId = column.ColumnId
-	err := ctr.columnService.UpdateColumn(form.ToServInCreateColumn(table.TableId, userId))
+	err := cc.columnService.UpdateColumn(form.ToCreateColumn(table.TableId, userId))
 
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf(
@@ -141,10 +141,10 @@ func (ctr *ColumnController) UpdateColumn(c *gin.Context) {
 
 
 //DELETE /:project_cd/tables/:table_id/columns/:column_id
-func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
+func (cc *ColumnController) DeleteColumn(c *gin.Context) {
 	column := c.Keys["column"].(model.Column)
 
-	ctr.columnService.DeleteColumn(column.ColumnId)
+	cc.columnService.DeleteColumn(column.ColumnId)
 
 	c.Redirect(303, fmt.Sprintf(
 		"/%s/%s/tables/%s/columns", 
@@ -155,11 +155,11 @@ func (ctr *ColumnController) DeleteColumn(c *gin.Context) {
 
 
 //GET /:project_cd/tables/:table_id/columns/:column_id/log
-func (ctr *ColumnController) ColumnLogPage(c *gin.Context) {
+func (cc *ColumnController) ColumnLogPage(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 	column := c.Keys["column"].(model.Column)
-	columnLog, _ := ctr.columnService.GetColumnLog(column.ColumnId)
+	columnLog, _ := cc.columnService.GetColumnLog(column.ColumnId)
 
 	c.HTML(200, "columnlog.html", gin.H{
 		"project": project,

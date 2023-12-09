@@ -1,7 +1,7 @@
 package form
 
 import (
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 )
 
 
@@ -22,11 +22,11 @@ type PostColumnsForm struct {
 }
 
 
-func (f PostColumnsForm) ToServInCreateColumn(
+func (f PostColumnsForm) ToCreateColumn(
 	tableId int, 
 	userId int,
-) dto.ServInCreateColumn {
-	var ret dto.ServInCreateColumn
+) dto.CreateColumn {
+	var ret dto.CreateColumn
 
 	ret.ColumnId = f.ColumnId
 	ret.TableId = tableId

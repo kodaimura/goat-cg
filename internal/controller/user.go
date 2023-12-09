@@ -22,15 +22,23 @@ func NewUserController() *UserController {
 
 
 //GET /signup
-func (ctr *UserController) SignupPage(c *gin.Context) {
+func (uc *UserController) SignupPage(c *gin.Context) {
 	c.HTML(200, "signup.html", gin.H{})
 }
 
 //GET /login
-func (ctr *UserController) LoginPage(c *gin.Context) {
+func (uc *UserController) LoginPage(c *gin.Context) {
 	c.HTML(200, "login.html", gin.H{})
 }
 
+//GET /account
+func (uc *UserController) AccountPage(c *gin.Context) {
+	user, _ := uc.userService.GetProfile(jwt.GetUserId(c))
+	c.HTML(200, "account.html", gin.H{
+		"username": user.Username,
+		"email": user.Email,
+	})
+}
 
 //POST /signup
 func (uc *UserController) Signup(c *gin.Context) {
@@ -110,10 +118,71 @@ func (uc *UserController) Login(c *gin.Context) {
 
 
 //GET /logout
-func (ctr *UserController) Logout(c *gin.Context) {
+func (uc *UserController) Logout(c *gin.Context) {
 	cf := config.GetConfig()
 	c.SetCookie(jwt.COOKIE_KEY_JWT, "", 0, "/", cf.AppHost, false, true)
 	c.Redirect(303, "/login")
+}
+
+
+//POST /account/password
+func (uc *UserController) UpdatePassword(c *gin.Context) {
+	id := jwt.GetUserId(c)
+	pass := c.PostForm("password")
+	newPass := c.PostForm("new_password")
+
+	user, err := uc.userService.Login(jwt.GetUsername(c), pass)
+
+	if err != nil {
+		user, _ = uc.userService.GetProfile(jwt.GetUserId(c))
+		c.HTML(400, "account.html", gin.H{
+			"password_error": "Incorrect Current Password.",
+			"username": user.Username,
+			"email": user.Email,
+		})
+		c.Abort()
+		return
+	}
+
+	if uc.userService.UpdatePassword(id, newPass) != nil {
+		c.HTML(500, "account.html", gin.H{
+			"password_error": "error occurred.",
+			"username": user.Username,
+			"email": user.Email,
+		})
+		c.Abort()
+		return
+	}
+
+	c.Redirect(303, "/logout")
+}
+
+
+//POST /account/email
+func (uc *UserController) UpdateEmail(c *gin.Context) {
+	id := jwt.GetUserId(c)
+	email := c.PostForm("email")
+	
+	err := uc.userService.UpdateEmail(id, email)
+	if err != nil {
+		if _, ok := err.(errs.UniqueConstraintError); ok {
+			c.HTML(409, "account.html", gin.H{
+				"email_error": "This Email is already taken.",
+				"username": jwt.GetUsername(c),
+				"email": email,
+			})
+		} else {
+			c.HTML(500, "account.html", gin.H{
+				"email_error": "error occurred.",
+				"username": jwt.GetUsername(c),
+				"email": email,
+			})
+		}
+		c.Abort()
+		return
+	}
+
+	c.Redirect(303, "/logout")
 }
 
 
@@ -128,47 +197,6 @@ func (uc *UserController) GetProfile(c *gin.Context) {
 	}
 
 	c.JSON(200, user)
-}
-
-
-//PUT /api/account/password
-func (uc *UserController) UpdatePassword(c *gin.Context) {
-	id := jwt.GetUserId(c)
-
-	m := map[string]string{}
-	c.BindJSON(&m)
-	pass := m["password"]
-
-	if uc.userService.UpdatePassword(id, pass) != nil {
-		c.JSON(500, gin.H{"error": "error occurred."})
-		c.Abort()
-		return
-	}
-
-	c.JSON(200, gin.H{})
-}
-
-
-//PUT /api/account/email
-func (uc *UserController) UpdateEmail(c *gin.Context) {
-	id := jwt.GetUserId(c)
-
-	m := map[string]string{}
-	c.BindJSON(&m)
-	email := m["email"]
-	
-	err := uc.userService.UpdateEmail(id, email)
-	if err != nil {
-		if _, ok := err.(errs.UniqueConstraintError); ok {
-			c.JSON(409, gin.H{"error": "This Email is already taken."})
-		} else {
-			c.JSON(500, gin.H{"error": "error occurred."})
-		}
-		c.Abort()
-		return
-	}
-
-	c.JSON(200, gin.H{})
 }
 
 

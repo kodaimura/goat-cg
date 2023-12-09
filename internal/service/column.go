@@ -1,7 +1,7 @@
 package service
 
 import (
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
@@ -13,10 +13,10 @@ import (
 type ColumnService interface {
 	GetColumn(columnId int) (model.Column, error)
 	GetColumns(tableId int) ([]model.Column, error)
-	CreateColumn(in dto.ServInCreateColumn) error
-	UpdateColumn(sin dto.ServInCreateColumn) error
+	CreateColumn(in dto.CreateColumn) error
+	UpdateColumn(sin dto.CreateColumn) error
 	DeleteColumn(columnId int) error
-	GetColumnLog(columnId int) ([]dto.QueOutColumnLog, error)
+	GetColumnLog(columnId int) ([]dto.ColumnLog, error)
 }
 
 
@@ -60,7 +60,7 @@ func (serv *columnService) GetColumns(tableId int) ([]model.Column, error) {
 
 
 // CreateColumn create new Column record.
-func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) error {
+func (serv *columnService) CreateColumn(sin dto.CreateColumn) error {
 	_, err := serv.columnRepository.GetByUniqueKey(sin.ColumnName, sin.TableId)
 	if err == nil {
 		return errs.NewUniqueConstraintError("column_name")
@@ -78,7 +78,7 @@ func (serv *columnService) CreateColumn(sin dto.ServInCreateColumn) error {
 
 
 // UpdateColumn update Column record by columnId.
-func (serv *columnService) UpdateColumn(sin dto.ServInCreateColumn) error {
+func (serv *columnService) UpdateColumn(sin dto.CreateColumn) error {
 	col, err := serv.columnRepository.GetByUniqueKey(sin.ColumnName, sin.TableId)
 
 	if err == nil && col.ColumnId != sin.ColumnId {
@@ -112,8 +112,8 @@ func (serv *columnService) DeleteColumn(columnId int) error {
 
 
 // GetColumnLog get Column chenge log.
-func (serv *columnService) GetColumnLog(columnId int) ([]dto.QueOutColumnLog, error) {
-	columnLog, err := serv.columnQuery.QueryColumnLog(columnId)
+func (serv *columnService) GetColumnLog(columnId int) ([]dto.ColumnLog, error) {
+	columnLog, err := serv.columnQuery.GetColumnLog(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())

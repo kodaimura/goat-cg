@@ -36,10 +36,14 @@ func SetRouter(r *gin.Engine) {
 			au.GET("/projects/:project_id", pc.UpdateProjectPage)
 			au.POST("/projects/:project_id", pc.UpdateProject)
 			au.DELETE("/projects/:project_id", pc.DeleteProject)
+			au.GET("/account", uc.AccountPage)
+			au.POST("/account/password", uc.UpdatePassword)
+			au.POST("/account/email", uc.UpdateEmail)
 
 			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{
 				tc := NewTableController()
+				mc := NewMemberController()
 
 				aup.GET("", tc.TablesPage)
 				aup.GET("/tables", tc.TablesPage)
@@ -49,6 +53,8 @@ func SetRouter(r *gin.Engine) {
 				aup.POST("/tables/:table_id", tc.UpdateTable)
 				aup.DELETE("/tables/:table_id", tc.DeleteTable)
 				aup.GET("/tables/:table_id/log", tc.TableLogPage)
+				aup.GET("/members", mc.MemberPage)
+				aup.POST("/members/invite", mc.Invite)
 	
 	
 				cgc := NewCodegenController()
@@ -79,8 +85,8 @@ func SetRouter(r *gin.Engine) {
 	{
 		api.GET("/account/profile", uc.GetProfile)
 		//api.PUT("/account/username", uc.UpdateUsername)
-		api.PUT("/account/password", uc.UpdatePassword)
-		api.PUT("/account/email", uc.UpdateEmail)
+		//api.PUT("/account/password", uc.UpdatePassword)
+		//api.PUT("/account/email", uc.UpdateEmail)
 		api.DELETE("/account", uc.DeleteAccount)
 	}
 }

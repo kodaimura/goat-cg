@@ -1,7 +1,7 @@
 package service
 
 import (
-	"goat-cg/internal/shared/dto"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
@@ -17,7 +17,7 @@ type TableService interface {
 	CreateTable(projectId, userId int, tableName, tableNameLogical string) error
 	UpdateTable(projectId, tableId, userId int, tableName, tableNameLogical string, delFlg int) error
 	DeleteTable(tableId int) error 
-	GetTableLog(tableId int) ([]dto.QueOutTableLog, error)
+	GetTableLog(tableId int) ([]dto.TableLog, error)
 }
 
 
@@ -141,8 +141,8 @@ func (serv *tableService) DeleteTable(tableId int) error {
 
 
 // GetTableLog get Table chenge log.
-func (serv *tableService) GetTableLog(tableId int) ([]dto.QueOutTableLog, error) {
-	tableLog, err := serv.tableQuery.QueryTableLog(tableId)
+func (serv *tableService) GetTableLog(tableId int) ([]dto.TableLog, error) {
+	tableLog, err := serv.tableQuery.GetTableLog(tableId)
 
 	if err != nil {
 		logger.Error(err.Error())

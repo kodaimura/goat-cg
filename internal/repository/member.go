@@ -1,5 +1,5 @@
 package repository
-/*
+
 import (
 	"database/sql"
 
@@ -8,31 +8,32 @@ import (
 )
 
 
-type ProjectMemberRepository interface {
-	GetByPk(userId, projectId int) (model.ProjectMember, error)
-	Upsert(up *model.ProjectMember) error
+type MemberRepository interface {
+	GetByPk(projectId, userId int) (model.Member, error)
+	Insert(m *model.Member) error
+	Upsert(m *model.Member) error
 	Delete(userId, projectId int) error
 }
 
 
-type projectMemberRepository struct {
+type memberRepository struct {
 	db *sql.DB
 }
 
 
-func NewProjectMemberRepository() ProjectMemberRepository {
+func NewMemberRepository() MemberRepository {
 	db := db.GetDB()
-	return &projectMemberRepository{db}
+	return &memberRepository{db}
 }
 
 
-func (rep *projectMemberRepository) GetByPk(userId, projectId int) (model.ProjectMember, error) {
-	var ret model.ProjectMember
+func (rep *memberRepository) GetByPk(projectId, userId int) (model.Member, error) {
+	var ret model.Member
 
 	err := rep.db.QueryRow(
 		`SELECT
-			user_id, 
 			project_id, 
+			user_id, 
 			user_status, 
 			user_role
 		 FROM project_member
@@ -41,8 +42,8 @@ func (rep *projectMemberRepository) GetByPk(userId, projectId int) (model.Projec
 		 userId,
 		 projectId,
 	).Scan(
-		&ret.UserId, 
 		&ret.ProjectId, 
+		&ret.UserId, 
 		&ret.UserStatus, 
 		&ret.UserRole,
 	)
@@ -51,7 +52,26 @@ func (rep *projectMemberRepository) GetByPk(userId, projectId int) (model.Projec
 }
 
 
-func (rep *projectMemberRepository) Upsert(up *model.ProjectMember) error {
+func (rep *memberRepository) Insert(m *model.Member) error {
+	_, err := rep.db.Exec(
+		`INSERT INTO project_member (
+			project_id,
+			user_id, 
+			user_status, 
+			user_role
+		 ) 
+		 VALUES(?,?,?,?)`,
+		m.ProjectId,
+		m.UserId, 
+		m.UserStatus,
+		m.UserRole,
+	)
+
+	return err
+}
+
+
+func (rep *memberRepository) Upsert(up *model.Member) error {
 	_, err := rep.db.Exec(
 		`REPLACE INTO project_member (
 			user_id, 
@@ -70,7 +90,7 @@ func (rep *projectMemberRepository) Upsert(up *model.ProjectMember) error {
 }
 
 
-func (rep *projectMemberRepository) Delete(userId, projectId int) error {
+func (rep *memberRepository) Delete(userId, projectId int) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM project_member
 		 WHERE 
@@ -81,4 +101,3 @@ func (rep *projectMemberRepository) Delete(userId, projectId int) error {
 	)
 	return err
 }
-*/

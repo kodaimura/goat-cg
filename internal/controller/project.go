@@ -24,7 +24,7 @@ func NewProjectController() *ProjectController {
 
 
 //GET /:username or /:username/projects
-func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
+func (cc *ProjectController) ProjectsPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	username := jwt.GetUsername(c)
 
@@ -34,8 +34,8 @@ func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
 		return
 	}
 
-	projects, _ := ctr.projectService.GetProjects(userId)
-	member_projects, _ := ctr.projectService.GetMemberProjects(userId)
+	projects, _ := cc.projectService.GetProjects(userId)
+	member_projects, _ := cc.projectService.GetMemberProjects(userId)
 
 	c.HTML(200, "index.html", gin.H{
 		"username": username,
@@ -46,7 +46,7 @@ func (ctr *ProjectController) ProjectsPage(c *gin.Context) {
 
 
 //GET /:username/projects/new
-func (ctr *ProjectController) CreateProjectPage(c *gin.Context) {
+func (cc *ProjectController) CreateProjectPage(c *gin.Context) {
 	username := jwt.GetUsername(c)
 
 	if c.Param("username") != username {
@@ -62,12 +62,12 @@ func (ctr *ProjectController) CreateProjectPage(c *gin.Context) {
 
 
 //POST /:username/projects
-func (ctr *ProjectController) CreateProject(c *gin.Context) {
+func (cc *ProjectController) CreateProject(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	username := jwt.GetUsername(c)
 
 	if c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
+		c.HTML(400, "400error.html", gin.H{})
 		c.Abort()
 		return
 	}
@@ -75,7 +75,7 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 	projectName := c.PostForm("project_name")
 	projectMemo := c.PostForm("project_memo")
 
-	err := ctr.projectService.CreateProject(userId, username, projectName, projectMemo)
+	err := cc.projectService.CreateProject(userId, username, projectName, projectMemo)
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf("/%s", username))
 		return
@@ -103,7 +103,7 @@ func (ctr *ProjectController) CreateProject(c *gin.Context) {
 
 
 //GET /:username/projects/:project_id
-func (ctr *ProjectController) UpdateProjectPage(c *gin.Context) {
+func (cc *ProjectController) UpdateProjectPage(c *gin.Context) {
 	userId := jwt.GetUserId(c)
 	username := jwt.GetUsername(c)
 	projectId, err := strconv.Atoi(c.Param("project_id"))
@@ -114,7 +114,7 @@ func (ctr *ProjectController) UpdateProjectPage(c *gin.Context) {
 		return
 	}
 
-	project, err := ctr.projectService.GetProject(projectId)
+	project, err := cc.projectService.GetProject(projectId)
 
 	if err != nil || project.UserId != userId {
 		c.HTML(404, "404error.html", gin.H{})
@@ -130,12 +130,12 @@ func (ctr *ProjectController) UpdateProjectPage(c *gin.Context) {
 
 
 //POST /:username/projects/:project_id
-func (ctr *ProjectController) UpdateProject(c *gin.Context) {
+func (cc *ProjectController) UpdateProject(c *gin.Context) {
 	username := jwt.GetUsername(c)
 	projectId, err := strconv.Atoi(c.Param("project_id"))
 
 	if err != nil || c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
+		c.HTML(400, "400error.html", gin.H{})
 		c.Abort()
 		return
 	}
@@ -143,7 +143,7 @@ func (ctr *ProjectController) UpdateProject(c *gin.Context) {
 	projectName := c.PostForm("project_name")
 	projectMemo := c.PostForm("project_memo")
 
-	err = ctr.projectService.UpdateProject(username, projectId, projectName, projectMemo)
+	err = cc.projectService.UpdateProject(username, projectId, projectName, projectMemo)
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf("/%s", username))
 		return
@@ -172,16 +172,16 @@ func (ctr *ProjectController) UpdateProject(c *gin.Context) {
 
 
 //DELETE /:username/projects/:project_id
-func (ctr *ProjectController) DeleteProject(c *gin.Context) {
+func (cc *ProjectController) DeleteProject(c *gin.Context) {
 	username := jwt.GetUsername(c)
 	projectId, err := strconv.Atoi(c.Param("project_id"))
 
 	if err != nil || c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
+		c.HTML(400, "400error.html", gin.H{})
 		c.Abort()
 		return
 	}
-	ctr.projectService.DeleteProject(projectId)
+	cc.projectService.DeleteProject(projectId)
 
 	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
 
