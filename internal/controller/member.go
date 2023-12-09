@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 
+	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
@@ -41,6 +42,16 @@ func (mc *MemberController) Invite (c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	email := c.PostForm("email")
 
+	if email == jwt.GetEmail(c) {
+		members, _ := mc.memberService.GetMembers(project.ProjectId)
+		c.HTML(400, "members.html", gin.H{
+			"project": project, 
+			"members": members,
+			"email": email,
+			"error": "Cannot invite yourself.",
+		})
+	}
+
 	err := mc.memberService.Invite(project.ProjectId, email)
 
 	if err == nil {
@@ -48,9 +59,12 @@ func (mc *MemberController) Invite (c *gin.Context) {
 		return
 	} 
 	
+	members, _ := mc.memberService.GetMembers(project.ProjectId)
+
 	if _, ok := err.(errs.NotFoundError); ok {
 		c.HTML(400, "members.html", gin.H{
 			"project": project, 
+			"members": members,
 			"email": email,
 			"error": "User not found.",
 		})
@@ -58,12 +72,14 @@ func (mc *MemberController) Invite (c *gin.Context) {
 	} else if _, ok := err.(errs.AlreadyRegisteredError); ok{
 		c.HTML(409, "members.html", gin.H{
 			"project": project, 
+			"members": members,
 			"email": email,
 			"error": "This user has already been invited.",
 		})
 	} else {
 		c.HTML(500, "members.html", gin.H{
 			"project": project, 
+			"members": members,
 			"email": email,
 			"error": "invitation failed.",
 		})
