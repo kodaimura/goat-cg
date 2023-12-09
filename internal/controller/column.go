@@ -58,7 +58,7 @@ func (cc *ColumnController) CreateColumn(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 
-	var form form.PostColumnsForm
+	var form form.PostColumn
 	c.Bind(&form)
 	err := cc.columnService.CreateColumn(form.ToCreateColumn(table.TableId, userId))
 
@@ -109,7 +109,7 @@ func (cc *ColumnController) UpdateColumn(c *gin.Context) {
 	table := c.Keys["table"].(model.Table)
 	column := c.Keys["column"].(model.Column)
 
-	var form form.PostColumnsForm
+	var form form.PostColumn
 	c.Bind(&form)
 	form.ColumnId = column.ColumnId
 	err := cc.columnService.UpdateColumn(form.ToCreateColumn(table.TableId, userId))
