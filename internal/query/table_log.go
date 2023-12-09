@@ -9,7 +9,7 @@ import (
 
 
 type TableQuery interface {
-	QueryTableLog(id int) ([]dto.TableLog, error)
+	GetTableLog(id int) ([]dto.TableLog, error)
 }
 
 
@@ -24,7 +24,7 @@ func NewTableQuery() TableQuery {
 }
 
 
-func (que *tableQuery)QueryTableLog(id int) ([]dto.TableLog, error){
+func (que *tableQuery)GetTableLog(id int) ([]dto.TableLog, error){
 	var ret []dto.TableLog	
 	rows, err := que.db.Query(
 		`SELECT 

@@ -142,7 +142,7 @@ func (serv *tableService) DeleteTable(tableId int) error {
 
 // GetTableLog get Table chenge log.
 func (serv *tableService) GetTableLog(tableId int) ([]dto.TableLog, error) {
-	tableLog, err := serv.tableQuery.QueryTableLog(tableId)
+	tableLog, err := serv.tableQuery.GetTableLog(tableId)
 
 	if err != nil {
 		logger.Error(err.Error())

@@ -9,7 +9,7 @@ import (
 
 
 type ColumnQuery interface {
-	QueryColumnLog(id int) ([]dto.ColumnLog, error)
+	GetColumnLog(id int) ([]dto.ColumnLog, error)
 }
 
 
@@ -24,7 +24,7 @@ func NewColumnQuery() ColumnQuery {
 }
 
 
-func (que *columnQuery)QueryColumnLog(id int) ([]dto.ColumnLog, error){
+func (que *columnQuery)GetColumnLog(id int) ([]dto.ColumnLog, error){
 	var ret []dto.ColumnLog
 
 	rows, err := que.db.Query(

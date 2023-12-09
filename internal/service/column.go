@@ -113,7 +113,7 @@ func (serv *columnService) DeleteColumn(columnId int) error {
 
 // GetColumnLog get Column chenge log.
 func (serv *columnService) GetColumnLog(columnId int) ([]dto.ColumnLog, error) {
-	columnLog, err := serv.columnQuery.QueryColumnLog(columnId)
+	columnLog, err := serv.columnQuery.GetColumnLog(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())
