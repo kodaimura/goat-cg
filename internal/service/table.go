@@ -17,7 +17,7 @@ type TableService interface {
 	CreateTable(projectId, userId int, tableName, tableNameLogical string) error
 	UpdateTable(projectId, tableId, userId int, tableName, tableNameLogical string, delFlg int) error
 	DeleteTable(tableId int) error 
-	GetTableLog(tableId int) ([]dto.QueOutTableLog, error)
+	GetTableLog(tableId int) ([]dto.TableLog, error)
 }
 
 
@@ -141,7 +141,7 @@ func (serv *tableService) DeleteTable(tableId int) error {
 
 
 // GetTableLog get Table chenge log.
-func (serv *tableService) GetTableLog(tableId int) ([]dto.QueOutTableLog, error) {
+func (serv *tableService) GetTableLog(tableId int) ([]dto.TableLog, error) {
 	tableLog, err := serv.tableQuery.QueryTableLog(tableId)
 
 	if err != nil {

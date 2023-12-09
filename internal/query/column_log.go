@@ -9,7 +9,7 @@ import (
 
 
 type ColumnQuery interface {
-	QueryColumnLog(id int) ([]dto.QueOutColumnLog, error)
+	QueryColumnLog(id int) ([]dto.ColumnLog, error)
 }
 
 
@@ -24,8 +24,8 @@ func NewColumnQuery() ColumnQuery {
 }
 
 
-func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
-	var ret []dto.QueOutColumnLog
+func (que *columnQuery)QueryColumnLog(id int) ([]dto.ColumnLog, error){
+	var ret []dto.ColumnLog
 
 	rows, err := que.db.Query(
 		`SELECT 
@@ -64,7 +64,7 @@ func (que *columnQuery)QueryColumnLog(id int) ([]dto.QueOutColumnLog, error){
 	}
 
 	for rows.Next() {
-		x := dto.QueOutColumnLog{}
+		x := dto.ColumnLog{}
 		err = rows.Scan(
 			&x.ColumnId,
 			&x.TableId,

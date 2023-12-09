@@ -5,7 +5,7 @@ import (
 	"goat-cg/internal/model"
 )
 
-type ServInCreateColumn struct {
+type CreateColumn struct {
 	ColumnId int
 	TableId int
 	ColumnName string
@@ -25,7 +25,7 @@ type ServInCreateColumn struct {
 }
 
 
-func (d ServInCreateColumn) ToColumn() model.Column {
+func (d CreateColumn) ToColumn() model.Column {
 	var c model.Column
 
 	c.ColumnId = d.ColumnId

@@ -1,7 +1,7 @@
 package dto
 
 
-type QueOutTableLog struct {
+type TableLog struct {
 	TableId int
 	ProjectId int
 	TableName string

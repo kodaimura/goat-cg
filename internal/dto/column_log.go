@@ -1,7 +1,7 @@
 package dto
 
 
-type QueOutColumnLog struct {
+type ColumnLog struct {
 	ColumnId int
 	TableId int
 	ColumnName string

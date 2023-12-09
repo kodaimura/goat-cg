@@ -9,7 +9,7 @@ import (
 
 
 type TableQuery interface {
-	QueryTableLog(id int) ([]dto.QueOutTableLog, error)
+	QueryTableLog(id int) ([]dto.TableLog, error)
 }
 
 
@@ -24,8 +24,8 @@ func NewTableQuery() TableQuery {
 }
 
 
-func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
-	var ret []dto.QueOutTableLog	
+func (que *tableQuery)QueryTableLog(id int) ([]dto.TableLog, error){
+	var ret []dto.TableLog	
 	rows, err := que.db.Query(
 		`SELECT 
 			tl.table_id,
@@ -53,7 +53,7 @@ func (que *tableQuery)QueryTableLog(id int) ([]dto.QueOutTableLog, error){
 	}
 
 	for rows.Next() {
-		x := dto.QueOutTableLog{}
+		x := dto.TableLog{}
 		err = rows.Scan(
 			&x.TableId, 
 			&x.TableName,

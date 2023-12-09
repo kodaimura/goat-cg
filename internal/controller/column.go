@@ -60,7 +60,7 @@ func (cc *ColumnController) CreateColumn(c *gin.Context) {
 
 	var form form.PostColumnsForm
 	c.Bind(&form)
-	err := cc.columnService.CreateColumn(form.ToServInCreateColumn(table.TableId, userId))
+	err := cc.columnService.CreateColumn(form.ToCreateColumn(table.TableId, userId))
 
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf(
@@ -112,7 +112,7 @@ func (cc *ColumnController) UpdateColumn(c *gin.Context) {
 	var form form.PostColumnsForm
 	c.Bind(&form)
 	form.ColumnId = column.ColumnId
-	err := cc.columnService.UpdateColumn(form.ToServInCreateColumn(table.TableId, userId))
+	err := cc.columnService.UpdateColumn(form.ToCreateColumn(table.TableId, userId))
 
 	if err == nil {
 		c.Redirect(303, fmt.Sprintf(
