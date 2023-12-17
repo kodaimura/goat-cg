@@ -144,13 +144,13 @@ func (cc *ColumnController) UpdateColumn(c *gin.Context) {
 func (cc *ColumnController) DeleteColumn(c *gin.Context) {
 	column := c.Keys["column"].(model.Column)
 
-	cc.columnService.DeleteColumn(column.ColumnId)
+	if cc.columnService.DeleteColumn(column.ColumnId) != nil {
+		c.JSON(500, gin.H{})
+		c.Abort()
+		return
+	}
 
-	c.Redirect(303, fmt.Sprintf(
-		"/%s/%s/tables/%s/columns", 
-		c.Param("username"), c.Param("project_name"), c.Param("table_id"),
-	))
-
+	c.JSON(200, gin.H{})
 }
 
 
