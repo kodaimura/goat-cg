@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
-	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
 )

@@ -29,9 +29,7 @@ func (cc *ProjectController) ProjectsPage(c *gin.Context) {
 	username := jwt.GetUsername(c)
 
 	if c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
-		c.Abort()
-		return
+		c.Redirect(303, fmt.Sprintf("/%s", username))
 	}
 
 	projects, _ := cc.projectService.GetProjects(userId)
