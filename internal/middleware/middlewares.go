@@ -1,10 +1,12 @@
 package middleware
 
 import (
+	"errors"
 	"strconv"
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
+	"goat-cg/internal/core/logger"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
 )
@@ -12,13 +14,8 @@ import (
 
 func PathParameterValidationMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		username := jwt.GetUsername(c)
-		ownername := c.Param("username")
-		projectName := c.Param("project_name")
-
-		project, b := searchAccessibleProject(username, ownername, projectName) 
-		
-		if !b {
+		project, err := validateProjectNameAndGetProject(c)
+		if err != nil {
 			c.HTML(404, "404error.html", gin.H{})
 			c.Abort()
 			return
@@ -27,68 +24,84 @@ func PathParameterValidationMiddleware() gin.HandlerFunc {
 		c.Set("project", project)
 
 		if c.Param("table_id") != "" {
-			tableId, _ := strconv.Atoi(c.Param("table_id"))
-			table, b := searchAccessibleTable(project.ProjectId, tableId)
+			tableId, err := strconv.Atoi(c.Param("table_id"))
+			if err != nil {
+				c.HTML(404, "404error.html", gin.H{})
+				c.Abort()
+				return
+			}
 
-			if !b {
+			table, err := validateTableIdAndGetTable(project.ProjectId, tableId)
+			if err != nil {
 				c.HTML(404, "404error.html", gin.H{})
 				c.Abort()
 				return
 			}
 
 			c.Set("table", table)
-		}
 
-		if c.Param("column_id") != "" {
-			tableId, _ := strconv.Atoi(c.Param("table_id"))
-			columnId, _ := strconv.Atoi(c.Param("column_id"))
-			column, b := searchAccessibleColumn(tableId, columnId)
-
-			if !b {
-				c.HTML(404, "404error.html", gin.H{})
-				c.Abort()
-				return
+			if c.Param("column_id") != "" {
+				columnId, err := strconv.Atoi(c.Param("column_id"))
+				if err != nil {
+					c.HTML(404, "404error.html", gin.H{})
+					c.Abort()
+					return
+				}
+	
+				column, err := validateColumnIdAndGetColumn(table.TableId, columnId)
+				if err != nil {
+					c.HTML(404, "404error.html", gin.H{})
+					c.Abort()
+					return
+				}
+	
+				c.Set("column", column)
 			}
-
-			c.Set("column", column)
 		}
 
 		c.Next()
 	}
 }
 
-func searchAccessibleProject (username, ownername, projectName string) (model.Project, bool) {
+func validateProjectNameAndGetProject (c *gin.Context) (model.Project, error) {
+	userId := jwt.GetUserId(c)
+	username := jwt.GetUsername(c)
+	ownername := c.Param("username")
+	projectName := c.Param("project_name")
+
+	var err error
 	var p model.Project
 	pr := repository.NewProjectRepository()
 
 	if username == ownername {
-		p, _ = pr.GetByUniqueKey(username, projectName)
+		p, err = pr.GetByUniqueKey(username, projectName)
 	} else {
-		p, _ = pr.GetMemberProject(username, projectName)
+		p, err = pr.GetMemberProject(userId, ownername, projectName)
 	}
 
-	if p.ProjectId == 0 {
-		return p, false
+	if err != nil {
+		return p, errors.New("validateProjectNameAndGetProject")
 	}
-	return p, true
+
+	return p, nil
 }
 
-func searchAccessibleTable (projectId, tableId int) (model.Table, bool) {
+func validateTableIdAndGetTable (projectId, tableId int) (model.Table, error) {
 	tr := repository.NewTableRepository()
-	t, _ := tr.GetById(tableId)
+	t, err := tr.GetById(tableId)
 
-	if t.ProjectId != projectId {
-		return t, false
+	if err != nil || t.ProjectId != projectId {
+		return t, errors.New("validateTableIdAndGetTable")
 	}
-	return t, true
+	return t, nil
 }
 
-func searchAccessibleColumn (tableId, columnId int) (model.Column, bool) {
+func validateColumnIdAndGetColumn (tableId, columnId int) (model.Column, error) {
 	cr := repository.NewColumnRepository()
-	c, _ := cr.GetById(columnId)
+	c, err := cr.GetById(columnId)
 	
-	if c.TableId != tableId {
-		return c, false
+	if err != nil || c.TableId != tableId {
+		return c, errors.New("validateColumnIdAndGetColumn")
 	}
-	return c, true
+	return c, nil
 }
