@@ -29,9 +29,7 @@ func (cc *ProjectController) ProjectsPage(c *gin.Context) {
 	username := jwt.GetUsername(c)
 
 	if c.Param("username") != username {
-		c.HTML(404, "404error.html", gin.H{})
-		c.Abort()
-		return
+		c.Redirect(303, fmt.Sprintf("/%s", username))
 	}
 
 	projects, _ := cc.projectService.GetProjects(userId)
@@ -177,12 +175,16 @@ func (cc *ProjectController) DeleteProject(c *gin.Context) {
 	projectId, err := strconv.Atoi(c.Param("project_id"))
 
 	if err != nil || c.Param("username") != username {
-		c.HTML(400, "400error.html", gin.H{})
+		c.JSON(400, gin.H{})
 		c.Abort()
 		return
 	}
-	cc.projectService.DeleteProject(projectId)
+	
+	if cc.projectService.DeleteProject(projectId) != nil {
+		c.JSON(500, gin.H{"error": "error occurred."})
+		c.Abort()
+		return
+	}
 
-	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
-
+	c.JSON(200, gin.H{})
 }

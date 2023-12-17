@@ -18,7 +18,7 @@ type ProjectRepository interface {
 	GetByUserId(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
 	GetByUniqueKey(username, projectName string) (model.Project, error)
-	GetMemberProject(username, projectName string) (model.Project, error)
+	GetMemberProject(userId int, ownername, projectName string) (model.Project, error)
 }
 
 
@@ -233,7 +233,7 @@ func (rep *projectRepository) GetByUniqueKey(username, projectName string) (mode
 }
 
 
-func (rep *projectRepository) GetMemberProject(username, projectName string) (model.Project, error) {
+func (rep *projectRepository) GetMemberProject(userId int, ownername, projectName string) (model.Project, error) {
 	var ret model.Project
 	err := rep.db.QueryRow(
 		`SELECT 
@@ -249,9 +249,11 @@ func (rep *projectRepository) GetMemberProject(username, projectName string) (mo
 			 project_member pm
 		 WHERE 
 			 p.project_id = pm.project_id
-		 AND pm.username = ?
+		 AND pm.user_id = ?
+		 AND p.username = ? 
 		 AND p.project_name = ?`, 
-		 username,
+		 userId,
+		 ownername,
 		 projectName,
 	).Scan(
 		&ret.ProjectId, 

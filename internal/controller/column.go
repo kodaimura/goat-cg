@@ -58,7 +58,7 @@ func (cc *ColumnController) CreateColumn(c *gin.Context) {
 	project := c.Keys["project"].(model.Project)
 	table := c.Keys["table"].(model.Table)
 
-	var form form.PostColumnsForm
+	var form form.PostColumn
 	c.Bind(&form)
 	err := cc.columnService.CreateColumn(form.ToCreateColumn(table.TableId, userId))
 
@@ -109,7 +109,7 @@ func (cc *ColumnController) UpdateColumn(c *gin.Context) {
 	table := c.Keys["table"].(model.Table)
 	column := c.Keys["column"].(model.Column)
 
-	var form form.PostColumnsForm
+	var form form.PostColumn
 	c.Bind(&form)
 	form.ColumnId = column.ColumnId
 	err := cc.columnService.UpdateColumn(form.ToCreateColumn(table.TableId, userId))
@@ -144,13 +144,13 @@ func (cc *ColumnController) UpdateColumn(c *gin.Context) {
 func (cc *ColumnController) DeleteColumn(c *gin.Context) {
 	column := c.Keys["column"].(model.Column)
 
-	cc.columnService.DeleteColumn(column.ColumnId)
+	if cc.columnService.DeleteColumn(column.ColumnId) != nil {
+		c.JSON(500, gin.H{})
+		c.Abort()
+		return
+	}
 
-	c.Redirect(303, fmt.Sprintf(
-		"/%s/%s/tables/%s/columns", 
-		c.Param("username"), c.Param("project_name"), c.Param("table_id"),
-	))
-
+	c.JSON(200, gin.H{})
 }
 
 

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
@@ -25,11 +26,15 @@ func NewMemberController() *MemberController {
 
 
 //GET /:username/:project_name/members
-func (mc *MemberController) MemberPage (c *gin.Context) {
+func (mc *MemberController) MembersPage (c *gin.Context) {
+	if c.Param("username") != jwt.GetUsername(c) {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
 	project := c.Keys["project"].(model.Project)
-
 	members, _ := mc.memberService.GetMembers(project.ProjectId)
-
 	c.HTML(200, "members.html", gin.H{
 		"project": project, 
 		"members": members,
@@ -37,11 +42,46 @@ func (mc *MemberController) MemberPage (c *gin.Context) {
 }
 
 
+//GET /:username/:project_name/members/:user_id
+func (mc *MemberController) MemberPage (c *gin.Context) {
+	if c.Param("username") != jwt.GetUsername(c) {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	project := c.Keys["project"].(model.Project)
+	userId, err := strconv.Atoi(c.Param("user_id"))
+	if err != nil {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	member, err := mc.memberService.GetMember(project.ProjectId, userId)
+	if err != nil {
+		c.HTML(404, "404error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
+	c.HTML(200, "member.html", gin.H{
+		"project": project, 
+		"member": member,
+	})
+}
+
+
 //POST /:username/:project_name/members/invite
 func (mc *MemberController) Invite (c *gin.Context) {
+	if c.Param("username") != jwt.GetUsername(c) {
+		c.HTML(400, "400error.html", gin.H{})
+		c.Abort()
+		return
+	}
+
 	project := c.Keys["project"].(model.Project)
 	email := c.PostForm("email")
-
 	if email == jwt.GetEmail(c) {
 		members, _ := mc.memberService.GetMembers(project.ProjectId)
 		c.HTML(400, "members.html", gin.H{
@@ -84,4 +124,31 @@ func (mc *MemberController) Invite (c *gin.Context) {
 			"error": "invitation failed.",
 		})
 	}
+}
+
+//DELETE /:username/:project_name/members/:user_id
+func (mc *MemberController) DeleteMember (c *gin.Context) {
+	if c.Param("username") != jwt.GetUsername(c) {
+		c.JSON(400, gin.H{})
+		c.Abort()
+		return
+	}
+
+	project := c.Keys["project"].(model.Project)
+	userId, err := strconv.Atoi(c.Param("user_id"))
+
+	if err != nil {
+		c.JSON(400, gin.H{})
+		c.Abort()
+		return
+	}
+
+	if err = mc.memberService.DeleteMember(project.ProjectId, userId); err != nil {
+		c.JSON(500, gin.H{})
+		c.Abort()
+		return
+	}
+
+	c.JSON(200, gin.H{})
+
 }

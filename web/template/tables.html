@@ -5,8 +5,10 @@
 	class="button is-link is-light has-text-weight-bold">Back</a>
     <a href="/{{.project.Username}}/{{.project.ProjectName}}/codegen" 
 	class="button is-danger has-text-weight-bold">Code Generate</a>
+	{{ if eq .project.Username .username }}
 	<a href="/{{.project.Username}}/{{.project.ProjectName}}/members" 
 	class="button is-warning has-text-weight-bold">Member Management</a>
+	{{ end }}
 </div>
 <hr class="hr is-marginless mb-4">
 

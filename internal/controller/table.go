@@ -31,6 +31,7 @@ func (tc *TableController) TablesPage(c *gin.Context) {
 
 	tables, _ := tc.tableService.GetTables(project.ProjectId)
 	c.HTML(200, "tables.html", gin.H{
+		"username": jwt.GetUsername(c),
 		"project": project, 
 		"tables": tables,
 	})
@@ -141,10 +142,14 @@ func (tc *TableController) UpdateTable(c *gin.Context) {
 //DELETE /:username/:project_name/tables/:table_id
 func (tc *TableController) DeleteTable(c *gin.Context) {
 	table := c.Keys["table"].(model.Table)
-	tc.tableService.DeleteTable(table.TableId)
 
-	c.Redirect(303, fmt.Sprintf("/%s/%s/tables", c.Param("username"), c.Param("project_name")))
+	if tc.tableService.DeleteTable(table.TableId) != nil {
+		c.JSON(500, gin.H{"error": "error occurred."})
+		c.Abort()
+		return
+	}
 
+	c.JSON(200, gin.H{})
 }
 
 

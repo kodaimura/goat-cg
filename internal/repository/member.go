@@ -12,7 +12,7 @@ type MemberRepository interface {
 	GetByPk(projectId, userId int) (model.Member, error)
 	Insert(m *model.Member) error
 	Upsert(m *model.Member) error
-	Delete(userId, projectId int) error
+	Delete(m *model.Member) error
 }
 
 
@@ -71,7 +71,7 @@ func (rep *memberRepository) Insert(m *model.Member) error {
 }
 
 
-func (rep *memberRepository) Upsert(up *model.Member) error {
+func (rep *memberRepository) Upsert(m *model.Member) error {
 	_, err := rep.db.Exec(
 		`REPLACE INTO project_member (
 			user_id, 
@@ -80,24 +80,23 @@ func (rep *memberRepository) Upsert(up *model.Member) error {
 			user_role
 		 ) 
 		 VALUES(?,?,?,?)`,
-		up.UserId, 
-		up.ProjectId,
-		up.UserStatus,
-		up.UserRole,
+		m.UserId, 
+		m.ProjectId,
+		m.UserStatus,
+		m.UserRole,
 	)
 
 	return err
 }
 
 
-func (rep *memberRepository) Delete(userId, projectId int) error {
+func (rep *memberRepository) Delete(m *model.Member) error {
 	_, err := rep.db.Exec(
 		`DELETE FROM project_member
-		 WHERE 
-			 user_id = ?
-		 AND project_id = ?`, 
-		userId,
-		projectId,
+		 WHERE user_id = ?
+		   AND project_id = ?`, 
+		m.UserId,
+		m.ProjectId,
 	)
 	return err
 }

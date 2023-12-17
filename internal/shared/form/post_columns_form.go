@@ -5,7 +5,7 @@ import (
 )
 
 
-type PostColumnsForm struct {
+type PostColumn struct {
 	ColumnId int `form:"column_id"`
 	ColumnName string `form:"column_name" binding:"required,max=50,min=1"`
 	ColumnNameLogical string `form:"column_name_logical"`
@@ -22,10 +22,7 @@ type PostColumnsForm struct {
 }
 
 
-func (f PostColumnsForm) ToCreateColumn(
-	tableId int, 
-	userId int,
-) dto.CreateColumn {
+func (f PostColumn) ToCreateColumn(tableId int, userId int) dto.CreateColumn {
 	var ret dto.CreateColumn
 
 	ret.ColumnId = f.ColumnId

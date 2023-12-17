@@ -53,7 +53,9 @@ func SetRouter(r *gin.Engine) {
 				aup.POST("/tables/:table_id", tc.UpdateTable)
 				aup.DELETE("/tables/:table_id", tc.DeleteTable)
 				aup.GET("/tables/:table_id/log", tc.TableLogPage)
-				aup.GET("/members", mc.MemberPage)
+				aup.GET("/members", mc.MembersPage)
+				aup.GET("/members/:user_id", mc.MemberPage)
+				aup.DELETE("/members/:user_id", mc.DeleteMember)
 				aup.POST("/members/invite", mc.Invite)
 	
 	

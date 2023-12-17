@@ -10,6 +10,7 @@
     </div>
     <hr class="hr is-marginless mb-4">
     <div class="container">
+        <h2 class="subtitle">My Projects</h2>
         <div class="columns is-multiline">
 		{{ range .projects }}
         <div class="column is-half">
@@ -34,8 +35,8 @@
     </div>
 {{ $l := len .member_projects }}
 {{ if ne $l 0 }}
-    <div class="container">
-        <spam>参画プロジェクト</spam>
+    <div class="container mt-5">
+        <h2 class="subtitle">Invited Projects</h2>
         <div class="columns is-multiline">
         {{ range .member_projects }}
         <div class="column is-half">
