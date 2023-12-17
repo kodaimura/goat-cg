@@ -1,0 +1,26 @@
+{{template "header" .}}
+<main>
+<div class="mb-3">
+    <a href="/{{.project.Username}}/{{.project.ProjectName}}/members" 
+	class="button is-link is-light has-text-weight-bold">Back</a>
+</div>
+<hr class="hr is-marginless mb-4">
+
+<h1 class="title">
+    {{.member.Username}}
+</h1>
+
+<div class="box has-background-light">
+</div>
+
+{{template "modal-del" .}}
+<script type="text/javascript">
+	document.getElementById("modal-del-button").addEventListener("click", (e)=>{
+		fetch("", {method: "DELETE"})
+		.then(data => {
+			window.location = "../members"
+		})
+	})
+</script>
+</main>
+{{template "footer"}}

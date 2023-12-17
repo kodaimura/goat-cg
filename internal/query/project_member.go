@@ -9,7 +9,8 @@ import (
 
 
 type ProjectMemberQuery interface {
-	GetProjectMember(projectId int) ([]dto.ProjectMember, error)
+	GetProjectMembers(projectId int) ([]dto.ProjectMember, error)
+	GetProjectMember(projectId, userId int) (dto.ProjectMember, error)
 }
 
 
@@ -24,7 +25,7 @@ func NewProjectMemberQuery() ProjectMemberQuery {
 }
 
 
-func (que *projectMemberQuery)GetProjectMember(projectId int) ([]dto.ProjectMember, error){
+func (que *projectMemberQuery)GetProjectMembers(projectId int) ([]dto.ProjectMember, error) {
 
 	var ret []dto.ProjectMember
 	rows, err := que.db.Query(
@@ -66,6 +67,41 @@ func (que *projectMemberQuery)GetProjectMember(projectId int) ([]dto.ProjectMemb
 		}
 		ret = append(ret, x)
 	}
+
+	return ret, err
+}
+
+
+func (que *projectMemberQuery)GetProjectMember(projectId, userId int) (dto.ProjectMember, error) {
+	var ret dto.ProjectMember
+	err := que.db.QueryRow(
+		`SELECT
+			pm.project_id,
+			pm.user_id,
+			u.username,
+			u.email,
+			pm.user_status,
+			pm.user_role,
+			pm.created_at,
+			pm.updated_at
+		 FROM 
+			 project_member pm,
+			 users u
+		 WHERE pm.project_id = ?
+		  AND u.user_id = pm.user_id
+		  AND u.user_id = ? `,
+		 projectId,
+		 userId,
+	).Scan(
+		&ret.ProjectId,
+		&ret.UserId,
+		&ret.Username,
+		&ret.Email,
+		&ret.UserStatus,
+		&ret.UserRole,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
+	)
 
 	return ret, err
 }

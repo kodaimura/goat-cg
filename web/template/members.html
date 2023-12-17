@@ -37,11 +37,10 @@
           <thead>
             <tr>
                 <th style="min-width:200px;">Username</th>
-                <th style="min-width:200px;">Email</th>
+                <th style="min-width:250px;">Email</th>
                 <th style="min-width:100px;">Status</th>
                 <th style="min-width:100px;">Role</th>
-                <th style="min-width:200px;">CreatedAt</th>
-                <th style="min-width:200px;">UpdatedAt</th>
+                <th style="min-width:50px;"></th>
             </tr>
         </thead>
     </table>
@@ -50,11 +49,14 @@
             {{ range $i, $m := .members }}
             <tr>
                 <td style="min-width:200px;">{{$m.Username}}</td>
-                <td style="min-width:200px;">{{$m.Email}}</td>
+                <td style="min-width:250px;">{{$m.Email}}</td>
                 <td style="min-width:100px;">{{$m.UserStatus}}</td>
                 <td style="min-width:100px;">{{$m.UserRole}}</td>
-                <td style="min-width:200px;">{{$m.CreatedAt}}</td>
-                <td style="min-width:200px;">{{$m.UpdatedAt}}</td>
+                <td style="min-width:50px;">
+                    <a href="/{{$.project.Username}}/{{$.project.ProjectName}}/members/{{$m.UserId}}">
+                        <i class="fa-sharp fa-solid fa-pen-to-square fa-xl has-text-black"></i>
+                    </a>
+                </td>
             </tr>
             {{ end }}
         </tbody>

@@ -13,6 +13,8 @@ import (
 type MemberService interface {
 	Invite(projectId int, email string) error
 	GetMembers(projectId int) ([]dto.ProjectMember, error)
+	GetMember(projectId, userId int) (dto.ProjectMember, error)
+	DeleteMember(projectId, userId int) error
 }
 
 
@@ -56,5 +58,22 @@ func (serv *memberService) Invite(projectId int, email string) error {
 }
 
 func (serv *memberService) GetMembers(projectId int) ([]dto.ProjectMember, error) {
-	return serv.projectMemberQuery.GetProjectMember(projectId)
+	return serv.projectMemberQuery.GetProjectMembers(projectId)
+}
+
+func (serv *memberService) GetMember(projectId, userId int) (dto.ProjectMember, error) {
+	return serv.projectMemberQuery.GetProjectMember(projectId, userId)
+}
+
+func (serv *memberService) DeleteMember(projectId, userId int) error {
+	var m model.Member
+	m.ProjectId = projectId
+	m.UserId = userId
+
+	if err := serv.memberRepository.Delete(&m); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
