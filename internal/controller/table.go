@@ -31,6 +31,7 @@ func (tc *TableController) TablesPage(c *gin.Context) {
 
 	tables, _ := tc.tableService.GetTables(project.ProjectId)
 	c.HTML(200, "tables.html", gin.H{
+		"username": jwt.GetUsername(c),
 		"project": project, 
 		"tables": tables,
 	})
