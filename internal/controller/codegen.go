@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
-	"goat-cg/pkg/utils"
+	"goat-cg/internal/core/utils"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
 )

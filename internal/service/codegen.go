@@ -8,9 +8,9 @@ import (
 	"strings"
 	"os/exec"
 
-	"goat-cg/pkg/utils"
 	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/logger"
+	"goat-cg/internal/core/utils"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
 )
