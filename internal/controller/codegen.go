@@ -53,7 +53,7 @@ func (cc *CodegenController) CodegenGOAT(c *gin.Context) {
 		return
 	}
 
-	fpath := cc.codegenService.CodeGenerateGoat(pb.DbType, tableIds)
+	fpath := cc.codegenService.GenerateGoat(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }
@@ -71,7 +71,7 @@ func (cc *CodegenController) CodegenDDL(c *gin.Context) {
 		return
 	}
 
-	fpath := cc.codegenService.CodeGenerateDdl(pb.DbType, tableIds)
+	fpath := cc.codegenService.GenerateDdl(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }
