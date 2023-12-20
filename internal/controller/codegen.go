@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
-	"goat-cg/pkg/utils"
+	"goat-cg/internal/core/utils"
 	"goat-cg/internal/service"
 	"goat-cg/internal/model"
 )
@@ -53,25 +53,7 @@ func (cc *CodegenController) CodegenGOAT(c *gin.Context) {
 		return
 	}
 
-	fpath := cc.codegenService.CodeGenerateGoat(pb.DbType, tableIds)
-
-	c.String(200, fpath[1:])
-}
-
-
-//POST /:project_cd/codegen/ddl
-func (cc *CodegenController) CodegenDDL(c *gin.Context) {
-	pb := &CodegenPostBody{} 
-	c.BindJSON(&pb)
-
-	tableIds, err := utils.AtoiSlice(pb.TableIds)
-
-	if err != nil {
-		c.String(200, "error.txt")
-		return
-	}
-
-	fpath := cc.codegenService.CodeGenerateDdl(pb.DbType, tableIds)
+	fpath := cc.codegenService.GenerateGoat(pb.DbType, tableIds)
 
 	c.String(200, fpath[1:])
 }

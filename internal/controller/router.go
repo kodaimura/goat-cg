@@ -63,7 +63,6 @@ func SetRouter(r *gin.Engine) {
 	
 				aup.GET("/codegen", cgc.CodegenPage)
 				aup.POST("/codegen/goat", cgc.CodegenGOAT)
-				aup.POST("/codegen/ddl", cgc.CodegenDDL)
 	
 				aupt := aup.Group("/tables/:table_id")
 				{
