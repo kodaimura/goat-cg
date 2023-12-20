@@ -449,20 +449,20 @@ func (serv *codegenService) generateInternalSource(rdbms string, tableIds []int,
 			break
 		}
 
-		serv.generateModelFile(table, columns, modelPath)
-		serv.generateRepositoryFile(rdbms, table, columns, repositoryPath)
+		serv.generateModelFile(&table, columns, modelPath)
+		serv.generateRepositoryFile(rdbms, &table, columns, repositoryPath)
 	}
 }
 
 
-func (serv *codegenService) generateModelFile(table model.Table, columns []model.Column, path string) {
+func (serv *codegenService) generateModelFile(table *model.Table, columns []model.Column, path string) {
 	path += "/" + serv.tableNameToFileName(table.TableName)
 	code := serv.generateModelCode(table, columns)
 	serv.writeFile(path, code)
 }
 
 
-func (serv *codegenService) generateModelCode(table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateModelCode(table *model.Table, columns []model.Column) string {
 	s := "package model\n\n\n"
 
 	s += fmt.Sprintf("type %s struct {\n", SnakeToPascal(table.TableName))
@@ -482,14 +482,14 @@ func (serv *codegenService) generateModelCode(table model.Table, columns []model
 }
 
 
-func (serv *codegenService) generateRepositoryFile(rdbms string, table model.Table, columns []model.Column, path string) {
+func (serv *codegenService) generateRepositoryFile(rdbms string, table *model.Table, columns []model.Column, path string) {
 	path += "/" + serv.tableNameToFileName(table.TableName)
 	code := serv.generateRepositoryCode(rdbms, table, columns)
 	serv.writeFile(path, code)
 }
 
 
-func (serv *codegenService) generateRepositoryCode(rdbms string, table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateRepositoryCode(rdbms string, table *model.Table, columns []model.Column) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -515,7 +515,7 @@ func (serv *codegenService) generateRepositoryCode(rdbms string, table model.Tab
 
 
 // return "type *Repository interface { ... }"
-func (serv *codegenService) generateRepositoryInterfaceCode(table model.Table) string {
+func (serv *codegenService) generateRepositoryInterfaceCode(table *model.Table) string {
 	tnp := SnakeToPascal(table.TableName)
 	tni := GetSnakeInitial(table.TableName)
 	return fmt.Sprintf("type %sRepository interface {\n", tnp) +
@@ -529,7 +529,7 @@ func (serv *codegenService) generateRepositoryInterfaceCode(table model.Table) s
 
 // generateRepositoryGet generate repository function 'Get'.
 // return "func (ur *userRepository) Get() ([]model.User, error) {...}"
-func (serv *codegenService) generateRepositoryGet(table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []model.Column) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -566,7 +566,7 @@ func (serv *codegenService) generateRepositoryGet(table model.Table, columns []m
 // generateRepositoryGetByPk generate repository function 'GetByPk'.
 // return "func (ur *userRepository) GetByPk(u *model.User) (model.User, error) {...}"
 func (serv *codegenService) generateRepositoryGetByPk(
-	rdbms string, table model.Table, columns []model.Column,
+	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
@@ -624,7 +624,7 @@ func (serv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount
 // generateRepositoryInsert generate repository function 'Insert'.
 // return "func (ur *userRepository) Insert(u *entity.User) error {...}"
 func (serv *codegenService) generateRepositoryInsert(
-	rdbms string, table model.Table, columns []model.Column,
+	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
@@ -663,7 +663,7 @@ func (serv *codegenService) generateRepositoryInsert(
 // generateRepositoryUpdate generate repository function 'Update'.
 // return "func (ur *userRepository) Update(u *entity.User) error {...}"
 func (serv *codegenService) generateRepositoryUpdate(
-	rdbms string, table model.Table, columns []model.Column,
+	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
@@ -707,7 +707,7 @@ func (serv *codegenService) generateRepositoryUpdate(
 // generateRepositoryDelete generate repository function 'Delete'.
 // return "func (ur *userRepository) Delete(u *entity.User) error {...}"
 func (serv *codegenService) generateRepositoryDelete(
-	rdbms string, table model.Table, columns []model.Column,
+	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
@@ -752,7 +752,7 @@ func (serv *codegenService) generateRepositoryWhereClause(
 
 
 func (serv *codegenService) generateRepositoryWhereClauseBindVals(
-	table model.Table, columns []model.Column,
+	table *model.Table, columns []model.Column,
 ) string {
 	s := ""
 	tni := GetSnakeInitial(table.TableName)
