@@ -49,7 +49,7 @@ document.getElementById("cg-goat").addEventListener("click", (e) => {
 	})
 	.catch(console.error);
 })
-
+/*
 document.getElementById("cg-ddl").addEventListener("click", (e) => {
 	let tableids = getChechedValues()
 	let dbtype = document.getElementById("db_type").value
@@ -71,3 +71,4 @@ document.getElementById("cg-ddl").addEventListener("click", (e) => {
 	})
 	.catch(console.error);
 })
+*/

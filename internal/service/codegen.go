@@ -18,7 +18,6 @@ import (
 
 type CodegenService interface {
 	GenerateGoat(rdbms string, tableIds []int) string
-	GenerateDdl(rdbms string, tableIds []int) string
 }
 
 
@@ -35,31 +34,36 @@ func NewCodegenService() CodegenService {
 }
 
 
-// Generate ddl source and return file path.
-// param rdbms: "sqlite3" or "postgresql" 
-func (serv *codegenService) GenerateDdl(rdbms string, tableIds []int) string {
-	path := "./tmp/ddl-" + time.Now().Format("2006-01-02-15-04-05") + 
-		"-" + utils.RandomString(7) + ".sql"
-
-	serv.generateDdlSource(rdbms, tableIds, path)
-
-	return path
-}
-
-
 // Generate goat source and return zip path.
 // param rdbms: "sqlite3" or "postgresql" 
 func (serv *codegenService) GenerateGoat(rdbms string, tableIds []int) string {
 	path := "./tmp/goat-" + time.Now().Format("2006-01-02-15-04-05") + 
 		"-" + utils.RandomString(7)
 
-	serv.generateGoatSource(rdbms, tableIds, path)
+	serv.generateSource(rdbms, tableIds, path)
 
 	if err := exec.Command("zip", "-rm", path + ".zip", path).Run(); err != nil {
 		logger.Error(err.Error())
 	}
 
 	return path + ".zip"
+}
+
+
+func (serv *codegenService) generateSource(rdbms string, tableIds []int, rootPath string) {
+	path := rootPath + "/scripts"
+	if err := os.MkdirAll(path, 0777); err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	serv.generateScriptsSource(rdbms, tableIds, path)
+
+	path = rootPath + "/internal"
+	if err := os.MkdirAll(path, 0777); err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	serv.generateInternalSource(rdbms, tableIds, path)
 }
 
 
@@ -132,9 +136,9 @@ func (serv *codegenService) writeFile(path, content string) {
 func (serv *codegenService) extractPrimaryKeys(columns []model.Column) []model.Column {
 	var ret []model.Column
 
-	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			ret = append(ret, col)
+	for _, c := range columns {
+		if c.PrimaryKeyFlg == constant.FLG_ON {
+			ret = append(ret, c)
 		}
 	}
 
@@ -142,17 +146,13 @@ func (serv *codegenService) extractPrimaryKeys(columns []model.Column) []model.C
 }
 
 
-///////////////////////
-/// GenerateDdl     ///
-///////////////////////
-
-// generateDdlSource generate ddl(create table) source.
+// generateScriptsSource generate ddl(create table) source.
 // main processing of GenerateDdl.
-func (serv *codegenService) generateDdlSource(rdbms string, tableIds []int, path string) {
+func (serv *codegenService) generateScriptsSource(rdbms string, tableIds []int, path string) {
 	s := serv.generateDdlCreateTables(rdbms, tableIds) + "\n" +
 		serv.generateDdlCreateTriggers(rdbms, tableIds)
 
-	serv.writeFile(path, s)
+	serv.writeFile(path + "/create-table.sql", s)
 }
 
 
@@ -224,8 +224,8 @@ func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.
 	s := "" 
 	pkcolumns := serv.extractPrimaryKeys(columns)
 
-	for i, col := range pkcolumns {
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
+	for i, c := range pkcolumns {
+		if c.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
 			return ""
 		}
 
@@ -234,7 +234,7 @@ func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.
 		} else {
 			s += ", "
 		}
-		s += col.ColumnName
+		s += c.ColumnName
 	}
 	
 	if s != "" {
@@ -245,12 +245,12 @@ func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.
 }
 
 
-func (serv *codegenService) generateDdlColumn(rdbms string, col model.Column) string {
-	s := "\t" + col.ColumnName + " " + serv.generateDdlColumnDataType(rdbms, col)
-	if cts := serv.generateDdlColumnConstraints(col); cts != "" {
+func (serv *codegenService) generateDdlColumn(rdbms string, column model.Column) string {
+	s := "\t" + column.ColumnName + " " + serv.generateDdlColumnDataType(rdbms, column)
+	if cts := serv.generateDdlColumnConstraints(column); cts != "" {
 		s += " " + cts
 	}
-	if dflt := serv.generateDdlColumnDefault(col); dflt != "" {
+	if dflt := serv.generateDdlColumnDefault(column); dflt != "" {
 		s += " " + dflt
 	}
 
@@ -258,12 +258,12 @@ func (serv *codegenService) generateDdlColumn(rdbms string, col model.Column) st
 }
 
 
-func (serv *codegenService) generateDdlColumnConstraints(col model.Column) string {
+func (serv *codegenService) generateDdlColumnConstraints(column model.Column) string {
 	s := ""
-	if col.NotNullFlg == constant.FLG_ON {
+	if column.NotNullFlg == constant.FLG_ON {
 		s += "NOT NULL "
 	}
-	if col.UniqueFlg == constant.FLG_ON {
+	if column.UniqueFlg == constant.FLG_ON {
 		s += "UNIQUE"
 	} 
 	
@@ -271,14 +271,14 @@ func (serv *codegenService) generateDdlColumnConstraints(col model.Column) strin
 }
 
 
-func (serv *codegenService) generateDdlColumnDefault(col model.Column) string {
+func (serv *codegenService) generateDdlColumnDefault(column model.Column) string {
 	s := ""
-	if col.DefaultValue != "" {
-		if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC ||
-		col.DataTypeCls == constant.DATA_TYPE_CLS_INTEGER {
-			s = "DEFAULT " + col.DefaultValue
+	if column.DefaultValue != "" {
+		if column.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC ||
+		column.DataTypeCls == constant.DATA_TYPE_CLS_INTEGER {
+			s = "DEFAULT " + column.DefaultValue
 		} else {
-			s = "DEFAULT '" + col.DefaultValue + "'"
+			s = "DEFAULT '" + column.DefaultValue + "'"
 		}
 	}
 
@@ -286,34 +286,34 @@ func (serv *codegenService) generateDdlColumnDefault(col model.Column) string {
 }
 
 
-func (serv *codegenService) generateDdlColumnDataType(rdbms string, col model.Column) string {
+func (serv *codegenService) generateDdlColumnDataType(rdbms string, column model.Column) string {
 	s := ""
 	if rdbms == "sqlite3" {
-		s = dataTypeMapSqlite3[col.DataTypeCls]
+		s = dataTypeMapSqlite3[column.DataTypeCls]
 
 	} else if rdbms == "postgresql" {
-		s = serv.generateDdlColumnDataTypePostgresql(col)
+		s = serv.generateDdlColumnDataTypePostgresql(column)
 	
 	} else if rdbms == "mysql" {
-		s = serv.generateDdlColumnDataTypeMysql(col)
+		s = serv.generateDdlColumnDataTypeMysql(column)
 	}
 
 	return s
 }
 
 
-func (serv *codegenService) generateDdlColumnDataTypePostgresql(col model.Column) string {
-	s := dataTypeMapPostgresql[col.DataTypeCls]
+func (serv *codegenService) generateDdlColumnDataTypePostgresql(column model.Column) string {
+	s := dataTypeMapPostgresql[column.DataTypeCls]
 
-	if col.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
-	col.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
-		if col.Precision != 0 {
-			s += "(" + strconv.Itoa(col.Precision) + ")"
+	if column.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
+	column.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
+		if column.Precision != 0 {
+			s += "(" + strconv.Itoa(column.Precision) + ")"
 		}	
 	}
-	if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
-		if col.Precision != 0 {
-			s += "(" + strconv.Itoa(col.Precision) + "," + strconv.Itoa(col.Scale) + ")"
+	if column.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
+		if column.Precision != 0 {
+			s += "(" + strconv.Itoa(column.Precision) + "," + strconv.Itoa(column.Scale) + ")"
 		}
 	}
 
@@ -321,18 +321,18 @@ func (serv *codegenService) generateDdlColumnDataTypePostgresql(col model.Column
 }
 
 
-func (serv *codegenService) generateDdlColumnDataTypeMysql(col model.Column) string {
-	s := dataTypeMapMysql[col.DataTypeCls]
+func (serv *codegenService) generateDdlColumnDataTypeMysql(column model.Column) string {
+	s := dataTypeMapMysql[column.DataTypeCls]
 
-	if col.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
-	col.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
-		if col.Precision != 0 {
-			s += "(" + strconv.Itoa(col.Precision) + ")"
+	if column.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
+	column.DataTypeCls == constant.DATA_TYPE_CLS_CHAR {
+		if column.Precision != 0 {
+			s += "(" + strconv.Itoa(column.Precision) + ")"
 		}	
 	}
-	if col.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
-		if col.Precision != 0 {
-			s += "(" + strconv.Itoa(col.Precision) + "," + strconv.Itoa(col.Scale) + ")"
+	if column.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC {
+		if column.Precision != 0 {
+			s += "(" + strconv.Itoa(column.Precision) + "," + strconv.Itoa(column.Scale) + ")"
 		}
 	}
 
@@ -382,10 +382,6 @@ func (serv *codegenService) generateDdlCreateTrigger(rdbms string, tid int) stri
 }
 
 
-////////////////////////
-/// GenerateGoat     ///
-////////////////////////
-
 // tableNameToFileName get file name from table name
 // user => user.go / USER_TABLE => user_table.go
 func (serv *codegenService) tableNameToFileName(tn string) string {
@@ -427,18 +423,7 @@ func GetSnakeInitial(snake string) string {
 }
 
 
-func (serv *codegenService) generateGoatSource(rdbms string, tableIds []int, rootPath string) {
-	path := rootPath + "/internal"
-	if err := os.MkdirAll(path, 0777); err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	serv.generateGoatInternalSource(rdbms, tableIds, path)
-}
-
-
-func (serv *codegenService) generateGoatInternalSource(rdbms string, tableIds []int, path string) {
+func (serv *codegenService) generateInternalSource(rdbms string, tableIds []int, path string) {
 	modelPath := path + "/model"
 	if err := os.MkdirAll(modelPath, 0777); err != nil {
 		logger.Error(err.Error())
@@ -464,20 +449,20 @@ func (serv *codegenService) generateGoatInternalSource(rdbms string, tableIds []
 			break
 		}
 
-		serv.generateGoatModelFile(table, columns, modelPath)
-		serv.generateGoatRepositoryFile(rdbms, table, columns, repositoryPath)
+		serv.generateModelFile(table, columns, modelPath)
+		serv.generateRepositoryFile(rdbms, table, columns, repositoryPath)
 	}
 }
 
 
-func (serv *codegenService) generateGoatModelFile(table model.Table, columns []model.Column, path string) {
+func (serv *codegenService) generateModelFile(table model.Table, columns []model.Column, path string) {
 	path += "/" + serv.tableNameToFileName(table.TableName)
-	code := serv.generateGoatModelCode(table, columns)
+	code := serv.generateModelCode(table, columns)
 	serv.writeFile(path, code)
 }
 
 
-func (serv *codegenService) generateGoatModelCode(table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateModelCode(table model.Table, columns []model.Column) string {
 	s := "package model\n\n\n"
 
 	s += fmt.Sprintf("type %s struct {\n", SnakeToPascal(table.TableName))
@@ -497,14 +482,14 @@ func (serv *codegenService) generateGoatModelCode(table model.Table, columns []m
 }
 
 
-func (serv *codegenService) generateGoatRepositoryFile(rdbms string, table model.Table, columns []model.Column, path string) {
+func (serv *codegenService) generateRepositoryFile(rdbms string, table model.Table, columns []model.Column, path string) {
 	path += "/" + serv.tableNameToFileName(table.TableName)
-	code := serv.generateGoatRepositoryCode(rdbms, table, columns)
+	code := serv.generateRepositoryCode(rdbms, table, columns)
 	serv.writeFile(path, code)
 }
 
 
-func (serv *codegenService) generateGoatRepositoryCode(rdbms string, table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateRepositoryCode(rdbms string, table model.Table, columns []model.Column) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -512,25 +497,25 @@ func (serv *codegenService) generateGoatRepositoryCode(rdbms string, table model
 	s := "package repository\n\n\nimport (\n" + 
 		"\t\"database/sql\"\n\n\t\"xxxxx/internal/core/db\"\n\t\"xxxxx/internal/model\"\n)\n\n\n"
 
-	s += serv.generateGoatRepositoryInterfaceCode(table)
+	s += serv.generateRepositoryInterfaceCode(table)
 	
 	s += "\n\n" +
 		fmt.Sprintf("type %sRepository struct {\n\tdb *sql.DB\n}\n\n\n", tnc) +
 		fmt.Sprintf("func New%sRepository() *%sRepository {\n", tnp, tnc) +
 		fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sRepository{db}\n}\n\n\n", tnc)
 
-	s += serv.generateGoatRepositoryGet(table, columns) + "\n\n\n"
-	s += serv.generateGoatRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
-	s += serv.generateGoatRepositoryInsert(rdbms, table, columns) + "\n\n\n"
-	s += serv.generateGoatRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
-	s += serv.generateGoatRepositoryDelete(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateRepositoryGet(table, columns) + "\n\n\n"
+	s += serv.generateRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateRepositoryInsert(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateRepositoryDelete(rdbms, table, columns) + "\n\n\n"
 
 	return s
 }
 
 
 // return "type *Repository interface { ... }"
-func (serv *codegenService) generateGoatRepositoryInterfaceCode(table model.Table) string {
+func (serv *codegenService) generateRepositoryInterfaceCode(table model.Table) string {
 	tnp := SnakeToPascal(table.TableName)
 	tni := GetSnakeInitial(table.TableName)
 	return fmt.Sprintf("type %sRepository interface {\n", tnp) +
@@ -542,9 +527,9 @@ func (serv *codegenService) generateGoatRepositoryInterfaceCode(table model.Tabl
 }
 
 
-// generateGoatRepositoryGet generate repository function 'Get'.
+// generateRepositoryGet generate repository function 'Get'.
 // return "func (ur *userRepository) Get() ([]model.User, error) {...}"
-func (serv *codegenService) generateGoatRepositoryGet(table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateRepositoryGet(table model.Table, columns []model.Column) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -578,9 +563,9 @@ func (serv *codegenService) generateGoatRepositoryGet(table model.Table, columns
 }
 
 
-// generateGoatRepositoryGetByPk generate repository function 'GetByPk'.
+// generateRepositoryGetByPk generate repository function 'GetByPk'.
 // return "func (ur *userRepository) GetByPk(u *model.User) (model.User, error) {...}"
-func (serv *codegenService) generateGoatRepositoryGetByPk(
+func (serv *codegenService) generateRepositoryGetByPk(
 	rdbms string, table model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -603,9 +588,9 @@ func (serv *codegenService) generateGoatRepositoryGetByPk(
 		}
 	}
 	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" + fmt.Sprintf("\n\t\t FROM %s\n", tn)
-	s += serv.generateGoatRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += serv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
-	s += serv.generateGoatRepositoryWhereClauseBindVals(table, columns)
+	s += serv.generateRepositoryWhereClauseBindVals(table, columns)
 	s += "\t).Scan(\n"
 	for _, c := range columns {
 		s += fmt.Sprintf("\t\t&ret.%s,\n", SnakeToPascal(c.ColumnName))
@@ -636,10 +621,10 @@ func (serv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount
 }
 
 
-// generateGoatRepositoryInsert generate repository function 'Insert'.
+// generateRepositoryInsert generate repository function 'Insert'.
 // return "func (ur *userRepository) Insert(u *entity.User) error {...}"
-func (serv *codegenService) generateGoatRepositoryInsert(
-	rdbms string, table model.Table, columns []model.Column
+func (serv *codegenService) generateRepositoryInsert(
+	rdbms string, table model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
@@ -675,10 +660,10 @@ func (serv *codegenService) generateGoatRepositoryInsert(
 }
 
 
-// generateGoatRepositoryUpdate generate repository function 'Update'.
+// generateRepositoryUpdate generate repository function 'Update'.
 // return "func (ur *userRepository) Update(u *entity.User) error {...}"
-func (serv *codegenService) generateGoatRepositoryUpdate(
-	rdbms string, table model.Table, columns []model.Column
+func (serv *codegenService) generateRepositoryUpdate(
+	rdbms string, table model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
@@ -702,9 +687,8 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 			}
 		}
 	}
-
 	s += "\n"
-	s += serv.generateGoatRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += serv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
 
 	for _, c := range columns {
@@ -713,16 +697,18 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
-	s += serv.generateGoatRepositoryWhereClauseBindVals(table, columns)
+	s += serv.generateRepositoryWhereClauseBindVals(table, columns)
 	s += "\t)\n\n\treturn err\n}"
 
 	return s
 }
 
 
-// generateGoatRepositoryDelete generate repository function 'Delete'.
+// generateRepositoryDelete generate repository function 'Delete'.
 // return "func (ur *userRepository) Delete(u *entity.User) error {...}"
-func (serv *codegenService) generateGoatRepositoryDelete(rdbms string, table model.Table, columns []model.Column) string {
+func (serv *codegenService) generateRepositoryDelete(
+	rdbms string, table model.Table, columns []model.Column,
+) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -734,29 +720,29 @@ func (serv *codegenService) generateGoatRepositoryDelete(rdbms string, table mod
 	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
 
 	bindCount := 0
-	s += serv.generateGoatRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += serv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
-	s += serv.generateGoatRepositoryWhereClauseBindVals(table, columns)
+	s += serv.generateRepositoryWhereClauseBindVals(table, columns)
 	s += "\t)\n\n\treturn err\n}"
 
 	return s
 }
 
 
-func (serv *codegenService) generateGoatRepositoryWhereClause(
+func (serv *codegenService) generateRepositoryWhereClause(
 	rdbms string, columns []model.Column, bindCount *int,
 ) string {
 	s := "\t\t WHERE "
 
 	isFirst := true
-	for _, col := range columns {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
+	for _, c := range columns {
+		if c.PrimaryKeyFlg == constant.FLG_ON {
 			*bindCount += 1
 			if isFirst {
-				s += fmt.Sprintf("%s = %s", col.ColumnName, serv.getBindVar(rdbms, *bindCount))
+				s += fmt.Sprintf("%s = %s", c.ColumnName, serv.getBindVar(rdbms, *bindCount))
 				isFirst = false
 			} else {
-				s += fmt.Sprintf("\n\t\t   AND %s = %s", col.ColumnName, serv.getBindVar(rdbms, *bindCount))
+				s += fmt.Sprintf("\n\t\t   AND %s = %s", c.ColumnName, serv.getBindVar(rdbms, *bindCount))
 			}
 		}
 	}
@@ -765,7 +751,7 @@ func (serv *codegenService) generateGoatRepositoryWhereClause(
 }
 
 
-func (serv *codegenService) generateGoatRepositoryWhereClauseBindVals(
+func (serv *codegenService) generateRepositoryWhereClauseBindVals(
 	table model.Table, columns []model.Column,
 ) string {
 	s := ""
@@ -780,10 +766,10 @@ func (serv *codegenService) generateGoatRepositoryWhereClauseBindVals(
 }
 
 
-func (serv *codegenService) generateGoatDaoSelectScanVars(columns []model.Column, prefix string,) string {
+func (serv *codegenService) generateDaoSelectScanVars(columns []model.Column, prefix string,) string {
 	s := ""
-	for _, col := range columns {
-		s += fmt.Sprintf("%s%s,\n", prefix, SnakeToPascal(col.ColumnName))
+	for _, c := range columns {
+		s += fmt.Sprintf("%s%s,\n", prefix, SnakeToPascal(c.ColumnName))
 	}
 
 	s += fmt.Sprintf("%sCreatedAt,\n", prefix)
