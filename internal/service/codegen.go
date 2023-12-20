@@ -542,7 +542,7 @@ func (serv *codegenService) generateGoatRepositoryInterfaceCode(table model.Tabl
 }
 
 
-// generateGoatRepositoryGet generate dao function 'Get'.
+// generateGoatRepositoryGet generate repository function 'Get'.
 // return "func (ur *userRepository) Get() ([]model.User, error) {...}"
 func (serv *codegenService) generateGoatRepositoryGet(table model.Table, columns []model.Column) string {
 	tn := table.TableName
@@ -636,7 +636,7 @@ func (serv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount
 }
 
 
-// generateGoatRepositoryInsert generate dao function 'Insert'.
+// generateGoatRepositoryInsert generate repository function 'Insert'.
 // return "func (ur *userRepository) Insert(u *entity.User) error {...}"
 func (serv *codegenService) generateGoatRepositoryInsert(
 	rdbms string, table model.Table, columns []model.Column
@@ -675,7 +675,7 @@ func (serv *codegenService) generateGoatRepositoryInsert(
 }
 
 
-// generateGoatRepositoryUpdate generate dao function 'Update'.
+// generateGoatRepositoryUpdate generate repository function 'Update'.
 // return "func (ur *userRepository) Update(u *entity.User) error {...}"
 func (serv *codegenService) generateGoatRepositoryUpdate(
 	rdbms string, table model.Table, columns []model.Column
@@ -720,7 +720,7 @@ func (serv *codegenService) generateGoatRepositoryUpdate(
 }
 
 
-// generateGoatRepositoryDelete generate dao function 'Delete'.
+// generateGoatRepositoryDelete generate repository function 'Delete'.
 // return "func (ur *userRepository) Delete(u *entity.User) error {...}"
 func (serv *codegenService) generateGoatRepositoryDelete(rdbms string, table model.Table, columns []model.Column) string {
 	tn := table.TableName
