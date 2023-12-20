@@ -129,10 +129,10 @@ func (serv *codegenService) writeFile(path, content string) {
 }
 
 
-func (serv *codegenService) extractPrimaryKeys(cols []model.Column) []model.Column {
+func (serv *codegenService) extractPrimaryKeys(columns []model.Column) []model.Column {
 	var ret []model.Column
 
-	for _, col := range cols {
+	for _, col := range columns {
 		if col.PrimaryKeyFlg == constant.FLG_ON {
 			ret = append(ret, col)
 		}
@@ -184,18 +184,18 @@ func (serv *codegenService) generateDdlCreateTable(rdbms string, tid int) string
 
 func (serv *codegenService) generateDdlColumns(rdbms string, tid int) string {
 	s := ""
-	cols, err := serv.columnRepository.GetByTableId(tid)
+	columns, err := serv.columnRepository.GetByTableId(tid)
 
 	if err != nil {
 		logger.Error(err.Error())
 		return s
 	}
 
-	for _, col := range cols {
+	for _, col := range columns {
 		s += serv.generateDdlColumn(rdbms, col)
 	}
 	s += serv.generateDdlCommonColumns(rdbms)
-	s += serv.generateDdlPrymaryKey(rdbms, cols)
+	s += serv.generateDdlPrymaryKey(rdbms, columns)
 
 	return strings.TrimRight(s, ",\n")
 }
@@ -220,11 +220,11 @@ func (serv *codegenService) generateDdlCommonColumns(rdbms string) string {
 }
 
 
-func (serv *codegenService) generateDdlPrymaryKey(rdbms string, cols []model.Column) string {
+func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.Column) string {
 	s := "" 
-	pkcols := serv.extractPrimaryKeys(cols)
+	pkcolumns := serv.extractPrimaryKeys(columns)
 
-	for i, col := range pkcols {
+	for i, col := range pkcolumns {
 		if col.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
 			return ""
 		}
@@ -386,7 +386,7 @@ func (serv *codegenService) generateDdlCreateTrigger(rdbms string, tid int) stri
 /// GenerateGoat     ///
 ////////////////////////
 
-// tableNameToFileName get file name from tabel name
+// tableNameToFileName get file name from table name
 // user => user.go / USER_TABLE => user_table.go
 func (serv *codegenService) tableNameToFileName(tn string) string {
 	n := strings.ToLower(tn)
@@ -434,7 +434,22 @@ func (serv *codegenService) generateGoatSource(rdbms string, tableIds []int, roo
 		return
 	}
 
-	var tables []model.Table
+	serv.generateGoatInternalSource(rdbms, tableIds, path)
+}
+
+
+func (serv *codegenService) generateGoatInternalSource(rdbms string, tableIds []int, path string) {
+	modelPath := path + "/model"
+	if err := os.MkdirAll(modelPath, 0777); err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	repositoryPath := path + "/repository"
+	if err := os.MkdirAll(repositoryPath, 0777); err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
 	for _, tid := range tableIds {
 		table, err := serv.tableRepository.GetById(tid)
@@ -443,43 +458,36 @@ func (serv *codegenService) generateGoatSource(rdbms string, tableIds []int, roo
 			break
 		}
 
-		cols, err := serv.columnRepository.GetByTableId(tid)
+		columns, err := serv.columnRepository.GetByTableId(tid)
 		if err != nil {
 			logger.Error(err.Error())
 			break
 		}
 
-		serv.generateGoatModelSource(table.TableName, cols, mePath)
-		serv.generateGoatDaoSource(rdbms, table.TableName, cols, mrPath)
-		//serv.generateGoatController(tn, cPath)
-		//serv.generateGoatService(tn, sPath)
+		serv.generateGoatModelFile(table, columns, modelPath)
+		serv.generateGoatRepositoryFile(rdbms, table, columns, repositoryPath)
 	}
 }
 
 
-/////////////////////////////////
-/// GenerateGoat (Model)      ///
-/////////////////////////////////
-
-func (serv *codegenService) generateGoatModelSource(tn string, cols []model.Column, path string) {
-	path += "/" + serv.tableNameToFileName(tn)
-	s := serv.generateGoatModel(tn, cols)
-	serv.writeFile(path, s)
+func (serv *codegenService) generateGoatModelFile(table model.Table, columns []model.Column, path string) {
+	path += "/" + serv.tableNameToFileName(table.TableName)
+	code := serv.generateGoatModelCode(table, columns)
+	serv.writeFile(path, code)
 }
 
 
-// generateGoatEntity is the main processing of generateGoatEntitySource 
-func (serv *codegenService) generateGoatModel(tn string, cols []model.Column) string {
+func (serv *codegenService) generateGoatModelCode(table model.Table, columns []model.Column) string {
 	s := "package model\n\n\n"
 
-	s += fmt.Sprintf("type %s struct {\n", SnakeToPascal(tn))
-	for _, col := range cols {
+	s += fmt.Sprintf("type %s struct {\n", SnakeToPascal(table.TableName))
+	for _, c := range columns {
 		s += fmt.Sprintf(
 			"\t%s %s `db:\"%s\" json:\"%s\"`\n", 
-			SnakeToPascal(col.ColumnName),
-			dbDataTypeGoTypeMap[col.DataTypeCls],
-			strings.ToLower(col.ColumnName),
-			strings.ToLower(col.ColumnName),
+			SnakeToPascal(c.ColumnName),
+			dbDataTypeGoTypeMap[c.DataTypeCls],
+			strings.ToLower(c.ColumnName),
+			strings.ToLower(c.ColumnName),
 		)
 	}
 	s += "\tCreatedAt string `db:\"created_at \" json:\"created_at \"`\n"
@@ -489,124 +497,127 @@ func (serv *codegenService) generateGoatModel(tn string, cols []model.Column) st
 }
 
 
-/////////////////////////////////////
-/// GenerateGoat (Dao)            ///
-/////////////////////////////////////
-
-
-// generateGoatDaoSource generate dao program for goat.
-func (serv *codegenService) generateGoatDaoSource(rdbms, tn string, cols []model.Column, path string) {
-	path += "/" + serv.tableNameToFileName(tn)
-	s := serv.generateGoatDao(rdbms, tn, cols)
-	serv.writeFile(path, s)
+func (serv *codegenService) generateGoatRepositoryFile(rdbms string, table model.Table, columns []model.Column, path string) {
+	path += "/" + serv.tableNameToFileName(table.TableName)
+	code := serv.generateGoatRepositoryCode(rdbms, table, columns)
+	serv.writeFile(path, code)
 }
 
 
-// generateGoatDao is the main processing of generateGoatDaoSource 
-func (serv *codegenService) generateGoatDao(rdbms, tn string, cols []model.Column) string {
+func (serv *codegenService) generateGoatRepositoryCode(rdbms string, table model.Table, columns []model.Column) string {
+	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
 
-	s := "package dao\n\n\n" +
-		"import (\n" + 
-		"\t\"database/sql\"\n\n" +
-		"\t\"xxxxx/internal/core/db\"\n" +
-		"\t\"xxxxx/internal/model/entity\"\n)\n\n\n"
+	s := "package repository\n\n\nimport (\n" + 
+		"\t\"database/sql\"\n\n\t\"xxxxx/internal/core/db\"\n\t\"xxxxx/internal/model\"\n)\n\n\n"
 
-	s += serv.generateGoatDaoInterface(tn, cols)
+	s += serv.generateGoatRepositoryInterfaceCode(table)
 	
-	s += "\n\n\n"
-	s += fmt.Sprintf("type %sDao struct {\n\tdb *sql.DB\n}", tnc)
-	s += "\n\n\n"
-	s += fmt.Sprintf("func New%sDao() *%sDao {\n", tnp, tnc)
-	s += fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sDao{db}\n}", tnc)
-	s += "\n\n\n"
+	s += "\n\n" +
+		fmt.Sprintf("type %sRepository struct {\n\tdb *sql.DB\n}\n\n\n", tnc) +
+		fmt.Sprintf("func New%sRepository() *%sRepository {\n", tnp, tnc) +
+		fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sRepository{db}\n}\n\n\n", tnc)
 
-	s += serv.generateGoatDaoInsert(rdbms, tn, cols) + "\n\n\n"
-	s += serv.generateGoatDaoSelect(rdbms, tn, cols) + "\n\n\n"
-	s += serv.generateGoatDaoUpdate(rdbms, tn, cols) + "\n\n\n"
-	s += serv.generateGoatDaoDelete(rdbms, tn, cols) + "\n\n\n"
-	s += serv.generateGoatDaoSelectAll(rdbms, tn, cols) + "\n"
+	s += serv.generateGoatRepositoryGet(table, columns) + "\n\n\n"
+	s += serv.generateGoatRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateGoatRepositoryInsert(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateGoatRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
+	s += serv.generateGoatRepositoryDelete(rdbms, table, columns) + "\n\n\n"
 
 	return s
 }
 
 
-// generateGoatDaoInterface
-// return "type *Dao interface { ... }"
-func (serv *codegenService) generateGoatDaoInterface(tn string, cols []model.Column) string {
-	s := fmt.Sprintf("type %s interface {\n", SnakeToPascal(tn))
-
-	s += "\t" + serv.generateGoatDaoInterfaceInsert(tn) + "\n"
-	s += "\t" + serv.generateGoatDaoInterfaceSelect(tn) + "\n"
-	s += "\t" + serv.generateGoatDaoInterfaceUpdate(tn) + "\n"
-	s += "\t" + serv.generateGoatDaoInterfaceDelete(tn) + "\n"
-	s += "\t" + serv.generateGoatDaoInterfaceSelectAll(tn) + "\n"
-
-	return s + "}"
+// return "type *Repository interface { ... }"
+func (serv *codegenService) generateGoatRepositoryInterfaceCode(table model.Table) string {
+	tnp := SnakeToPascal(table.TableName)
+	tni := GetSnakeInitial(table.TableName)
+	return fmt.Sprintf("type %sRepository interface {\n", tnp) +
+		fmt.Sprintf("\tGet() ([]model.%s, error)\n", tnp) +
+		fmt.Sprintf("\tGetByPk(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
+		fmt.Sprintf("\tInsert(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
+		fmt.Sprintf("\tUpdate(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
+		fmt.Sprintf("\tDelete(%s *model.%s) error\n", tni, tnp) + "}\n"
 }
 
 
-// generateGoatDaoInterfaceInsert
-// return "Insert(e entity.Entity) error"
-func (serv *codegenService) generateGoatDaoInterfaceInsert(
-	tn string,
+// generateGoatRepositoryGet generate dao function 'Get'.
+// return "func (ur *userRepository) Get() ([]model.User, error) {...}"
+func (serv *codegenService) generateGoatRepositoryGet(table model.Table, columns []model.Column) string {
+	tn := table.TableName
+	tnc := SnakeToCamel(tn)
+	tnp := SnakeToPascal(tn)
+	tni := GetSnakeInitial(tn)
+
+	s := fmt.Sprintf("func (%sr *%sRepository) Get() ([]model.%s, error) {\n", tni, tnc, tnp) +
+		fmt.Sprintf("\tvar ret []model.%s\n\n\trows, err := %sr.db.Query(\n", tnp, tni)
+
+	s += "\t\t`SELECT\n"
+	for i, c := range columns {
+		if i == 0 {
+			s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
+		} else {
+			s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
+		}
+	}
+	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" +
+		fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\n", tn) +
+		"\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\tfor rows.Next() {\n" +
+		fmt.Sprintf("\t\t%s := model.%s{}\n\t\terr = rows.Scan(\n", tni, tnp)
+
+	for _, c := range columns {
+		s += fmt.Sprintf("\t\t\t&%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
+	}
+	s += fmt.Sprintf("\t\t\t&%s.CreatedAt,\n", tni) + fmt.Sprintf("\t\t\t&%s.UpdatedAt,\n", tni)
+
+	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\tbreak\n\t\t}\n\t\tret = append(ret, %s)\n", tni) +
+		"\t}\n\n\treturn ret, err\n}"
+
+	return s
+}
+
+
+// generateGoatRepositoryGetByPk generate repository function 'GetByPk'.
+// return "func (ur *userRepository) GetByPk(u *model.User) (model.User, error) {...}"
+func (serv *codegenService) generateGoatRepositoryGetByPk(
+	rdbms string, table model.Table, columns []model.Column,
 ) string {
-	return fmt.Sprintf(
-		"Insert(%s *entity.%s) error",
-		GetSnakeInitial(tn),
-		SnakeToPascal(tn),
-	)
+	tn := table.TableName
+	tnc := SnakeToCamel(tn)
+	tnp := SnakeToPascal(tn)
+	tni := GetSnakeInitial(tn)
+
+	s := fmt.Sprintf(
+		"func (%sr *%sRepository) GetByPk(%s *model.%s) (entity.%s, error) {\n", 
+		tni, tnc, tni, tnp, tnp,
+	) + fmt.Sprintf("\tvar ret model.%s\n\n\terr := %sr.db.QueryRow(\n", tnp, tni)
+
+	bindCount := 0
+	s += "\t\t`SELECT\n"
+	for i, c := range columns {
+		if i == 0 {
+			s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
+		} else {
+			s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
+		}
+	}
+	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" + fmt.Sprintf("\n\t\t FROM %s\n", tn)
+	s += serv.generateGoatRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += "`,\n"
+	s += serv.generateGoatRepositoryWhereClauseBindVals(table, columns)
+	s += "\t).Scan(\n"
+	for _, c := range columns {
+		s += fmt.Sprintf("\t\t&ret.%s,\n", SnakeToPascal(c.ColumnName))
+	}
+	s += "\t\t&retCreatedAt,\n\t\t&retUpdatedAt,\n" +
+		"\t)\n\n\treturn ret, err\n}"
+
+	return s
 }
 
 
-// generateGoatDaoInterfaceSelect
-// return "Select(e *entity.Entity) (entity.Entity, error)"
-func (serv *codegenService) generateGoatDaoInterfaceSelect(tn string) string {
-	en := SnakeToPascal(tn)
-
-	return fmt.Sprintf(
-		"Select(%s *entity.%s) (entity.%s, error)", 
-		GetSnakeInitial(tn),
-		en,
-		en,
-	)
-}
-
-
-// generateGoatDaoInterfaceUpdate
-// return "Update(x *entity.Entity) error"
-func (serv *codegenService) generateGoatDaoInterfaceUpdate(tn string) string {
-	return fmt.Sprintf(
-		"Update(%s *entity.%s) error",
-		GetSnakeInitial(tn),
-		SnakeToPascal(tn),
-	)
-}
-
-
-// generateGoatDaoInterfaceDelete
-// return "Delete(e *entity.Entity) error"
-func (serv *codegenService) generateGoatDaoInterfaceDelete(tn string) string {
-	return fmt.Sprintf(
-		"Delete(%s *entity.%s) error",
-		GetSnakeInitial(tn),
-		SnakeToPascal(tn), 
-	)
-}
-
-
-// generateGoatDaoInterfaceSelectAll
-// return "SelectAll() ([]entity.Entity, error)"
-func (serv *codegenService) generateGoatDaoInterfaceSelectAll(tn string) string {
-	return fmt.Sprintf(
-		"SelectAll() ([]entity.%s, error)",
-		SnakeToPascal(tn),
-	)
-}
-
-
-func (serv *codegenService) getBindVariable(rdbms string, n int) string {
+func (serv *codegenService) getBindVar(rdbms string, n int) string {
 	if rdbms == "postgresql" {
 		return fmt.Sprintf("$%d", n)
 	} else {
@@ -619,41 +630,43 @@ func (serv *codegenService) getBindVariable(rdbms string, n int) string {
 func (serv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount int) string {
 	var ls []string
 	for i := 1; i <= bindCount; i++ {
-		ls = append(ls, serv.getBindVariable(rdbms, i))
+		ls = append(ls, serv.getBindVar(rdbms, i))
 	}
 	return strings.Join(ls, ",")
 }
 
 
-// generateGoatDaoInsert generate dao function 'Insert'.
-// return "func (rep *userDao) Insert(u *entity.User) error {...}"
-func (serv *codegenService) generateGoatDaoInsert(rdbms, tn string, cols []model.Column) string {
-	s := fmt.Sprintf(
-		"func (rep *%sDao) %s {\n", 
-		SnakeToCamel(tn), 
-		serv.generateGoatDaoInterfaceInsert(tn),
-	)
+// generateGoatRepositoryInsert generate dao function 'Insert'.
+// return "func (ur *userRepository) Insert(u *entity.User) error {...}"
+func (serv *codegenService) generateGoatRepositoryInsert(
+	rdbms string, table model.Table, columns []model.Column
+) string {
+	tn := table.TableName
+	tnc := SnakeToCamel(tn)
+	tnp := SnakeToPascal(tn)
+	tni := GetSnakeInitial(tn)
 
-	s += "\t_, err := rep.db.Exec(\n"
-	s += fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
+	s := fmt.Sprintf(
+		"func (%sr *%sRepository) Insert(%s *model.%s) (model.%s, error) {\n", 
+		tni, tnc, tni, tnp, tnp,
+	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) +fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
 
 	bindCount := 0
-	for _, col := range cols {
-		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+	for _, c := range columns {
+		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
 			bindCount += 1
 			if bindCount == 1 {
-				s += fmt.Sprintf("\t\t\t%s", col.ColumnName)
+				s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
 			} else {
-				s += fmt.Sprintf("\n\t\t\t,%s", col.ColumnName)
+				s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
 			}
 		}	
 	}
 	s += fmt.Sprintf("\n\t\t ) VALUES(%s)`,\n", serv.concatBindVariableWithCommas(rdbms, bindCount))
 
-	tni := GetSnakeInitial(tn)
-	for _, col := range cols {
-		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
-			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(col.ColumnName))
+	for _, c := range columns {
+		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
 	s += "\t)\n\n\treturn err\n}"
@@ -662,137 +675,88 @@ func (serv *codegenService) generateGoatDaoInsert(rdbms, tn string, cols []model
 }
 
 
-// generateGoatDaoSelect generate dao function 'Select'.
-// return "func (rep *userDao) Select(u *entity.User) (entity.User, error) {...}"
-func (serv *codegenService) generateGoatDaoSelect(rdbms, tn string, cols []model.Column) string {
-	bindCount := 0
-
-	s := fmt.Sprintf(
-		"func (rep *%sDao) %s {\n",
-		SnakeToCamel(tn), 
-		serv.generateGoatDaoInterfaceSelect(tn),
-	)
-
-	s += fmt.Sprintf("\tvar ret entity.%s\n\n", SnakeToPascal(tn))
-	s += "\terr := rep.db.QueryRow(\n\t\t`SELECT\n"
-	s += serv.generateGoatDaoSelectSqlColumns(cols)
-	s += fmt.Sprintf("\n\t\t FROM %s\n", tn)
-	s += serv.generateGoatDaoSqlWhere(rdbms, cols, &bindCount)
-	s += "`,\n"
-	s += serv.generateGoatDaoSqlWhereBindVals(tn, cols)
-	s += "\t).Scan(\n"
-	s += serv.generateGoatDaoSelectScanVars(cols, "\t\t&ret.")
-	s +=  "\t)\n\n\treturn ret, err\n}"
-
-	return s
-}
-
-
-// generateGoatDaoUpdate generate dao function 'Update'.
-// return "func (rep *userDao) Update(u *entity.User) error {...}"
-func (serv *codegenService) generateGoatDaoUpdate(rdbms, tn string, cols []model.Column) string {
-	bindCount := 0
-
-	s := fmt.Sprintf(
-		"func (rep *%sDao) %s {\n",
-		SnakeToCamel(tn), 
-		serv.generateGoatDaoInterfaceUpdate(tn),
-	)
+// generateGoatRepositoryUpdate generate dao function 'Update'.
+// return "func (ur *userRepository) Update(u *entity.User) error {...}"
+func (serv *codegenService) generateGoatRepositoryUpdate(
+	rdbms string, table model.Table, columns []model.Column
+) string {
+	tn := table.TableName
+	tnc := SnakeToCamel(tn)
+	tnp := SnakeToPascal(tn)
+	tni := GetSnakeInitial(tn)
 	
-	s += "\t_, err := rep.db.Exec(\n"
-	s += fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET\n", tn)
-	for _, col := range cols {
-		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL && 
-		col.PrimaryKeyFlg != constant.FLG_ON {
+	s := fmt.Sprintf(
+		"func (%sr *%sRepository) Update(%s *model.%s) (model.%s, error) {\n", 
+		tni, tnc, tni, tnp, tnp,
+	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET\n", tn)
+
+	bindCount := 0
+	for _, c := range columns {
+		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL && 
+		c.PrimaryKeyFlg != constant.FLG_ON {
 			bindCount += 1
 			if bindCount == 1 {
-				s += fmt.Sprintf("\t\t\t%s = %s", col.ColumnName, serv.getBindVariable(rdbms, bindCount))
+				s += fmt.Sprintf("\t\t\t%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
 			} else {
-				s += fmt.Sprintf("\n\t\t\t,%s = %s", col.ColumnName, serv.getBindVariable(rdbms, bindCount))
+				s += fmt.Sprintf("\n\t\t\t,%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
 			}
 		}
 	}
 
 	s += "\n"
-	s += serv.generateGoatDaoSqlWhere(rdbms, cols, &bindCount)
-
+	s += serv.generateGoatRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
-	tni := GetSnakeInitial(tn)
-	for _, col := range cols {
-		if col.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL && 
-		col.PrimaryKeyFlg != constant.FLG_ON {
-			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(col.ColumnName))
+
+	for _, c := range columns {
+		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL && 
+		c.PrimaryKeyFlg != constant.FLG_ON {
+			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
-	s += serv.generateGoatDaoSqlWhereBindVals(tn, cols)
+	s += serv.generateGoatRepositoryWhereClauseBindVals(table, columns)
 	s += "\t)\n\n\treturn err\n}"
 
 	return s
 }
 
 
-// generateGoatDaoDelete generate dao function 'Delete'.
-// return "func (rep *userDao) Delete(u *entity.User) error {...}"
-func (serv *codegenService) generateGoatDaoDelete(rdbms, tn string, cols []model.Column) string {
-	bindCount := 0
-
-	s := fmt.Sprintf(
-		"func (rep *%sDao) %s {\n",
-		SnakeToCamel(tn), 
-		serv.generateGoatDaoInterfaceDelete(tn),
-	)
-	s += "\t_, err := rep.db.Exec(\n"
-	s += fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
-	s += serv.generateGoatDaoSqlWhere(rdbms, cols, &bindCount)
-	s += "`,\n"
-	s += serv.generateGoatDaoSqlWhereBindVals(tn, cols)
-	s += "\t)\n\n\treturn err\n}"
-
-	return s
-}
-
-
-// generateGoatDaoSelectAll generate dao function 'SelectAll'.
-// return "func (rep *userDao) SelectAll() ([]entity.User, error) {...}"
-func (serv *codegenService) generateGoatDaoSelectAll(rdbms, tn string, cols []model.Column) string {
+// generateGoatRepositoryDelete generate dao function 'Delete'.
+// return "func (ur *userRepository) Delete(u *entity.User) error {...}"
+func (serv *codegenService) generateGoatRepositoryDelete(rdbms string, table model.Table, columns []model.Column) string {
+	tn := table.TableName
+	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
 	tni := GetSnakeInitial(tn)
-
-	s := fmt.Sprintf(
-		"func (rep *%sDao) %s {\n",
-		 SnakeToCamel(tn),
-		 serv.generateGoatDaoInterfaceSelectAll(tn),
-	) 
 	
-	s += fmt.Sprintf("\tvar ret []entity.%s\n\n\trows, err := rep.db.Query(\n", tnp)
-	s += "\t\t`SELECT\n"
-	s += serv.generateGoatDaoSelectSqlColumns(cols)
-	s += fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\n", tn)
-	s += "\tif err != nil {\n\t\treturn nil, err\n\t}\n\n"
-	s += "\tfor rows.Next() {\n"
-	s += fmt.Sprintf("\t\t%s := entity.%s{}\n", tni, tnp)
-	s += "\t\terr = rows.Scan(\n"
-	s += serv.generateGoatDaoSelectScanVars(cols, fmt.Sprintf("\t\t\t&%s.", tni))
-	s += "\t\t)\n\t\tif err != nil {\n\t\t\tbreak\n\t\t}\n"
-	s += fmt.Sprintf("\t\tret = append(ret, %s)\n", tni)
-	s +=  "\t}\n\n\treturn ret, err\n}"
+	s := fmt.Sprintf(
+		"func (%sr *%sRepository) Delete(%s *model.%s) (model.%s, error) {\n", 
+		tni, tnc, tni, tnp, tnp,
+	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
+
+	bindCount := 0
+	s += serv.generateGoatRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += "`,\n"
+	s += serv.generateGoatRepositoryWhereClauseBindVals(table, columns)
+	s += "\t)\n\n\treturn err\n}"
 
 	return s
 }
 
 
-func (serv *codegenService) generateGoatDaoSqlWhere(rdbms string, cols []model.Column, bindCount *int) string {
+func (serv *codegenService) generateGoatRepositoryWhereClause(
+	rdbms string, columns []model.Column, bindCount *int,
+) string {
 	s := "\t\t WHERE "
 
 	isFirst := true
-	for _, col := range cols {
+	for _, col := range columns {
 		if col.PrimaryKeyFlg == constant.FLG_ON {
 			*bindCount += 1
 			if isFirst {
-				s += fmt.Sprintf("%s = %s", col.ColumnName, serv.getBindVariable(rdbms, *bindCount))
+				s += fmt.Sprintf("%s = %s", col.ColumnName, serv.getBindVar(rdbms, *bindCount))
 				isFirst = false
 			} else {
-				s += fmt.Sprintf("\n\t\t   AND %s = %s", col.ColumnName, serv.getBindVariable(rdbms, *bindCount))
+				s += fmt.Sprintf("\n\t\t   AND %s = %s", col.ColumnName, serv.getBindVar(rdbms, *bindCount))
 			}
 		}
 	}
@@ -801,40 +765,24 @@ func (serv *codegenService) generateGoatDaoSqlWhere(rdbms string, cols []model.C
 }
 
 
-func (serv *codegenService) generateGoatDaoSqlWhereBindVals(tn string, cols []model.Column) string {
+func (serv *codegenService) generateGoatRepositoryWhereClauseBindVals(
+	table model.Table, columns []model.Column,
+) string {
 	s := ""
-	tni := GetSnakeInitial(tn)
+	tni := GetSnakeInitial(table.TableName)
 
-	for _, col := range cols {
-		if col.PrimaryKeyFlg == constant.FLG_ON {
-			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(col.ColumnName))
+	for _, c := range columns {
+		if c.PrimaryKeyFlg == constant.FLG_ON {
+			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
-
 	return s
 }
 
 
-func (serv *codegenService) generateGoatDaoSelectSqlColumns(cols []model.Column) string {
+func (serv *codegenService) generateGoatDaoSelectScanVars(columns []model.Column, prefix string,) string {
 	s := ""
-
-	for i, col := range cols {
-		if i == 0 {
-			s += fmt.Sprintf("\t\t\t%s", col.ColumnName)
-		} else {
-			s += fmt.Sprintf("\n\t\t\t,%s", col.ColumnName)
-		}
-	}
-	s += "\n\t\t\t,created_at"
-	s += "\n\t\t\t,updated_at"
-
-	return s
-}
-
-
-func (serv *codegenService) generateGoatDaoSelectScanVars(cols []model.Column, prefix string,) string {
-	s := ""
-	for _, col := range cols {
+	for _, col := range columns {
 		s += fmt.Sprintf("%s%s,\n", prefix, SnakeToPascal(col.ColumnName))
 	}
 
