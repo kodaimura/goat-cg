@@ -475,7 +475,7 @@ func (serv *codegenService) generateModelCode(table *model.Table, columns []mode
 			strings.ToLower(c.ColumnName),
 		)
 	}
-	s += "\tCreatedAt string `db:\"created_at \" json:\"created_at \"`\n"
+	s += "\tCreatedAt string `db:\"created_at\" json:\"created_at\"`\n"
 	s += "\tUpdatedAt string `db:\"updated_at\" json:\"updated_at\"`\n"
 
 	return s + "}"
