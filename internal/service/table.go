@@ -1,6 +1,8 @@
 package service
 
 import (
+	"database/sql"
+	
 	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
@@ -54,7 +56,11 @@ func (serv *tableService) GetTable(tableId int) (model.Table, error) {
 	table, err := serv.tableRepository.GetById(tableId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		if err == sql.ErrNoRows {
+			logger.Debug(err.Error())
+		} else {
+			logger.Error(err.Error())
+		}
 	}
 
 	return table, err

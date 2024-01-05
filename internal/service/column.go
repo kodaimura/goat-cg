@@ -1,6 +1,8 @@
 package service
 
 import (
+	"database/sql"
+	
 	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
@@ -40,7 +42,11 @@ func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
 	column, err := serv.columnRepository.GetById(columnId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		if err == sql.ErrNoRows {
+			logger.Debug(err.Error())
+		} else {
+			logger.Error(err.Error())
+		}
 	}
 
 	return column, err
