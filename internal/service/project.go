@@ -2,7 +2,7 @@ package service
 
 import (
 	"database/sql"
-	
+
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/core/db"
@@ -91,12 +91,12 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 	p.UserId = userId
 	p.Username = username
 
-	if err = serv.projectRepository.Insert(&p); err != nil {
+	_, err = serv.projectRepository.Insert(&p)
+	if err != nil {
 		logger.Error(err.Error())
-		return err
 	}
 
-	return nil
+	return err
 }
 
 

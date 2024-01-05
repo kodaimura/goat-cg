@@ -2,7 +2,7 @@ package service
 
 import (
 	"database/sql"
-	
+
 	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
@@ -74,12 +74,12 @@ func (serv *columnService) CreateColumn(sin dto.CreateColumn) error {
 	
 	column := sin.ToColumn()
 	
-	if err = serv.columnRepository.Insert(&column); err != nil {
+	_, err = serv.columnRepository.Insert(&column)
+	if err != nil {
 		logger.Error(err.Error())
-		return err
 	}
 
-	return nil
+	return err
 }
 
 

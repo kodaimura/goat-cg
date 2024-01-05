@@ -2,7 +2,7 @@ package service
 
 import (
 	"database/sql"
-	
+
 	"goat-cg/internal/dto"
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
@@ -80,12 +80,12 @@ func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNam
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
 
-	if err = serv.tableRepository.Insert(&t); err != nil {
+	_, err = serv.tableRepository.Insert(&t);
+	if err != nil {
 		logger.Error(err.Error())
-		return err
 	}
 
-	return nil
+	return err
 }
 
 

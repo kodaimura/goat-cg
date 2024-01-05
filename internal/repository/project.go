@@ -9,7 +9,7 @@ import (
 
 
 type ProjectRepository interface {
-	Insert(p *model.Project) error
+	Insert(p *model.Project) (int, error)
 	Update(p *model.Project) error
 	Delete(p *model.Project) error
 	DeleteTx(p *model.Project, tx *sql.Tx) error
@@ -33,21 +33,26 @@ func NewProjectRepository() ProjectRepository {
 }
 
 
-func (rep *projectRepository) Insert(p *model.Project) error {
-	_, err := rep.db.Exec(
+func (rep *projectRepository) Insert(p *model.Project) (int, error) {
+	var projectId int
+
+	err := rep.db.QueryRow(
 		`INSERT INTO project (
 			project_name,
 			project_memo,
 			user_id,
 			username 
-		 ) VALUES(?,?,?,?)`,
+		 ) VALUES(?,?,?,?)
+		 RETURNING project_id`,
 		p.ProjectName, 
 		p.ProjectMemo,
 		p.UserId,
 		p.Username,
+	).Scan(
+		&projectId,
 	)
 
-	return err
+	return projectId, err
 }
 
 

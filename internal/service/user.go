@@ -59,12 +59,12 @@ func (us *userService) Signup(username, password, email string) error {
 	user.Password = string(hashed)
 	user.Email = email
 
-	if err = us.userRepository.Insert(&user); err != nil {
+	_, err = us.userRepository.Insert(&user)
+	if err != nil {
 		logger.Error(err.Error())
-		return err
 	}
 
-	return nil
+	return err
 }
 
 
