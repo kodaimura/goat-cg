@@ -239,8 +239,6 @@ func (rep *columnRepository) GetByUniqueKey(name string, tableId int) (model.Col
 
 
 func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
-	
-	var ret []model.Column
 	rows, err := rep.db.Query(
 		`SELECT 
 			column_id,
@@ -268,11 +266,13 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 		 ORDER BY align_seq`,
 		 tableId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []model.Column{}
 	for rows.Next() {
 		c := model.Column{}
 		err = rows.Scan(
@@ -296,12 +296,12 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 			&c.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, c)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 

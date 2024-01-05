@@ -25,8 +25,6 @@ func NewColumnQuery() ColumnQuery {
 
 
 func (que *columnQuery)GetColumnLog(id int) ([]dto.ColumnLog, error){
-	var ret []dto.ColumnLog
-
 	rows, err := que.db.Query(
 		`SELECT 
 			cl.column_id,
@@ -58,11 +56,13 @@ func (que *columnQuery)GetColumnLog(id int) ([]dto.ColumnLog, error){
 		 ORDER BY cl.updated_at`,
 		 id,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []dto.ColumnLog{}
 	for rows.Next() {
 		x := dto.ColumnLog{}
 		err = rows.Scan(
@@ -88,10 +88,10 @@ func (que *columnQuery)GetColumnLog(id int) ([]dto.ColumnLog, error){
 			&x.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, x)
 	}
 
-	return ret, err
+	return ret, nil
 }

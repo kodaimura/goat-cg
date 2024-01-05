@@ -155,7 +155,6 @@ func (rep *tableRepository) GetByUniqueKey(name string, projectId int) (model.Ta
 
 
 func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error){
-	var ret []model.Table
 	rows, err := rep.db.Query(
 		`SELECT 
 			table_id,
@@ -172,11 +171,13 @@ func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error)
 			 project_id = ?`, 
 		 projectId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []model.Table{}
 	for rows.Next() {
 		t := model.Table{}
 		err = rows.Scan(
@@ -190,12 +191,12 @@ func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error)
 			&t.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, t)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 

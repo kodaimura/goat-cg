@@ -116,7 +116,6 @@ func (rep *projectRepository) GetById(projectId int) (model.Project, error) {
 
 
 func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
-	var ret []model.Project
 	rows, err := rep.db.Query(
 		`SELECT 
 			project_id,
@@ -131,11 +130,13 @@ func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
 		 WHERE user_id = ?`, 
 		 userId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []model.Project{}
 	for rows.Next() {
 		p := model.Project{}
 		err = rows.Scan(
@@ -148,17 +149,16 @@ func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
 			&p.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, p)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 
 func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, error){
-	var ret []model.Project
 	rows, err := rep.db.Query(
 		`SELECT 
 			p.project_id,
@@ -176,11 +176,13 @@ func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, er
 		 AND pm.user_id = ?`, 
 		 userId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []model.Project{}
 	for rows.Next() {
 		p := model.Project{}
 		err = rows.Scan(
@@ -193,12 +195,12 @@ func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, er
 			&p.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, p)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 

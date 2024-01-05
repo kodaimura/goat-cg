@@ -25,7 +25,6 @@ func NewTableQuery() TableQuery {
 
 
 func (que *tableQuery)GetTableLog(id int) ([]dto.TableLog, error){
-	var ret []dto.TableLog	
 	rows, err := que.db.Query(
 		`SELECT 
 			tl.table_id,
@@ -47,11 +46,13 @@ func (que *tableQuery)GetTableLog(id int) ([]dto.TableLog, error){
 		 ORDER BY tl.updated_at`, 
 		 id,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []dto.TableLog{}
 	for rows.Next() {
 		x := dto.TableLog{}
 		err = rows.Scan(
@@ -67,10 +68,10 @@ func (que *tableQuery)GetTableLog(id int) ([]dto.TableLog, error){
 			&x.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, x)
 	}
 
-	return ret, err
+	return ret, nil
 }

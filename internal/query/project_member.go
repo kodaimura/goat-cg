@@ -26,8 +26,6 @@ func NewProjectMemberQuery() ProjectMemberQuery {
 
 
 func (que *projectMemberQuery)GetProjectMembers(projectId int) ([]dto.ProjectMember, error) {
-
-	var ret []dto.ProjectMember
 	rows, err := que.db.Query(
 		`SELECT
 			pm.project_id,
@@ -45,11 +43,13 @@ func (que *projectMemberQuery)GetProjectMembers(projectId int) ([]dto.ProjectMem
 		  AND u.user_id = pm.user_id`, 
 		 projectId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []dto.ProjectMember{}
 	for rows.Next() {
 		x := dto.ProjectMember{}
 		err = rows.Scan(
@@ -63,12 +63,12 @@ func (que *projectMemberQuery)GetProjectMembers(projectId int) ([]dto.ProjectMem
 			&x.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, x)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 
