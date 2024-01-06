@@ -536,7 +536,7 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 	tni := GetSnakeInitial(tn)
 
 	s := fmt.Sprintf("func (%sr *%sRepository) Get() ([]model.%s, error) {\n", tni, tnc, tnp) +
-		fmt.Sprintf("\tvar ret []model.%s\n\n\trows, err := %sr.db.Query(\n", tnp, tni)
+		fmt.Sprintf("\trows, err := %sr.db.Query(\n", tni)
 
 	s += "\t\t`SELECT\n"
 	for i, c := range columns {
@@ -547,8 +547,10 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 		}
 	}
 	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" +
-		fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\n", tn) +
-		"\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\tfor rows.Next() {\n" +
+		fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\tdefer rows.Close()\n\n", tn) +
+		"\tif err != nil {\n\t\treturn nil, err\n\t}\n\n" +
+		fmt.Sprintf("\tret := []model.%s{}\n", tnp) +
+		"\tfor rows.Next() {\n" +
 		fmt.Sprintf("\t\t%s := model.%s{}\n\t\terr = rows.Scan(\n", tni, tnp)
 
 	for _, c := range columns {
@@ -556,8 +558,8 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 	}
 	s += fmt.Sprintf("\t\t\t&%s.CreatedAt,\n", tni) + fmt.Sprintf("\t\t\t&%s.UpdatedAt,\n", tni)
 
-	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\tbreak\n\t\t}\n\t\tret = append(ret, %s)\n", tni) +
-		"\t}\n\n\treturn ret, err\n}"
+	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\tret = append(ret, %s)\n", tni) +
+		"\t}\n\n\treturn ret, nil\n}"
 
 	return s
 }
