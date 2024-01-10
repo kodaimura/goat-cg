@@ -228,7 +228,6 @@ func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.
 		if c.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
 			return ""
 		}
-
 		if i == 0 {
 			s += "\tPRIMARY KEY("
 		} else {
@@ -497,7 +496,7 @@ func (serv *codegenService) generateRepositoryCode(rdbms string, table *model.Ta
 	s := "package repository\n\n\nimport (\n" + 
 		"\t\"database/sql\"\n\n\t\"xxxxx/internal/core/db\"\n\t\"xxxxx/internal/model\"\n)\n\n\n"
 
-	s += serv.generateRepositoryInterfaceCode(table)
+	s += serv.generateRepositoryInterfaceCode(table, columns)
 	
 	s += "\n\n" +
 		fmt.Sprintf("type %sRepository struct {\n\tdb *sql.DB\n}\n\n\n", tnc) +
@@ -505,25 +504,59 @@ func (serv *codegenService) generateRepositoryCode(rdbms string, table *model.Ta
 		fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sRepository{db}\n}\n\n\n", tnc)
 
 	s += serv.generateRepositoryGet(table, columns) + "\n\n\n"
-	s += serv.generateRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
-	s += serv.generateRepositoryInsert(rdbms, table, columns) + "\n\n\n"
-	s += serv.generateRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
-	s += serv.generateRepositoryDelete(rdbms, table, columns)
+	if len(serv.extractPrimaryKeys(columns)) > 0 {
+		s += serv.generateRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
+		s += serv.generateRepositoryInsertPk(rdbms, table, columns) + "\n\n\n"
+		s += serv.generateRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
+		s += serv.generateRepositoryDelete(rdbms, table, columns)
+	} else {
+		s += serv.generateRepositoryInsert(rdbms, table, columns)
+	}
+
+	return s
+}
+
+
+func (serv *codegenService) generateInsertReturnType(columns []model.Column) string {
+	pkcolumns := serv.extractPrimaryKeys(columns)
+	s := "error"
+	if len(pkcolumns) > 0 {
+		s = "("
+		isFirst := true
+		for _, column := range pkcolumns {
+			if isFirst {
+				s += dbDataTypeGoTypeMap[column.DataTypeCls]
+				isFirst = false
+			} else {
+				s += ", " + dbDataTypeGoTypeMap[column.DataTypeCls] 
+			}
+		}
+		s += ", error)"
+	}
 
 	return s
 }
 
 
 // return "type *Repository interface { ... }"
-func (serv *codegenService) generateRepositoryInterfaceCode(table *model.Table) string {
+func (serv *codegenService) generateRepositoryInterfaceCode(table *model.Table, columns []model.Column) string {
 	tnp := SnakeToPascal(table.TableName)
 	tni := GetSnakeInitial(table.TableName)
-	return fmt.Sprintf("type %sRepository interface {\n", tnp) +
-		fmt.Sprintf("\tGet() ([]model.%s, error)\n", tnp) +
-		fmt.Sprintf("\tGetByPk(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
-		fmt.Sprintf("\tInsert(%s *model.%s) error\n", tni, tnp) +
+
+	s := fmt.Sprintf("type %sRepository interface {\n", tnp) +
+		fmt.Sprintf("\tGet() ([]model.%s, error)\n", tnp)
+
+	if len(serv.extractPrimaryKeys(columns)) > 0 {
+		s += fmt.Sprintf("\tGetByPk(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
+		fmt.Sprintf("\tInsert(%s *model.%s) %s\n", tni, tnp, serv.generateInsertReturnType(columns)) +
 		fmt.Sprintf("\tUpdate(%s *model.%s) error\n", tni, tnp) +
-		fmt.Sprintf("\tDelete(%s *model.%s) error\n", tni, tnp) + "}\n"
+		fmt.Sprintf("\tDelete(%s *model.%s) error\n", tni, tnp)
+	} else {
+		s += fmt.Sprintf("\tInsert(%s *model.%s) error\n", tni, tnp,)
+	}
+	s += "}\n"
+	return s
+		
 }
 
 
@@ -536,7 +569,7 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 	tni := GetSnakeInitial(tn)
 
 	s := fmt.Sprintf("func (%sr *%sRepository) Get() ([]model.%s, error) {\n", tni, tnc, tnp) +
-		fmt.Sprintf("\tvar ret []model.%s\n\n\trows, err := %sr.db.Query(\n", tnp, tni)
+		fmt.Sprintf("\trows, err := %sr.db.Query(\n", tni)
 
 	s += "\t\t`SELECT\n"
 	for i, c := range columns {
@@ -547,8 +580,10 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 		}
 	}
 	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" +
-		fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\n", tn) +
-		"\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\tfor rows.Next() {\n" +
+		fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\tdefer rows.Close()\n\n", tn) +
+		"\tif err != nil {\n\t\treturn nil, err\n\t}\n\n" +
+		fmt.Sprintf("\tret := []model.%s{}\n", tnp) +
+		"\tfor rows.Next() {\n" +
 		fmt.Sprintf("\t\t%s := model.%s{}\n\t\terr = rows.Scan(\n", tni, tnp)
 
 	for _, c := range columns {
@@ -556,8 +591,8 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 	}
 	s += fmt.Sprintf("\t\t\t&%s.CreatedAt,\n", tni) + fmt.Sprintf("\t\t\t&%s.UpdatedAt,\n", tni)
 
-	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\tbreak\n\t\t}\n\t\tret = append(ret, %s)\n", tni) +
-		"\t}\n\n\treturn ret, err\n}"
+	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\tret = append(ret, %s)\n", tni) +
+		"\t}\n\n\treturn ret, nil\n}"
 
 	return s
 }
@@ -655,6 +690,73 @@ func (serv *codegenService) generateRepositoryInsert(
 		}
 	}
 	s += "\t)\n\n\treturn err\n}"
+
+	return s
+}
+
+
+// generateRepositoryInsertPk generate repository function 'Insert'.
+// return "func (ur *userRepository) Insert(u *model.User) (int, error) {...}"
+func (serv *codegenService) generateRepositoryInsertPk(
+	rdbms string, table *model.Table, columns []model.Column,
+) string {
+	tn := table.TableName
+	tnc := SnakeToCamel(tn)
+	tnp := SnakeToPascal(tn)
+	tni := GetSnakeInitial(tn)
+
+	s := fmt.Sprintf(
+		"func (%sr *%sRepository) Insert(%s *model.%s) %s {\n", 
+		tni, tnc, tni, tnp, serv.generateInsertReturnType(columns),
+	)
+
+	pkcolumns := serv.extractPrimaryKeys(columns)
+	for _, column := range pkcolumns {
+		s += fmt.Sprintf(
+			"\tvar %s %s\n", 
+			SnakeToCamel(column.ColumnName), dbDataTypeGoTypeMap[column.DataTypeCls],
+		)
+	}
+	s += fmt.Sprintf("\n\terr := %sr.db.QueryRow(\n", tni) +fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
+
+	bindCount := 0
+	for _, c := range columns {
+		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			bindCount += 1
+			if bindCount == 1 {
+				s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
+			} else {
+				s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
+			}
+		}	
+	}
+	s += fmt.Sprintf("\n\t\t ) VALUES(%s)\n\t\t RETURNING ", serv.concatBindVariableWithCommas(rdbms, bindCount))
+	isFirst := true
+	for _, column := range pkcolumns {
+		if isFirst {
+			s += column.ColumnName
+			isFirst = false
+		} else {
+			s += ", " + column.ColumnName
+		}
+	}
+	s += "`,\n"
+
+	for _, c := range columns {
+		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
+			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
+		}
+	}
+	s += "\t).Scan(\n"
+	for _, column := range pkcolumns {
+		s += fmt.Sprintf("\t\t&%s,\n", SnakeToCamel(column.ColumnName))
+	}
+
+	s += "\t)\n\n\treturn "
+	for _, column := range pkcolumns {
+		s += fmt.Sprintf("%s, ", SnakeToCamel(column.ColumnName))
+	}
+	s += "err\n}"
 
 	return s
 }

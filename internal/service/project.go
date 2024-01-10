@@ -1,6 +1,8 @@
 package service
 
 import (
+	"database/sql"
+
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/core/db"
@@ -23,7 +25,6 @@ type projectService struct {
 	projectRepository repository.ProjectRepository
 	tableRepository repository.TableRepository
 	columnRepository repository.ColumnRepository
-	//projectMemberRepository repository.ProjectMemberRepository
 }
 
 
@@ -31,8 +32,7 @@ func NewProjectService() ProjectService {
 	projectRepository := repository.NewProjectRepository()
 	tableRepository := repository.NewTableRepository()
 	columnRepository := repository.NewColumnRepository()
-	//projectMemberRepository := repository.NewProjectMemberRepository()
-	return &projectService{projectRepository, tableRepository, columnRepository}//, projectMemberRepository}
+	return &projectService{projectRepository, tableRepository, columnRepository}
 }
 
 
@@ -40,7 +40,11 @@ func (serv *projectService) GetProject(projectId int) (model.Project, error) {
 	project, err := serv.projectRepository.GetById(projectId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		if err == sql.ErrNoRows {
+			logger.Debug(err.Error())
+		} else {
+			logger.Error(err.Error())
+		}
 	}
 
 	return project, err
@@ -52,7 +56,11 @@ func (serv *projectService) GetProjects(userId int) ([]model.Project, error) {
 	projects, err := serv.projectRepository.GetByUserId(userId)
 
 	if err != nil {
-		logger.Error(err.Error())
+		if err == sql.ErrNoRows {
+			logger.Debug(err.Error())
+		} else {
+			logger.Error(err.Error())
+		}
 	}
 
 	return projects, err
@@ -83,12 +91,12 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 	p.UserId = userId
 	p.Username = username
 
-	if err = serv.projectRepository.Insert(&p); err != nil {
+	_, err = serv.projectRepository.Insert(&p)
+	if err != nil {
 		logger.Error(err.Error())
-		return err
 	}
 
-	return nil
+	return err
 }
 
 

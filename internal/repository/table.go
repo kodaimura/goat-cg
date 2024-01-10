@@ -11,7 +11,7 @@ import (
 
 type TableRepository interface {
 	GetById(id int) (model.Table, error)
-	Insert(t *model.Table) error
+	Insert(t *model.Table) (int, error)
 	Update(t *model.Table) error
 	Delete(t *model.Table) error
 	DeleteTx(t *model.Table, tx *sql.Tx) error
@@ -63,8 +63,10 @@ func (rep *tableRepository) GetById(id int) (model.Table, error){
 }
 
 
-func (rep *tableRepository) Insert(t *model.Table) error {
-	_, err := rep.db.Exec(
+func (rep *tableRepository) Insert(t *model.Table) (int, error) {
+	var tableId int
+
+	err := rep.db.QueryRow(
 		`INSERT INTO table_def (
 			project_id, 
 			table_name,
@@ -72,16 +74,19 @@ func (rep *tableRepository) Insert(t *model.Table) error {
 			del_flg,
 			create_user_id,
 			update_user_id
-		 ) VALUES(?,?,?,?,?,?)`,
+		 ) VALUES(?,?,?,?,?,?)
+		 RETURNING table_id`,
 		t.ProjectId, 
 		t.TableName,
 		t.TableNameLogical,
 		constant.FLG_OFF,
 		t.CreateUserId,
 		t.UpdateUserId,
+	).Scan(
+		&tableId,
 	)
 
-	return err
+	return tableId, err
 }
 
 func (rep *tableRepository) Update(t *model.Table) error {
@@ -155,7 +160,6 @@ func (rep *tableRepository) GetByUniqueKey(name string, projectId int) (model.Ta
 
 
 func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error){
-	var ret []model.Table
 	rows, err := rep.db.Query(
 		`SELECT 
 			table_id,
@@ -172,11 +176,13 @@ func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error)
 			 project_id = ?`, 
 		 projectId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []model.Table{}
 	for rows.Next() {
 		t := model.Table{}
 		err = rows.Scan(
@@ -190,12 +196,12 @@ func (rep *tableRepository) GetByProjectId(projectId int) ([]model.Table, error)
 			&t.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, t)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 

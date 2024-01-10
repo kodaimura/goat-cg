@@ -10,7 +10,7 @@ import (
 
 type ColumnRepository interface {
 	GetById(id int) (model.Column, error)
-	Insert(c *model.Column) error
+	Insert(c *model.Column) (int, error)
 	Update(c *model.Column) error
 	Delete(c *model.Column) error
 	DeleteTx(c *model.Column, tx *sql.Tx) error
@@ -85,8 +85,10 @@ func (rep *columnRepository) GetById(id int) (model.Column, error) {
 }
 
 
-func (rep *columnRepository) Insert(c *model.Column) error {
-	_, err := rep.db.Exec(
+func (rep *columnRepository) Insert(c *model.Column) (int, error) {
+	var columnId int
+
+	err := rep.db.QueryRow(
 		`INSERT INTO column_def (
 			table_id, 
 			column_name,
@@ -103,7 +105,8 @@ func (rep *columnRepository) Insert(c *model.Column) error {
 			del_flg,
 			create_user_id,
 			update_user_id
-		 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+		 RETURNING column_id`,
 		c.TableId,
 		c.ColumnName, 
 		c.ColumnNameLogical,
@@ -119,9 +122,11 @@ func (rep *columnRepository) Insert(c *model.Column) error {
 		c.DelFlg,
 		c.CreateUserId,
 		c.CreateUserId,
+	).Scan(
+		&columnId,
 	)
 
-	return err
+	return columnId, err
 }
 
 
@@ -239,8 +244,6 @@ func (rep *columnRepository) GetByUniqueKey(name string, tableId int) (model.Col
 
 
 func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
-	
-	var ret []model.Column
 	rows, err := rep.db.Query(
 		`SELECT 
 			column_id,
@@ -268,11 +271,13 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 		 ORDER BY align_seq`,
 		 tableId,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
 
+	ret := []model.Column{}
 	for rows.Next() {
 		c := model.Column{}
 		err = rows.Scan(
@@ -296,12 +301,12 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 			&c.UpdatedAt,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		ret = append(ret, c)
 	}
 
-	return ret, err
+	return ret, nil
 }
 
 
