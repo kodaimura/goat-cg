@@ -775,7 +775,7 @@ func (serv *codegenService) generateRepositoryUpdate(
 	s := fmt.Sprintf(
 		"func (%sr *%sRepository) Update(%s *model.%s) error {\n", 
 		tni, tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET\n", tn)
+	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET ", tn)
 
 	bindCount := 0
 	for _, c := range columns {
@@ -783,7 +783,7 @@ func (serv *codegenService) generateRepositoryUpdate(
 		c.PrimaryKeyFlg != constant.FLG_ON {
 			bindCount += 1
 			if bindCount == 1 {
-				s += fmt.Sprintf("\t\t\t%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
+				s += fmt.Sprintf("%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
 			} else {
 				s += fmt.Sprintf("\n\t\t\t,%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
 			}
