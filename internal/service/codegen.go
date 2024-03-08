@@ -182,10 +182,27 @@ func (serv *codegenService) generateDdlCreateTable(rdbms string, tid int) string
 }
 
 
+func (serv *codegenService) getValidColumns(tid int) ([]model.Column, error) {
+	columns, err := serv.columnRepository.GetByTableId(tid)
+	if err != nil {
+		logger.Error(err.Error())
+		return columns, err
+	}
+
+	var cols []model.Column
+	for _, col := range columns {
+		if (col.DelFlg != 1) {
+			cols = append(cols, col)
+		} 
+	}
+
+	return cols, nil
+}
+
+
 func (serv *codegenService) generateDdlColumns(rdbms string, tid int) string {
 	s := ""
-	columns, err := serv.columnRepository.GetByTableId(tid)
-
+	columns, err := serv.getValidColumns(tid)
 	if err != nil {
 		logger.Error(err.Error())
 		return s
@@ -442,7 +459,7 @@ func (serv *codegenService) generateInternalSource(rdbms string, tableIds []int,
 			break
 		}
 
-		columns, err := serv.columnRepository.GetByTableId(tid)
+		columns, err := serv.getValidColumns(tid)
 		if err != nil {
 			logger.Error(err.Error())
 			break
