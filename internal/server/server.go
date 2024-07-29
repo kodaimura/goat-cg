@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/config"
-	"goat-cg/internal/controller"
 )
 
 func Run() {
@@ -25,7 +24,7 @@ func router() *gin.Engine {
 	r.Static("/tmp", "./tmp")
 	r.StaticFile("/favicon.ico", "web/static/favicon.ico")
 
-	controller.SetRouter(r)
+	SetRouter(r)
 
 	return r
 }
