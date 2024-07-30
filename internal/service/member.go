@@ -38,7 +38,7 @@ func (serv *memberService) Invite(projectId int, email string) error {
 		return errs.NewNotFoundError()
 	}
 
-	_, err = serv.memberRepository.GetByPk(projectId, user.UserId)
+	_, err = serv.memberRepository.GetOne(&model.Member{ProjectId: projectId, UserId: user.UserId})
 	if err == nil {
 		return errs.NewAlreadyRegisteredError()
 	}
@@ -49,7 +49,7 @@ func (serv *memberService) Invite(projectId int, email string) error {
 	m.UserStatus = "0"
 	m.UserRole = "0"
 
-	if err = serv.memberRepository.Insert(&m); err != nil {
+	if err = serv.memberRepository.Insert(&m, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -70,7 +70,7 @@ func (serv *memberService) DeleteMember(projectId, userId int) error {
 	m.ProjectId = projectId
 	m.UserId = userId
 
-	if err := serv.memberRepository.Delete(&m); err != nil {
+	if err := serv.memberRepository.Delete(&m, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
