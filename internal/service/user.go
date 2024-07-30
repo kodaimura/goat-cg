@@ -8,15 +8,17 @@ import (
 	"goat-cg/internal/core/logger"
 	"goat-cg/internal/core/errs"
 	"goat-cg/internal/model"
+	"goat-cg/internal/dto"
 	"goat-cg/internal/repository"
 )
 
 
 type UserService interface {
-	Signup(username, password, email string) error
-	Login(username, password string) (model.User, error)
+	Signup(name, password, email string) error
+	Login(name, password string) (dto.User, error)
 	GenerateJWT(id int) (string, error)
-	GetProfile(id int) (model.User, error)
+	GetProfile(id int) (dto.User, error)
+	UpdateName(id int, name string) error
 	UpdateEmail(id int, email string) error
 	UpdatePassword(id int, password string) error
 	DeleteUser(id int) error
@@ -34,15 +36,22 @@ func NewUserService() UserService {
 }
 
 
-func (us *userService) Signup(username, password, email string) error {
-	_, err := us.userRepository.GetByName(username)
+func (srv *userService) toUserDTO(user model.User) dto.User {
+	return dto.User{
+		UserId:    user.UserId,
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
 
+
+func (srv *userService) Signup(name, password, email string) error {
+	_, err := srv.userRepository.GetOne(&model.User{Username: name})
 	if err == nil {
 		return errs.NewUniqueConstraintError("username")
 	}
-
-	_, err = us.userRepository.GetByEmail(email)
-
+	_, err = srv.userRepository.GetOne(&model.User{Email: email})
 	if err == nil {
 		return errs.NewUniqueConstraintError("email")
 	}
@@ -55,11 +64,11 @@ func (us *userService) Signup(username, password, email string) error {
 	}
 
 	var user model.User
-	user.Username = username
+	user.Username = name
 	user.Password = string(hashed)
 	user.Email = email
 
-	_, err = us.userRepository.Insert(&user)
+	err = srv.userRepository.Insert(&user, nil);
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -68,15 +77,15 @@ func (us *userService) Signup(username, password, email string) error {
 }
 
 
-func (us *userService) Login(username, password string) (model.User, error) {
-	user, err := us.userRepository.GetByName(username)
+func (srv *userService) Login(name, password string) (dto.User, error) {
+	user, err := srv.userRepository.GetOne(&model.User{Username: name})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			logger.Debug(err.Error())
 		} else {
 			logger.Error(err.Error())
 		}
-		return user, err
+		return dto.User{}, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -84,13 +93,26 @@ func (us *userService) Login(username, password string) (model.User, error) {
 		logger.Error(err.Error())
 	}
 
-	return user, err
+	return srv.toUserDTO(user), err
 }
 
 
-func (us *userService) GenerateJWT(id int) (string, error) {
-	user, err := us.userRepository.GetById(id)
-	
+func (srv *userService) GetProfile(id int) (dto.User, error) {
+	user, err := srv.userRepository.GetOne(&model.User{UserId: id})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			logger.Debug(err.Error())
+		} else {
+			logger.Error(err.Error())
+		}
+	}
+
+	return srv.toUserDTO(user), err
+}
+
+
+func (srv *userService) GenerateJWT(id int) (string, error) {
+	user, err := srv.userRepository.GetOne(&model.User{UserId: id})
 	if err != nil {
 		logger.Error(err.Error())
 		return "", err
@@ -111,33 +133,17 @@ func (us *userService) GenerateJWT(id int) (string, error) {
 }
 
 
-func (us *userService) GetProfile(id int) (model.User, error) {
-	user, err := us.userRepository.GetById(id)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			logger.Debug(err.Error())
-		} else {
-			logger.Error(err.Error())
-		}
-	}
-
-	return user, err
-}
-
-
-func (us *userService) UpdateEmail(id int, email string) error {
-	u, err := us.userRepository.GetByEmail(email)
-
+func (srv *userService) UpdateName(id int, name string) error {
+	u, err := srv.userRepository.GetOne(&model.User{Username: name})
 	if err == nil && u.UserId != id{
-		return errs.NewUniqueConstraintError("email")
+		return errs.NewUniqueConstraintError("username")
 	}
 
 	var user model.User
 	user.UserId = id
-	user.Email = email
+	user.Username = name
 
-	if err = us.userRepository.UpdateEmail(&user); err != nil {
+	if err = srv.userRepository.UpdateName(&user, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -146,7 +152,7 @@ func (us *userService) UpdateEmail(id int, email string) error {
 }
 
 
-func (us *userService) UpdatePassword(id int, password string) error {
+func (srv *userService) UpdatePassword(id int, password string) error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -158,7 +164,7 @@ func (us *userService) UpdatePassword(id int, password string) error {
 	user.UserId = id
 	user.Password = string(hashed)
 	
-	if err = us.userRepository.UpdatePassword(&user); err != nil {
+	if err = srv.userRepository.UpdatePassword(&user, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -167,11 +173,30 @@ func (us *userService) UpdatePassword(id int, password string) error {
 }
 
 
-func (us *userService) DeleteUser(id int) error {
+func (srv *userService) UpdateEmail(id int, email string) error {
+	u, err := srv.userRepository.GetOne(&model.User{Email: email})
+	if err == nil && u.UserId != id{
+		return errs.NewUniqueConstraintError("email")
+	}
+
+	var user model.User
+	user.UserId = id
+	user.Email = email
+
+	if err = srv.userRepository.UpdateEmail(&user, nil); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+
+func (srv *userService) DeleteUser(id int) error {
 	var user model.User
 	user.UserId = id
 
-	if err := us.userRepository.Delete(&user); err != nil {
+	if err := srv.userRepository.Delete(&user, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
