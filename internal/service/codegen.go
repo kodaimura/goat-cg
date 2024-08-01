@@ -168,7 +168,7 @@ func (srv *codegenService) generateDdlCreateTables(rdbms string, tableIds []int)
 
 func (srv *codegenService) generateDdlCreateTable(rdbms string, tid int) string {
 	s := ""
-	table, err := srv.tableRepository.GetById(tid)
+	table, err := srv.tableRepository.GetOne(&model.Table{TableId: tid})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -374,7 +374,7 @@ func (srv *codegenService) generateDdlCreateTriggers(rdbms string, tableIds []in
 
 func (srv *codegenService) generateDdlCreateTrigger(rdbms string, tid int) string {
 	s := ""
-	table, err := srv.tableRepository.GetById(tid)
+	table, err := srv.tableRepository.GetOne(&model.Table{TableId: tid})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -453,7 +453,7 @@ func (srv *codegenService) generateInternalSource(rdbms string, tableIds []int, 
 	}
 
 	for _, tid := range tableIds {
-		table, err := srv.tableRepository.GetById(tid)
+		table, err := srv.tableRepository.GetOne(&model.Table{TableId: tid})
 		if err != nil {
 			logger.Error(err.Error())
 			break

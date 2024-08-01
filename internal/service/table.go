@@ -41,7 +41,7 @@ func NewTableService() TableService {
 
 // GetTables get tables by projeectId.
 func (srv *tableService) GetTables(projectId int) ([]model.Table, error) {
-	tables, err := srv.tableRepository.GetByProjectId(projectId)
+	tables, err := srv.tableRepository.Get(&model.Table{ProjectId: projectId})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -53,7 +53,7 @@ func (srv *tableService) GetTables(projectId int) ([]model.Table, error) {
 
 // GetTable get table by tableId.
 func (srv *tableService) GetTable(tableId int) (model.Table, error) {
-	table, err := srv.tableRepository.GetById(tableId)
+	table, err := srv.tableRepository.GetOne(&model.Table{TableId: tableId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -68,7 +68,7 @@ func (srv *tableService) GetTable(tableId int) (model.Table, error) {
 
 // CreateTable create new Table.
 func (srv *tableService) CreateTable(projectId, userId int, tableName, tableNameLogical string) error {
-	_, err := srv.tableRepository.GetByUniqueKey(tableName, projectId)
+	_, err := srv.tableRepository.GetOne(&model.Table{TableName: tableName, ProjectId: projectId})
 	if err == nil {
 		return errs.NewUniqueConstraintError("table_name")
 	}
@@ -80,8 +80,7 @@ func (srv *tableService) CreateTable(projectId, userId int, tableName, tableName
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
 
-	_, err = srv.tableRepository.Insert(&t);
-	if err != nil {
+	if err = srv.tableRepository.Insert(&t, nil); err != nil {
 		logger.Error(err.Error())
 	}
 
@@ -92,19 +91,24 @@ func (srv *tableService) CreateTable(projectId, userId int, tableName, tableName
 // UpdateTable update Table by tableId.
 // contains logical delete. 
 func (srv *tableService) UpdateTable(projectId, tableId, userId int, tableName, tableNameLogical string, delFlg int) error {
-	table, err := srv.tableRepository.GetByUniqueKey(tableName, projectId)
+	table, err := srv.tableRepository.GetOne(&model.Table{TableName: tableName, ProjectId: projectId})
 	if err == nil && table.TableId != tableId {
 		return errs.NewUniqueConstraintError("table_name")
 	}
 
-	var t model.Table
+	t, err := srv.tableRepository.GetOne(&model.Table{TableId: tableId})
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
 	t.TableId = tableId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
 	t.DelFlg = delFlg
 
-	if err = srv.tableRepository.Update(&t); err != nil {
+	if err = srv.tableRepository.Update(&t, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -116,9 +120,6 @@ func (srv *tableService) UpdateTable(projectId, tableId, userId int, tableName, 
 // DeleteTable delete Table by tableId.
 // (physical delete)
 func (srv *tableService) DeleteTable(tableId int) error {
-	var t model.Table
-	t.TableId= tableId
-
 	tx, err := db.GetDB().Begin()
 	if err != nil {
 		tx.Rollback()
@@ -126,7 +127,7 @@ func (srv *tableService) DeleteTable(tableId int) error {
 		return err
 	}
 
-	if err = srv.tableRepository.DeleteTx(&t, tx); err != nil {
+	if err = srv.tableRepository.Delete(&model.Table{TableId: tableId}, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err

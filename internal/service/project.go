@@ -123,10 +123,7 @@ func (srv *projectService) UpdateProject(username string, projectId int, project
 
 
 func (srv *projectService) DeleteProject(projectId int) error {
-	var p model.Project
-	p.ProjectId= projectId
-
-	tables, err := srv.tableRepository.GetByProjectId(projectId)
+	tables, err := srv.tableRepository.Get(&model.Table{ProjectId: projectId})
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -138,13 +135,13 @@ func (srv *projectService) DeleteProject(projectId int) error {
 		return err
 	}
 
-	if err = srv.projectRepository.Delete(&p, tx); err != nil {
+	if err = srv.projectRepository.Delete(&model.Project{ProjectId: projectId}, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 	
-	if err = srv.tableRepository.DeleteByProjectIdTx(projectId, tx); err != nil {
+	if err = srv.tableRepository.Delete(&model.Table{ProjectId: projectId}, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err

@@ -87,7 +87,7 @@ func validateProjectNameAndGetProject (c *gin.Context) (model.Project, error) {
 
 func validateTableIdAndGetTable (projectId, tableId int) (model.Table, error) {
 	tr := repository.NewTableRepository()
-	t, err := tr.GetById(tableId)
+	t, err := tr.GetOne(&model.Table{TableId: tableId})
 
 	if err != nil || t.ProjectId != projectId {
 		return t, errors.New("validateTableIdAndGetTable")
