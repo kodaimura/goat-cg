@@ -36,8 +36,8 @@ func NewProjectService() ProjectService {
 }
 
 
-func (serv *projectService) GetProject(projectId int) (model.Project, error) {
-	project, err := serv.projectRepository.GetOne(&model.Project{ProjectId: projectId})
+func (srv *projectService) GetProject(projectId int) (model.Project, error) {
+	project, err := srv.projectRepository.GetOne(&model.Project{ProjectId: projectId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -52,8 +52,8 @@ func (serv *projectService) GetProject(projectId int) (model.Project, error) {
 
 
 // ログインユーザのプロジェクを取得
-func (serv *projectService) GetProjects(userId int) ([]model.Project, error) {
-	projects, err := serv.projectRepository.Get(&model.Project{UserId: userId})
+func (srv *projectService) GetProjects(userId int) ([]model.Project, error) {
+	projects, err := srv.projectRepository.Get(&model.Project{UserId: userId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -68,8 +68,8 @@ func (serv *projectService) GetProjects(userId int) ([]model.Project, error) {
 
 
 //参画しているプロジェクトを取得
-func (serv *projectService) GetMemberProjects(userId int) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetMemberProjects(userId)
+func (srv *projectService) GetMemberProjects(userId int) ([]model.Project, error) {
+	projects, err := srv.projectRepository.GetMemberProjects(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -79,8 +79,8 @@ func (serv *projectService) GetMemberProjects(userId int) ([]model.Project, erro
 }
 
 
-func (serv *projectService) CreateProject(userId int, username, projectName, projectMemo string) error {
-	_, err := serv.projectRepository.GetOne(&model.Project{Username: username, ProjectName: projectName})
+func (srv *projectService) CreateProject(userId int, username, projectName, projectMemo string) error {
+	_, err := srv.projectRepository.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	if err == nil {
 		return errs.NewUniqueConstraintError("project_name")
 	}
@@ -91,7 +91,7 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 	p.UserId = userId
 	p.Username = username
 
-	if err = serv.projectRepository.Insert(&p, nil); err != nil {
+	if err = srv.projectRepository.Insert(&p, nil); err != nil {
 		logger.Error(err.Error())
 	}
 
@@ -99,13 +99,13 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 }
 
 
-func (serv *projectService) UpdateProject(username string, projectId int, projectName, projectMemo string) error {
-	project, err := serv.projectRepository.GetOne(&model.Project{Username: username, ProjectName: projectName})
+func (srv *projectService) UpdateProject(username string, projectId int, projectName, projectMemo string) error {
+	project, err := srv.projectRepository.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	if err == nil && project.ProjectId != projectId {
 		return errs.NewUniqueConstraintError("project_name")
 	}
 
-	p, err := serv.projectRepository.GetOne(&model.Project{ProjectId: projectId})
+	p, err := srv.projectRepository.GetOne(&model.Project{ProjectId: projectId})
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -113,7 +113,7 @@ func (serv *projectService) UpdateProject(username string, projectId int, projec
 
 	p.ProjectName = projectName
 	p.ProjectMemo = projectMemo
-	if err = serv.projectRepository.Update(&p, nil); err != nil {
+	if err = srv.projectRepository.Update(&p, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -122,11 +122,11 @@ func (serv *projectService) UpdateProject(username string, projectId int, projec
 }
 
 
-func (serv *projectService) DeleteProject(projectId int) error {
+func (srv *projectService) DeleteProject(projectId int) error {
 	var p model.Project
 	p.ProjectId= projectId
 
-	tables, err := serv.tableRepository.GetByProjectId(projectId)
+	tables, err := srv.tableRepository.GetByProjectId(projectId)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -138,20 +138,20 @@ func (serv *projectService) DeleteProject(projectId int) error {
 		return err
 	}
 
-	if err = serv.projectRepository.Delete(&p, tx); err != nil {
+	if err = srv.projectRepository.Delete(&p, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 	
-	if err = serv.tableRepository.DeleteByProjectIdTx(projectId, tx); err != nil {
+	if err = srv.tableRepository.DeleteByProjectIdTx(projectId, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 
 	for _, table := range tables {
-		if err = serv.columnRepository.DeleteByTableIdTx(table.TableId, tx); err != nil {
+		if err = srv.columnRepository.DeleteByTableIdTx(table.TableId, tx); err != nil {
 			tx.Rollback()
 			logger.Error(err.Error())
 			return err
