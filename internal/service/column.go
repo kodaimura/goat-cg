@@ -39,7 +39,7 @@ func NewColumnService() ColumnService {
 
 // GetColumn get Column record by columnId.
 func (srv *columnService) GetColumn(columnId int) (model.Column, error) {
-	column, err := srv.columnRepository.GetById(columnId)
+	column, err := srv.columnRepository.GetOne(&model.Column{ColumnId: columnId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -55,7 +55,7 @@ func (srv *columnService) GetColumn(columnId int) (model.Column, error) {
 
 // GetColumn get Column records by tableId.
 func (srv *columnService) GetColumns(tableId int) ([]model.Column, error) {
-	columns, err := srv.columnRepository.GetByTableId(tableId)
+	columns, err := srv.columnRepository.Get(&model.Column{TableId: tableId})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -67,15 +67,14 @@ func (srv *columnService) GetColumns(tableId int) ([]model.Column, error) {
 
 // CreateColumn create new Column record.
 func (srv *columnService) CreateColumn(sin dto.CreateColumn) error {
-	_, err := srv.columnRepository.GetByUniqueKey(sin.ColumnName, sin.TableId)
+	_, err := srv.columnRepository.GetOne(&model.Column{ColumnName: sin.ColumnName, TableId: sin.TableId})
 	if err == nil {
 		return errs.NewUniqueConstraintError("column_name")
 	}
 	
 	column := sin.ToColumn()
 	
-	_, err = srv.columnRepository.Insert(&column)
-	if err != nil {
+	if err = srv.columnRepository.Insert(&column, nil); err != nil {
 		logger.Error(err.Error())
 	}
 
@@ -85,7 +84,7 @@ func (srv *columnService) CreateColumn(sin dto.CreateColumn) error {
 
 // UpdateColumn update Column record by columnId.
 func (srv *columnService) UpdateColumn(sin dto.CreateColumn) error {
-	col, err := srv.columnRepository.GetByUniqueKey(sin.ColumnName, sin.TableId)
+	col, err := srv.columnRepository.GetOne(&model.Column{ColumnName: sin.ColumnName, TableId: sin.TableId})
 
 	if err == nil && col.ColumnId != sin.ColumnId {
 		return errs.NewUniqueConstraintError("column_name")
@@ -93,7 +92,7 @@ func (srv *columnService) UpdateColumn(sin dto.CreateColumn) error {
 	
 	column := sin.ToColumn()
 
-	if err = srv.columnRepository.Update(&column); err != nil {
+	if err = srv.columnRepository.Update(&column, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -105,10 +104,7 @@ func (srv *columnService) UpdateColumn(sin dto.CreateColumn) error {
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
 func (srv *columnService) DeleteColumn(columnId int) error {
-	var c model.Column
-	c.ColumnId= columnId
-
-	if err := srv.columnRepository.Delete(&c); err != nil {
+	if err := srv.columnRepository.Delete(&model.Column{ColumnId: columnId}, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}

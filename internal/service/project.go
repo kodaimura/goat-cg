@@ -148,7 +148,7 @@ func (srv *projectService) DeleteProject(projectId int) error {
 	}
 
 	for _, table := range tables {
-		if err = srv.columnRepository.DeleteByTableIdTx(table.TableId, tx); err != nil {
+		if err = srv.columnRepository.Delete(&model.Column{TableId: table.TableId}, tx); err != nil {
 			tx.Rollback()
 			logger.Error(err.Error())
 			return err

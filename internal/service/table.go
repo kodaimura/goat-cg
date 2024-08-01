@@ -133,7 +133,7 @@ func (srv *tableService) DeleteTable(tableId int) error {
 		return err
 	}
 
-	if err = srv.columnRepository.DeleteByTableIdTx(tableId, tx); err != nil {
+	if err = srv.columnRepository.Delete(&model.Column{TableId: tableId}, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err

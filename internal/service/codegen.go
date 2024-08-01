@@ -183,7 +183,7 @@ func (srv *codegenService) generateDdlCreateTable(rdbms string, tid int) string 
 
 
 func (srv *codegenService) getValidColumns(tid int) ([]model.Column, error) {
-	columns, err := srv.columnRepository.GetByTableId(tid)
+	columns, err := srv.columnRepository.Get(&model.Column{TableId: tid})
 	if err != nil {
 		logger.Error(err.Error())
 		return columns, err

@@ -97,7 +97,7 @@ func validateTableIdAndGetTable (projectId, tableId int) (model.Table, error) {
 
 func validateColumnIdAndGetColumn (tableId, columnId int) (model.Column, error) {
 	cr := repository.NewColumnRepository()
-	c, err := cr.GetById(columnId)
+	c, err := cr.GetOne(&model.Column{ColumnId: columnId})
 	
 	if err != nil || c.TableId != tableId {
 		return c, errors.New("validateColumnIdAndGetColumn")
