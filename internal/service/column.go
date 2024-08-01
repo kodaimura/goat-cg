@@ -38,8 +38,8 @@ func NewColumnService() ColumnService {
 
 
 // GetColumn get Column record by columnId.
-func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
-	column, err := serv.columnRepository.GetById(columnId)
+func (srv *columnService) GetColumn(columnId int) (model.Column, error) {
+	column, err := srv.columnRepository.GetOne(&model.Column{ColumnId: columnId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -54,8 +54,8 @@ func (serv *columnService) GetColumn(columnId int) (model.Column, error) {
 
 
 // GetColumn get Column records by tableId.
-func (serv *columnService) GetColumns(tableId int) ([]model.Column, error) {
-	columns, err := serv.columnRepository.GetByTableId(tableId)
+func (srv *columnService) GetColumns(tableId int) ([]model.Column, error) {
+	columns, err := srv.columnRepository.Get(&model.Column{TableId: tableId})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -66,16 +66,15 @@ func (serv *columnService) GetColumns(tableId int) ([]model.Column, error) {
 
 
 // CreateColumn create new Column record.
-func (serv *columnService) CreateColumn(sin dto.CreateColumn) error {
-	_, err := serv.columnRepository.GetByUniqueKey(sin.ColumnName, sin.TableId)
+func (srv *columnService) CreateColumn(sin dto.CreateColumn) error {
+	_, err := srv.columnRepository.GetOne(&model.Column{ColumnName: sin.ColumnName, TableId: sin.TableId})
 	if err == nil {
 		return errs.NewUniqueConstraintError("column_name")
 	}
 	
 	column := sin.ToColumn()
 	
-	_, err = serv.columnRepository.Insert(&column)
-	if err != nil {
+	if err = srv.columnRepository.Insert(&column, nil); err != nil {
 		logger.Error(err.Error())
 	}
 
@@ -84,8 +83,8 @@ func (serv *columnService) CreateColumn(sin dto.CreateColumn) error {
 
 
 // UpdateColumn update Column record by columnId.
-func (serv *columnService) UpdateColumn(sin dto.CreateColumn) error {
-	col, err := serv.columnRepository.GetByUniqueKey(sin.ColumnName, sin.TableId)
+func (srv *columnService) UpdateColumn(sin dto.CreateColumn) error {
+	col, err := srv.columnRepository.GetOne(&model.Column{ColumnName: sin.ColumnName, TableId: sin.TableId})
 
 	if err == nil && col.ColumnId != sin.ColumnId {
 		return errs.NewUniqueConstraintError("column_name")
@@ -93,7 +92,7 @@ func (serv *columnService) UpdateColumn(sin dto.CreateColumn) error {
 	
 	column := sin.ToColumn()
 
-	if err = serv.columnRepository.Update(&column); err != nil {
+	if err = srv.columnRepository.Update(&column, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -104,11 +103,8 @@ func (serv *columnService) UpdateColumn(sin dto.CreateColumn) error {
 
 // DeleteColumn delete Column record by columnId.
 // (physical delete)
-func (serv *columnService) DeleteColumn(columnId int) error {
-	var c model.Column
-	c.ColumnId= columnId
-
-	if err := serv.columnRepository.Delete(&c); err != nil {
+func (srv *columnService) DeleteColumn(columnId int) error {
+	if err := srv.columnRepository.Delete(&model.Column{ColumnId: columnId}, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -118,8 +114,8 @@ func (serv *columnService) DeleteColumn(columnId int) error {
 
 
 // GetColumnLog get Column chenge log.
-func (serv *columnService) GetColumnLog(columnId int) ([]dto.ColumnLog, error) {
-	columnLog, err := serv.columnQuery.GetColumnLog(columnId)
+func (srv *columnService) GetColumnLog(columnId int) ([]dto.ColumnLog, error) {
+	columnLog, err := srv.columnQuery.GetColumnLog(columnId)
 
 	if err != nil {
 		logger.Error(err.Error())

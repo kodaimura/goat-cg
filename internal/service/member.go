@@ -32,13 +32,13 @@ func NewMemberService() MemberService {
 	return &memberService{memberRepository, userRepository, projectMemberQuery}
 }
 
-func (serv *memberService) Invite(projectId int, email string) error {
-	user, err := serv.userRepository.GetByEmail(email)
+func (srv *memberService) Invite(projectId int, email string) error {
+	user, err := srv.userRepository.GetOne(&model.User{Email: email})
 	if err != nil {
 		return errs.NewNotFoundError()
 	}
 
-	_, err = serv.memberRepository.GetByPk(projectId, user.UserId)
+	_, err = srv.memberRepository.GetOne(&model.Member{ProjectId: projectId, UserId: user.UserId})
 	if err == nil {
 		return errs.NewAlreadyRegisteredError()
 	}
@@ -49,7 +49,7 @@ func (serv *memberService) Invite(projectId int, email string) error {
 	m.UserStatus = "0"
 	m.UserRole = "0"
 
-	if err = serv.memberRepository.Insert(&m); err != nil {
+	if err = srv.memberRepository.Insert(&m, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -57,20 +57,20 @@ func (serv *memberService) Invite(projectId int, email string) error {
 	return nil
 }
 
-func (serv *memberService) GetMembers(projectId int) ([]dto.ProjectMember, error) {
-	return serv.projectMemberQuery.GetProjectMembers(projectId)
+func (srv *memberService) GetMembers(projectId int) ([]dto.ProjectMember, error) {
+	return srv.projectMemberQuery.GetProjectMembers(projectId)
 }
 
-func (serv *memberService) GetMember(projectId, userId int) (dto.ProjectMember, error) {
-	return serv.projectMemberQuery.GetProjectMember(projectId, userId)
+func (srv *memberService) GetMember(projectId, userId int) (dto.ProjectMember, error) {
+	return srv.projectMemberQuery.GetProjectMember(projectId, userId)
 }
 
-func (serv *memberService) DeleteMember(projectId, userId int) error {
+func (srv *memberService) DeleteMember(projectId, userId int) error {
 	var m model.Member
 	m.ProjectId = projectId
 	m.UserId = userId
 
-	if err := serv.memberRepository.Delete(&m); err != nil {
+	if err := srv.memberRepository.Delete(&m, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}

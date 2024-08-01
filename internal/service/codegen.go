@@ -36,11 +36,11 @@ func NewCodegenService() CodegenService {
 
 // Generate goat source and return zip path.
 // param rdbms: "sqlite3" or "postgresql" 
-func (serv *codegenService) GenerateGoat(rdbms string, tableIds []int) string {
+func (srv *codegenService) GenerateGoat(rdbms string, tableIds []int) string {
 	path := "./tmp/goat-" + time.Now().Format("2006-01-02-15-04-05") + 
 		"-" + utils.RandomString(7)
 
-	serv.generateSource(rdbms, tableIds, path)
+	srv.generateSource(rdbms, tableIds, path)
 
 	if err := exec.Command("zip", "-rm", path + ".zip", path).Run(); err != nil {
 		logger.Error(err.Error())
@@ -50,20 +50,20 @@ func (serv *codegenService) GenerateGoat(rdbms string, tableIds []int) string {
 }
 
 
-func (serv *codegenService) generateSource(rdbms string, tableIds []int, rootPath string) {
+func (srv *codegenService) generateSource(rdbms string, tableIds []int, rootPath string) {
 	path := rootPath + "/scripts"
 	if err := os.MkdirAll(path, 0777); err != nil {
 		logger.Error(err.Error())
 		return
 	}
-	serv.generateScriptsSource(rdbms, tableIds, path)
+	srv.generateScriptsSource(rdbms, tableIds, path)
 
 	path = rootPath + "/internal"
 	if err := os.MkdirAll(path, 0777); err != nil {
 		logger.Error(err.Error())
 		return
 	}
-	serv.generateInternalSource(rdbms, tableIds, path)
+	srv.generateInternalSource(rdbms, tableIds, path)
 }
 
 
@@ -120,7 +120,7 @@ var dbDataTypeGoTypeMap = map[string]string{
 }
 
 
-func (serv *codegenService) writeFile(path, content string) {
+func (srv *codegenService) writeFile(path, content string) {
 	f, err := os.Create(path)
 	defer f.Close()
 
@@ -133,7 +133,7 @@ func (serv *codegenService) writeFile(path, content string) {
 }
 
 
-func (serv *codegenService) extractPrimaryKeys(columns []model.Column) []model.Column {
+func (srv *codegenService) extractPrimaryKeys(columns []model.Column) []model.Column {
 	var ret []model.Column
 
 	for _, c := range columns {
@@ -148,27 +148,27 @@ func (serv *codegenService) extractPrimaryKeys(columns []model.Column) []model.C
 
 // generateScriptsSource generate ddl(create table) source.
 // main processing of GenerateDdl.
-func (serv *codegenService) generateScriptsSource(rdbms string, tableIds []int, path string) {
-	s := serv.generateDdlCreateTables(rdbms, tableIds) + "\n" +
-		serv.generateDdlCreateTriggers(rdbms, tableIds)
+func (srv *codegenService) generateScriptsSource(rdbms string, tableIds []int, path string) {
+	s := srv.generateDdlCreateTables(rdbms, tableIds) + "\n" +
+		srv.generateDdlCreateTriggers(rdbms, tableIds)
 
-	serv.writeFile(path + "/create-table.sql", s)
+	srv.writeFile(path + "/create-table.sql", s)
 }
 
 
-func (serv *codegenService) generateDdlCreateTables(rdbms string, tableIds []int) string {
+func (srv *codegenService) generateDdlCreateTables(rdbms string, tableIds []int) string {
 	s := ""
 	for _, tid := range tableIds {
-		s += serv.generateDdlCreateTable(rdbms, tid) + "\n\n"
+		s += srv.generateDdlCreateTable(rdbms, tid) + "\n\n"
 	}
 
 	return s
 }
 
 
-func (serv *codegenService) generateDdlCreateTable(rdbms string, tid int) string {
+func (srv *codegenService) generateDdlCreateTable(rdbms string, tid int) string {
 	s := ""
-	table, err := serv.tableRepository.GetById(tid)
+	table, err := srv.tableRepository.GetOne(&model.Table{TableId: tid})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -176,14 +176,14 @@ func (serv *codegenService) generateDdlCreateTable(rdbms string, tid int) string
 	}
 
 	s += "CREATE TABLE IF NOT EXISTS " + table.TableName + " (\n" +
-		serv.generateDdlColumns(rdbms, tid) + "\n);"
+		srv.generateDdlColumns(rdbms, tid) + "\n);"
 
 	return s
 }
 
 
-func (serv *codegenService) getValidColumns(tid int) ([]model.Column, error) {
-	columns, err := serv.columnRepository.GetByTableId(tid)
+func (srv *codegenService) getValidColumns(tid int) ([]model.Column, error) {
+	columns, err := srv.columnRepository.Get(&model.Column{TableId: tid})
 	if err != nil {
 		logger.Error(err.Error())
 		return columns, err
@@ -200,25 +200,25 @@ func (serv *codegenService) getValidColumns(tid int) ([]model.Column, error) {
 }
 
 
-func (serv *codegenService) generateDdlColumns(rdbms string, tid int) string {
+func (srv *codegenService) generateDdlColumns(rdbms string, tid int) string {
 	s := ""
-	columns, err := serv.getValidColumns(tid)
+	columns, err := srv.getValidColumns(tid)
 	if err != nil {
 		logger.Error(err.Error())
 		return s
 	}
 
 	for _, col := range columns {
-		s += serv.generateDdlColumn(rdbms, col)
+		s += srv.generateDdlColumn(rdbms, col)
 	}
-	s += serv.generateDdlCommonColumns(rdbms)
-	s += serv.generateDdlPrymaryKey(rdbms, columns)
+	s += srv.generateDdlCommonColumns(rdbms)
+	s += srv.generateDdlPrymaryKey(rdbms, columns)
 
 	return strings.TrimRight(s, ",\n")
 }
 
 
-func (serv *codegenService) generateDdlCommonColumns(rdbms string) string {
+func (srv *codegenService) generateDdlCommonColumns(rdbms string) string {
 	s := ""
 	if rdbms == "sqlite3" {
 		s = "\tcreated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),\n" + 
@@ -237,9 +237,9 @@ func (serv *codegenService) generateDdlCommonColumns(rdbms string) string {
 }
 
 
-func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.Column) string {
+func (srv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.Column) string {
 	s := "" 
-	pkcolumns := serv.extractPrimaryKeys(columns)
+	pkcolumns := srv.extractPrimaryKeys(columns)
 
 	for i, c := range pkcolumns {
 		if c.DataTypeCls == constant.DATA_TYPE_CLS_SERIAL {
@@ -261,12 +261,12 @@ func (serv *codegenService) generateDdlPrymaryKey(rdbms string, columns []model.
 }
 
 
-func (serv *codegenService) generateDdlColumn(rdbms string, column model.Column) string {
-	s := "\t" + column.ColumnName + " " + serv.generateDdlColumnDataType(rdbms, column)
-	if cts := serv.generateDdlColumnConstraints(column); cts != "" {
+func (srv *codegenService) generateDdlColumn(rdbms string, column model.Column) string {
+	s := "\t" + column.ColumnName + " " + srv.generateDdlColumnDataType(rdbms, column)
+	if cts := srv.generateDdlColumnConstraints(column); cts != "" {
 		s += " " + cts
 	}
-	if dflt := serv.generateDdlColumnDefault(column); dflt != "" {
+	if dflt := srv.generateDdlColumnDefault(column); dflt != "" {
 		s += " " + dflt
 	}
 
@@ -274,7 +274,7 @@ func (serv *codegenService) generateDdlColumn(rdbms string, column model.Column)
 }
 
 
-func (serv *codegenService) generateDdlColumnConstraints(column model.Column) string {
+func (srv *codegenService) generateDdlColumnConstraints(column model.Column) string {
 	s := ""
 	if column.NotNullFlg == constant.FLG_ON {
 		s += "NOT NULL "
@@ -287,7 +287,7 @@ func (serv *codegenService) generateDdlColumnConstraints(column model.Column) st
 }
 
 
-func (serv *codegenService) generateDdlColumnDefault(column model.Column) string {
+func (srv *codegenService) generateDdlColumnDefault(column model.Column) string {
 	s := ""
 	if column.DefaultValue != "" {
 		if column.DataTypeCls == constant.DATA_TYPE_CLS_NUMERIC ||
@@ -302,23 +302,23 @@ func (serv *codegenService) generateDdlColumnDefault(column model.Column) string
 }
 
 
-func (serv *codegenService) generateDdlColumnDataType(rdbms string, column model.Column) string {
+func (srv *codegenService) generateDdlColumnDataType(rdbms string, column model.Column) string {
 	s := ""
 	if rdbms == "sqlite3" {
 		s = dataTypeMapSqlite3[column.DataTypeCls]
 
 	} else if rdbms == "postgresql" {
-		s = serv.generateDdlColumnDataTypePostgresql(column)
+		s = srv.generateDdlColumnDataTypePostgresql(column)
 	
 	} else if rdbms == "mysql" {
-		s = serv.generateDdlColumnDataTypeMysql(column)
+		s = srv.generateDdlColumnDataTypeMysql(column)
 	}
 
 	return s
 }
 
 
-func (serv *codegenService) generateDdlColumnDataTypePostgresql(column model.Column) string {
+func (srv *codegenService) generateDdlColumnDataTypePostgresql(column model.Column) string {
 	s := dataTypeMapPostgresql[column.DataTypeCls]
 
 	if column.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
@@ -337,7 +337,7 @@ func (serv *codegenService) generateDdlColumnDataTypePostgresql(column model.Col
 }
 
 
-func (serv *codegenService) generateDdlColumnDataTypeMysql(column model.Column) string {
+func (srv *codegenService) generateDdlColumnDataTypeMysql(column model.Column) string {
 	s := dataTypeMapMysql[column.DataTypeCls]
 
 	if column.DataTypeCls == constant.DATA_TYPE_CLS_VARCHAR || 
@@ -356,7 +356,7 @@ func (serv *codegenService) generateDdlColumnDataTypeMysql(column model.Column) 
 }
 
 
-func (serv *codegenService) generateDdlCreateTriggers(rdbms string, tableIds []int) string {
+func (srv *codegenService) generateDdlCreateTriggers(rdbms string, tableIds []int) string {
 	s := ""
 	if rdbms == "postgresql" {
 		s += "CREATE FUNCTION set_update_time() returns opaque AS '\n" + 
@@ -365,16 +365,16 @@ func (serv *codegenService) generateDdlCreateTriggers(rdbms string, tableIds []i
 	}
 
 	for _, tid := range tableIds {
-		s += serv.generateDdlCreateTrigger(rdbms, tid) + "\n\n"
+		s += srv.generateDdlCreateTrigger(rdbms, tid) + "\n\n"
 	}
 
 	return s
 }
 
 
-func (serv *codegenService) generateDdlCreateTrigger(rdbms string, tid int) string {
+func (srv *codegenService) generateDdlCreateTrigger(rdbms string, tid int) string {
 	s := ""
-	table, err := serv.tableRepository.GetById(tid)
+	table, err := srv.tableRepository.GetOne(&model.Table{TableId: tid})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -400,7 +400,7 @@ func (serv *codegenService) generateDdlCreateTrigger(rdbms string, tid int) stri
 
 // tableNameToFileName get file name from table name
 // user => user.go / USER_TABLE => user_table.go
-func (serv *codegenService) tableNameToFileName(tn string) string {
+func (srv *codegenService) tableNameToFileName(tn string) string {
 	n := strings.ToLower(tn)
 	return n + ".go"
 }
@@ -439,7 +439,7 @@ func GetSnakeInitial(snake string) string {
 }
 
 
-func (serv *codegenService) generateInternalSource(rdbms string, tableIds []int, path string) {
+func (srv *codegenService) generateInternalSource(rdbms string, tableIds []int, path string) {
 	modelPath := path + "/model"
 	if err := os.MkdirAll(modelPath, 0777); err != nil {
 		logger.Error(err.Error())
@@ -453,32 +453,32 @@ func (serv *codegenService) generateInternalSource(rdbms string, tableIds []int,
 	}
 
 	for _, tid := range tableIds {
-		table, err := serv.tableRepository.GetById(tid)
+		table, err := srv.tableRepository.GetOne(&model.Table{TableId: tid})
 		if err != nil {
 			logger.Error(err.Error())
 			break
 		}
 
-		columns, err := serv.getValidColumns(tid)
+		columns, err := srv.getValidColumns(tid)
 		if err != nil {
 			logger.Error(err.Error())
 			break
 		}
 
-		serv.generateModelFile(&table, columns, modelPath)
-		serv.generateRepositoryFile(rdbms, &table, columns, repositoryPath)
+		srv.generateModelFile(&table, columns, modelPath)
+		srv.generateRepositoryFile(rdbms, &table, columns, repositoryPath)
 	}
 }
 
 
-func (serv *codegenService) generateModelFile(table *model.Table, columns []model.Column, path string) {
-	path += "/" + serv.tableNameToFileName(table.TableName)
-	code := serv.generateModelCode(table, columns)
-	serv.writeFile(path, code)
+func (srv *codegenService) generateModelFile(table *model.Table, columns []model.Column, path string) {
+	path += "/" + srv.tableNameToFileName(table.TableName)
+	code := srv.generateModelCode(table, columns)
+	srv.writeFile(path, code)
 }
 
 
-func (serv *codegenService) generateModelCode(table *model.Table, columns []model.Column) string {
+func (srv *codegenService) generateModelCode(table *model.Table, columns []model.Column) string {
 	s := "package model\n\n\n"
 
 	s += fmt.Sprintf("type %s struct {\n", SnakeToPascal(table.TableName))
@@ -498,14 +498,14 @@ func (serv *codegenService) generateModelCode(table *model.Table, columns []mode
 }
 
 
-func (serv *codegenService) generateRepositoryFile(rdbms string, table *model.Table, columns []model.Column, path string) {
-	path += "/" + serv.tableNameToFileName(table.TableName)
-	code := serv.generateRepositoryCode(rdbms, table, columns)
-	serv.writeFile(path, code)
+func (srv *codegenService) generateRepositoryFile(rdbms string, table *model.Table, columns []model.Column, path string) {
+	path += "/" + srv.tableNameToFileName(table.TableName)
+	code := srv.generateRepositoryCode(rdbms, table, columns)
+	srv.writeFile(path, code)
 }
 
 
-func (serv *codegenService) generateRepositoryCode(rdbms string, table *model.Table, columns []model.Column) string {
+func (srv *codegenService) generateRepositoryCode(rdbms string, table *model.Table, columns []model.Column) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -513,29 +513,29 @@ func (serv *codegenService) generateRepositoryCode(rdbms string, table *model.Ta
 	s := "package repository\n\n\nimport (\n" + 
 		"\t\"database/sql\"\n\n\t\"xxxxx/internal/core/db\"\n\t\"xxxxx/internal/model\"\n)\n\n\n"
 
-	s += serv.generateRepositoryInterfaceCode(table, columns)
+	s += srv.generateRepositoryInterfaceCode(table, columns)
 	
 	s += "\n\n" +
 		fmt.Sprintf("type %sRepository struct {\n\tdb *sql.DB\n}\n\n\n", tnc) +
 		fmt.Sprintf("func New%sRepository() *%sRepository {\n", tnp, tnc) +
 		fmt.Sprintf("\tdb := db.GetDB()\n\treturn &%sRepository{db}\n}\n\n\n", tnc)
 
-	s += serv.generateRepositoryGet(table, columns) + "\n\n\n"
-	if len(serv.extractPrimaryKeys(columns)) > 0 {
-		s += serv.generateRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
-		s += serv.generateRepositoryInsertPk(rdbms, table, columns) + "\n\n\n"
-		s += serv.generateRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
-		s += serv.generateRepositoryDelete(rdbms, table, columns)
+	s += srv.generateRepositoryGet(table, columns) + "\n\n\n"
+	if len(srv.extractPrimaryKeys(columns)) > 0 {
+		s += srv.generateRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
+		s += srv.generateRepositoryInsertPk(rdbms, table, columns) + "\n\n\n"
+		s += srv.generateRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
+		s += srv.generateRepositoryDelete(rdbms, table, columns)
 	} else {
-		s += serv.generateRepositoryInsert(rdbms, table, columns)
+		s += srv.generateRepositoryInsert(rdbms, table, columns)
 	}
 
 	return s
 }
 
 
-func (serv *codegenService) generateInsertReturnType(columns []model.Column) string {
-	pkcolumns := serv.extractPrimaryKeys(columns)
+func (srv *codegenService) generateInsertReturnType(columns []model.Column) string {
+	pkcolumns := srv.extractPrimaryKeys(columns)
 	s := "error"
 	if len(pkcolumns) > 0 {
 		s = "("
@@ -556,16 +556,16 @@ func (serv *codegenService) generateInsertReturnType(columns []model.Column) str
 
 
 // return "type *Repository interface { ... }"
-func (serv *codegenService) generateRepositoryInterfaceCode(table *model.Table, columns []model.Column) string {
+func (srv *codegenService) generateRepositoryInterfaceCode(table *model.Table, columns []model.Column) string {
 	tnp := SnakeToPascal(table.TableName)
 	tni := GetSnakeInitial(table.TableName)
 
 	s := fmt.Sprintf("type %sRepository interface {\n", tnp) +
 		fmt.Sprintf("\tGet() ([]model.%s, error)\n", tnp)
 
-	if len(serv.extractPrimaryKeys(columns)) > 0 {
+	if len(srv.extractPrimaryKeys(columns)) > 0 {
 		s += fmt.Sprintf("\tGetByPk(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
-		fmt.Sprintf("\tInsert(%s *model.%s) %s\n", tni, tnp, serv.generateInsertReturnType(columns)) +
+		fmt.Sprintf("\tInsert(%s *model.%s) %s\n", tni, tnp, srv.generateInsertReturnType(columns)) +
 		fmt.Sprintf("\tUpdate(%s *model.%s) error\n", tni, tnp) +
 		fmt.Sprintf("\tDelete(%s *model.%s) error\n", tni, tnp)
 	} else {
@@ -579,7 +579,7 @@ func (serv *codegenService) generateRepositoryInterfaceCode(table *model.Table, 
 
 // generateRepositoryGet generate repository function 'Get'.
 // return "func (ur *userRepository) Get() ([]model.User, error) {...}"
-func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []model.Column) string {
+func (srv *codegenService) generateRepositoryGet(table *model.Table, columns []model.Column) string {
 	tn := table.TableName
 	tnc := SnakeToCamel(tn)
 	tnp := SnakeToPascal(tn)
@@ -617,7 +617,7 @@ func (serv *codegenService) generateRepositoryGet(table *model.Table, columns []
 
 // generateRepositoryGetByPk generate repository function 'GetByPk'.
 // return "func (ur *userRepository) GetByPk(u *model.User) (model.User, error) {...}"
-func (serv *codegenService) generateRepositoryGetByPk(
+func (srv *codegenService) generateRepositoryGetByPk(
 	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -640,9 +640,9 @@ func (serv *codegenService) generateRepositoryGetByPk(
 		}
 	}
 	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" + fmt.Sprintf("\n\t\t FROM %s\n", tn)
-	s += serv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
-	s += serv.generateRepositoryWhereClauseBindVals(table, columns)
+	s += srv.generateRepositoryWhereClauseBindVals(table, columns)
 	s += "\t).Scan(\n"
 	for _, c := range columns {
 		s += fmt.Sprintf("\t\t&ret.%s,\n", SnakeToPascal(c.ColumnName))
@@ -654,7 +654,7 @@ func (serv *codegenService) generateRepositoryGetByPk(
 }
 
 
-func (serv *codegenService) getBindVar(rdbms string, n int) string {
+func (srv *codegenService) getBindVar(rdbms string, n int) string {
 	if rdbms == "postgresql" {
 		return fmt.Sprintf("$%d", n)
 	} else {
@@ -664,10 +664,10 @@ func (serv *codegenService) getBindVar(rdbms string, n int) string {
 
 
 // concatBindVariableWithCommas return ?,?,?,?,... or $1,$2,$3,$4,...
-func (serv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount int) string {
+func (srv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount int) string {
 	var ls []string
 	for i := 1; i <= bindCount; i++ {
-		ls = append(ls, serv.getBindVar(rdbms, i))
+		ls = append(ls, srv.getBindVar(rdbms, i))
 	}
 	return strings.Join(ls, ",")
 }
@@ -675,7 +675,7 @@ func (serv *codegenService) concatBindVariableWithCommas(rdbms string, bindCount
 
 // generateRepositoryInsert generate repository function 'Insert'.
 // return "func (ur *userRepository) Insert(u *model.User) error {...}"
-func (serv *codegenService) generateRepositoryInsert(
+func (srv *codegenService) generateRepositoryInsert(
 	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -699,7 +699,7 @@ func (serv *codegenService) generateRepositoryInsert(
 			}
 		}	
 	}
-	s += fmt.Sprintf("\n\t\t ) VALUES(%s)`,\n", serv.concatBindVariableWithCommas(rdbms, bindCount))
+	s += fmt.Sprintf("\n\t\t ) VALUES(%s)`,\n", srv.concatBindVariableWithCommas(rdbms, bindCount))
 
 	for _, c := range columns {
 		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
@@ -714,7 +714,7 @@ func (serv *codegenService) generateRepositoryInsert(
 
 // generateRepositoryInsertPk generate repository function 'Insert'.
 // return "func (ur *userRepository) Insert(u *model.User) (int, error) {...}"
-func (serv *codegenService) generateRepositoryInsertPk(
+func (srv *codegenService) generateRepositoryInsertPk(
 	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -724,10 +724,10 @@ func (serv *codegenService) generateRepositoryInsertPk(
 
 	s := fmt.Sprintf(
 		"func (%sr *%sRepository) Insert(%s *model.%s) %s {\n", 
-		tni, tnc, tni, tnp, serv.generateInsertReturnType(columns),
+		tni, tnc, tni, tnp, srv.generateInsertReturnType(columns),
 	)
 
-	pkcolumns := serv.extractPrimaryKeys(columns)
+	pkcolumns := srv.extractPrimaryKeys(columns)
 	for _, column := range pkcolumns {
 		s += fmt.Sprintf(
 			"\tvar %s %s\n", 
@@ -747,7 +747,7 @@ func (serv *codegenService) generateRepositoryInsertPk(
 			}
 		}	
 	}
-	s += fmt.Sprintf("\n\t\t ) VALUES(%s)\n\t\t RETURNING ", serv.concatBindVariableWithCommas(rdbms, bindCount))
+	s += fmt.Sprintf("\n\t\t ) VALUES(%s)\n\t\t RETURNING ", srv.concatBindVariableWithCommas(rdbms, bindCount))
 	isFirst := true
 	for _, column := range pkcolumns {
 		if isFirst {
@@ -781,7 +781,7 @@ func (serv *codegenService) generateRepositoryInsertPk(
 
 // generateRepositoryUpdate generate repository function 'Update'.
 // return "func (ur *userRepository) Update(u *model.User) error {...}"
-func (serv *codegenService) generateRepositoryUpdate(
+func (srv *codegenService) generateRepositoryUpdate(
 	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -800,14 +800,14 @@ func (serv *codegenService) generateRepositoryUpdate(
 		c.PrimaryKeyFlg != constant.FLG_ON {
 			bindCount += 1
 			if bindCount == 1 {
-				s += fmt.Sprintf("%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
+				s += fmt.Sprintf("%s = %s", c.ColumnName, srv.getBindVar(rdbms, bindCount))
 			} else {
-				s += fmt.Sprintf("\n\t\t\t,%s = %s", c.ColumnName, serv.getBindVar(rdbms, bindCount))
+				s += fmt.Sprintf("\n\t\t\t,%s = %s", c.ColumnName, srv.getBindVar(rdbms, bindCount))
 			}
 		}
 	}
 	s += "\n"
-	s += serv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
 
 	for _, c := range columns {
@@ -816,7 +816,7 @@ func (serv *codegenService) generateRepositoryUpdate(
 			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
-	s += serv.generateRepositoryWhereClauseBindVals(table, columns)
+	s += srv.generateRepositoryWhereClauseBindVals(table, columns)
 	s += "\t)\n\n\treturn err\n}"
 
 	return s
@@ -825,7 +825,7 @@ func (serv *codegenService) generateRepositoryUpdate(
 
 // generateRepositoryDelete generate repository function 'Delete'.
 // return "func (ur *userRepository) Delete(u *model.User) error {...}"
-func (serv *codegenService) generateRepositoryDelete(
+func (srv *codegenService) generateRepositoryDelete(
 	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -839,16 +839,16 @@ func (serv *codegenService) generateRepositoryDelete(
 	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
 
 	bindCount := 0
-	s += serv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
+	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
 	s += "`,\n"
-	s += serv.generateRepositoryWhereClauseBindVals(table, columns)
+	s += srv.generateRepositoryWhereClauseBindVals(table, columns)
 	s += "\t)\n\n\treturn err\n}"
 
 	return s
 }
 
 
-func (serv *codegenService) generateRepositoryWhereClause(
+func (srv *codegenService) generateRepositoryWhereClause(
 	rdbms string, columns []model.Column, bindCount *int,
 ) string {
 	s := "\t\t WHERE "
@@ -858,10 +858,10 @@ func (serv *codegenService) generateRepositoryWhereClause(
 		if c.PrimaryKeyFlg == constant.FLG_ON {
 			*bindCount += 1
 			if isFirst {
-				s += fmt.Sprintf("%s = %s", c.ColumnName, serv.getBindVar(rdbms, *bindCount))
+				s += fmt.Sprintf("%s = %s", c.ColumnName, srv.getBindVar(rdbms, *bindCount))
 				isFirst = false
 			} else {
-				s += fmt.Sprintf("\n\t\t   AND %s = %s", c.ColumnName, serv.getBindVar(rdbms, *bindCount))
+				s += fmt.Sprintf("\n\t\t   AND %s = %s", c.ColumnName, srv.getBindVar(rdbms, *bindCount))
 			}
 		}
 	}
@@ -870,7 +870,7 @@ func (serv *codegenService) generateRepositoryWhereClause(
 }
 
 
-func (serv *codegenService) generateRepositoryWhereClauseBindVals(
+func (srv *codegenService) generateRepositoryWhereClauseBindVals(
 	table *model.Table, columns []model.Column,
 ) string {
 	s := ""

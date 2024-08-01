@@ -9,15 +9,11 @@ import (
 
 
 type ColumnRepository interface {
-	GetById(id int) (model.Column, error)
-	Insert(c *model.Column) (int, error)
-	Update(c *model.Column) error
-	Delete(c *model.Column) error
-	DeleteTx(c *model.Column, tx *sql.Tx) error
-
-	GetByUniqueKey(name string, tableId int) (model.Column, error)
-	GetByTableId(tableId int) ([]model.Column, error)
-	DeleteByTableIdTx(tableId int, tx *sql.Tx) error
+	Get(c *model.Column) ([]model.Column, error)
+	GetOne(c *model.Column) (model.Column, error)
+	Insert(c *model.Column, tx *sql.Tx) error
+	Update(c *model.Column, tx *sql.Tx) error
+	Delete(c *model.Column, tx *sql.Tx) error
 }
 
 
@@ -32,249 +28,15 @@ func NewColumnRepository() ColumnRepository {
 }
 
 
-func (rep *columnRepository) GetById(id int) (model.Column, error) {
-	var ret model.Column
-	err := rep.db.QueryRow(
-		`SELECT 
-			column_id,
-			table_id, 
-			column_name,
-			column_name_logical,
-			data_type_cls,
-			precision,
-			scale,
-			primary_key_flg,
-			not_null_flg,
-			unique_flg,
-			default_value,
-			remark,
-			align_seq,
-			del_flg,
-			create_user_id,
-			update_user_id,
-			created_at ,
-			updated_at
-		 FROM
-			 column_def
-		 WHERE
-			 column_id = ?
-		 ORDER BY align_seq`,
-		 id,
-	).Scan(
-		&ret.ColumnId,
-		&ret.TableId,
-		&ret.ColumnName, 
-		&ret.ColumnNameLogical,
-		&ret.DataTypeCls,
-		&ret.Precision,
-		&ret.Scale,
-		&ret.PrimaryKeyFlg,
-		&ret.NotNullFlg,
-		&ret.UniqueFlg,
-		&ret.DefaultValue,
-		&ret.Remark,
-		&ret.AlignSeq,
-		&ret.DelFlg,
-		&ret.CreateUserId,
-		&ret.UpdateUserId,
-		&ret.CreatedAt,
-		&ret.UpdatedAt,
-	)
+func (rep *columnRepository) Get(c *model.Column) ([]model.Column, error) {
+	where, binds := db.BuildWhereClause(c)
+	query := "SELECT * FROM column_def " + where
 
-	return ret, err
-}
-
-
-func (rep *columnRepository) Insert(c *model.Column) (int, error) {
-	var columnId int
-
-	err := rep.db.QueryRow(
-		`INSERT INTO column_def (
-			table_id, 
-			column_name,
-			column_name_logical,
-			data_type_cls,
-			precision,
-			scale,
-			primary_key_flg,
-			not_null_flg,
-			unique_flg,
-			default_value,
-			remark,
-			align_seq,
-			del_flg,
-			create_user_id,
-			update_user_id
-		 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-		 RETURNING column_id`,
-		c.TableId,
-		c.ColumnName, 
-		c.ColumnNameLogical,
-		c.DataTypeCls,
-		c.Precision,
-		c.Scale,
-		c.PrimaryKeyFlg,
-		c.NotNullFlg,
-		c.UniqueFlg,
-		c.DefaultValue,
-		c.Remark,
-		c.AlignSeq,
-		c.DelFlg,
-		c.CreateUserId,
-		c.CreateUserId,
-	).Scan(
-		&columnId,
-	)
-
-	return columnId, err
-}
-
-
-func (rep *columnRepository) Update(c *model.Column) error {
-	_, err := rep.db.Exec(
-		`UPDATE column_def
-		 SET 
-			column_name = ?,
-			column_name_logical = ?,
-			data_type_cls = ?,
-			precision = ?,
-			scale = ?,
-			primary_key_flg = ?,
-			not_null_flg = ?,
-			unique_flg = ?,
-			default_value = ?,
-			remark = ?,
-			align_seq = ?,
-			del_flg = ?,
-			update_user_id = ?
-		 WHERE column_id = ?`,
-		c.ColumnName, 
-		c.ColumnNameLogical,
-		c.DataTypeCls,
-		c.Precision,
-		c.Scale,
-		c.PrimaryKeyFlg,
-		c.NotNullFlg,
-		c.UniqueFlg,
-		c.DefaultValue,
-		c.Remark,
-		c.AlignSeq,
-		c.DelFlg,
-		c.UpdateUserId,
-		c.ColumnId,
-	)
-
-	return err
-}
-
-
-func (rep *columnRepository) Delete(c *model.Column) error {
-	_, err := rep.db.Exec(
-		`DELETE FROM column_def WHERE column_id = ?`, 
-		c.ColumnId,
-	)
-
-	return err
-}
-
-
-func (rep *columnRepository) DeleteTx(c *model.Column, tx *sql.Tx) error {
-	_, err := tx.Exec(
-		`DELETE FROM column_def WHERE column_id = ?`, 
-		c.ColumnId,
-	)
-
-	return err
-}
-
-
-func (rep *columnRepository) GetByUniqueKey(name string, tableId int) (model.Column, error) {
-	var ret model.Column
-	err := rep.db.QueryRow(
-		`SELECT 
-			column_id,
-			table_id, 
-			column_name,
-			column_name_logical,
-			data_type_cls,
-			precision,
-			scale,
-			primary_key_flg,
-			not_null_flg,
-			unique_flg,
-			default_value,
-			remark,
-			align_seq,
-			del_flg,
-			create_user_id,
-			update_user_id,
-			created_at ,
-			updated_at
-		 FROM
-			 column_def
-		 WHERE
-			 table_id = ?
-		 AND column_name = ?
-		 ORDER BY align_seq`,
-		 tableId,
-		 name,
-	).Scan(
-		&ret.ColumnId,
-		&ret.TableId,
-		&ret.ColumnName, 
-		&ret.ColumnNameLogical,
-		&ret.DataTypeCls,
-		&ret.Precision,
-		&ret.Scale,
-		&ret.PrimaryKeyFlg,
-		&ret.NotNullFlg,
-		&ret.UniqueFlg,
-		&ret.DefaultValue,
-		&ret.Remark,
-		&ret.AlignSeq,
-		&ret.DelFlg,
-		&ret.CreateUserId,
-		&ret.UpdateUserId,
-		&ret.CreatedAt,
-		&ret.UpdatedAt,
-	)
-
-	return ret, err
-}
-
-
-func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
-	rows, err := rep.db.Query(
-		`SELECT 
-			column_id,
-			table_id, 
-			column_name,
-			column_name_logical,
-			data_type_cls,
-			precision,
-			scale,
-			primary_key_flg,
-			not_null_flg,
-			unique_flg,
-			default_value,
-			remark,
-			align_seq,
-			del_flg,
-			create_user_id,
-			update_user_id,
-			created_at ,
-			updated_at
-		 FROM
-			 column_def
-		 WHERE
-			 table_id = ?
-		 ORDER BY align_seq`,
-		 tableId,
-	)
+	rows, err := rep.db.Query(query, binds...)
 	defer rows.Close()
 
 	if err != nil {
-		return nil, err
+		return []model.Column{}, err
 	}
 
 	ret := []model.Column{}
@@ -301,7 +63,7 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 			&c.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return []model.Column{}, err
 		}
 		ret = append(ret, c)
 	}
@@ -310,11 +72,140 @@ func (rep *columnRepository) GetByTableId(tableId int) ([]model.Column, error) {
 }
 
 
-func (rep *columnRepository) DeleteByTableIdTx(tableId int, tx *sql.Tx) error {
-	_, err := tx.Exec(
-		`DELETE FROM column_def WHERE table_id = ?`, 
-		tableId,
+func (rep *columnRepository) GetOne(c *model.Column) (model.Column, error) {
+	var ret model.Column
+	where, binds := db.BuildWhereClause(c)
+	query := "SELECT * FROM column_def " + where
+
+	err := rep.db.QueryRow(query, binds...).Scan(
+		&ret.ColumnId,
+		&ret.TableId,
+		&ret.ColumnName, 
+		&ret.ColumnNameLogical,
+		&ret.DataTypeCls,
+		&ret.Precision,
+		&ret.Scale,
+		&ret.PrimaryKeyFlg,
+		&ret.NotNullFlg,
+		&ret.UniqueFlg,
+		&ret.DefaultValue,
+		&ret.Remark,
+		&ret.AlignSeq,
+		&ret.DelFlg,
+		&ret.CreateUserId,
+		&ret.UpdateUserId,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
 	)
 
+	return ret, err
+}
+
+
+func (rep *columnRepository) Insert(c *model.Column, tx *sql.Tx) error {
+	cmd := 
+	`INSERT INTO column_def (
+		table_id, 
+		column_name,
+		column_name_logical,
+		data_type_cls,
+		precision,
+		scale,
+		primary_key_flg,
+		not_null_flg,
+		unique_flg,
+		default_value,
+		remark,
+		align_seq,
+		del_flg,
+		create_user_id,
+		update_user_id
+	 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+	binds := []interface{}{
+		c.TableId,
+		c.ColumnName, 
+		c.ColumnNameLogical,
+		c.DataTypeCls,
+		c.Precision,
+		c.Scale,
+		c.PrimaryKeyFlg,
+		c.NotNullFlg,
+		c.UniqueFlg,
+		c.DefaultValue,
+		c.Remark,
+		c.AlignSeq,
+		c.DelFlg,
+		c.CreateUserId,
+		c.CreateUserId,
+	}
+
+	var err error
+	if tx != nil {
+        _, err = tx.Exec(cmd, binds...)
+    } else {
+        _, err = rep.db.Exec(cmd, binds...)
+    }
+	
+	return err
+}
+
+
+func (rep *columnRepository) Update(c *model.Column, tx *sql.Tx) error {
+	cmd := 
+	`UPDATE column_def
+	 SET 
+	    column_name = ?,
+	    column_name_logical = ?,
+	    data_type_cls = ?,
+	    precision = ?,
+	    scale = ?,
+	    primary_key_flg = ?,
+	    not_null_flg = ?,
+	    unique_flg = ?,
+	    default_value = ?,
+	    remark = ?,
+	    align_seq = ?,
+	    del_flg = ?,
+	    update_user_id = ?
+	 WHERE column_id = ?`
+	binds := []interface{}{
+		c.ColumnName, 
+		c.ColumnNameLogical,
+		c.DataTypeCls,
+		c.Precision,
+		c.Scale,
+		c.PrimaryKeyFlg,
+		c.NotNullFlg,
+		c.UniqueFlg,
+		c.DefaultValue,
+		c.Remark,
+		c.AlignSeq,
+		c.DelFlg,
+		c.UpdateUserId,
+		c.ColumnId,
+	}
+	
+	var err error
+	if tx != nil {
+        _, err = tx.Exec(cmd, binds...)
+    } else {
+        _, err = rep.db.Exec(cmd, binds...)
+    }
+	
+	return err
+}
+
+
+func (rep *columnRepository) Delete(c *model.Column, tx *sql.Tx) error {
+	where, binds := db.BuildWhereClause(c)
+	cmd := "DELETE FROM column_def " + where
+
+	var err error
+	if tx != nil {
+        _, err = tx.Exec(cmd, binds...)
+    } else {
+        _, err = rep.db.Exec(cmd, binds...)
+    }
+	
 	return err
 }

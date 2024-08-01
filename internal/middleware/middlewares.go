@@ -73,7 +73,7 @@ func validateProjectNameAndGetProject (c *gin.Context) (model.Project, error) {
 	pr := repository.NewProjectRepository()
 
 	if username == ownername {
-		p, err = pr.GetByUniqueKey(username, projectName)
+		p, err = pr.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	} else {
 		p, err = pr.GetMemberProject(userId, ownername, projectName)
 	}
@@ -87,7 +87,7 @@ func validateProjectNameAndGetProject (c *gin.Context) (model.Project, error) {
 
 func validateTableIdAndGetTable (projectId, tableId int) (model.Table, error) {
 	tr := repository.NewTableRepository()
-	t, err := tr.GetById(tableId)
+	t, err := tr.GetOne(&model.Table{TableId: tableId})
 
 	if err != nil || t.ProjectId != projectId {
 		return t, errors.New("validateTableIdAndGetTable")
@@ -97,7 +97,7 @@ func validateTableIdAndGetTable (projectId, tableId int) (model.Table, error) {
 
 func validateColumnIdAndGetColumn (tableId, columnId int) (model.Column, error) {
 	cr := repository.NewColumnRepository()
-	c, err := cr.GetById(columnId)
+	c, err := cr.GetOne(&model.Column{ColumnId: columnId})
 	
 	if err != nil || c.TableId != tableId {
 		return c, errors.New("validateColumnIdAndGetColumn")

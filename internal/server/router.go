@@ -1,15 +1,16 @@
-package controller
+package server
 
 import (
 	"github.com/gin-gonic/gin"
 
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/middleware"
+	"goat-cg/internal/controller"
 )
 
 
 func SetRouter(r *gin.Engine) {
-	uc := NewUserController()
+	uc := controller.NewUserController()
 
 	//render HTML or redirect
 	r.GET("/signup", uc.SignupPage)
@@ -21,11 +22,11 @@ func SetRouter(r *gin.Engine) {
 	//render HTML or redirect (Authorized request)
 	a := r.Group("/", jwt.JwtAuthMiddleware())
 	{
-		rc := NewRootController()
+		rc := controller.NewRootController()
 		
 		a.GET("/", rc.IndexPage)
 
-		pc := NewProjectController()
+		pc := controller.NewProjectController()
 
 		au := a.Group("/:username")
 		{
@@ -42,8 +43,8 @@ func SetRouter(r *gin.Engine) {
 
 			aup := au.Group("/:project_name", middleware.PathParameterValidationMiddleware())
 			{
-				tc := NewTableController()
-				mc := NewMemberController()
+				tc := controller.NewTableController()
+				mc := controller.NewMemberController()
 
 				aup.GET("", tc.TablesPage)
 				aup.GET("/tables", tc.TablesPage)
@@ -59,14 +60,14 @@ func SetRouter(r *gin.Engine) {
 				aup.POST("/members/invite", mc.Invite)
 	
 	
-				cgc := NewCodegenController()
+				cgc := controller.NewCodegenController()
 	
 				aup.GET("/codegen", cgc.CodegenPage)
 				aup.POST("/codegen/goat", cgc.CodegenGOAT)
 	
 				aupt := aup.Group("/tables/:table_id")
 				{
-					cc := NewColumnController()
+					cc := controller.NewColumnController()
 	
 					aupt.GET("/columns", cc.ColumnsPage)
 					aupt.GET("/columns/new", cc.CreateColumnPage)

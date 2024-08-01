@@ -9,15 +9,13 @@ import (
 
 
 type ProjectRepository interface {
-	Insert(p *model.Project) (int, error)
-	Update(p *model.Project) error
-	Delete(p *model.Project) error
-	DeleteTx(p *model.Project, tx *sql.Tx) error
+	Get(p *model.Project) ([]model.Project, error)
+	GetOne(p *model.Project) (model.Project, error)
+	Insert(p *model.Project, tx *sql.Tx) error
+	Update(p *model.Project, tx *sql.Tx) error
+	Delete(p *model.Project, tx *sql.Tx) error
 	
-	GetById(projectId int) (model.Project, error)
-	GetByUserId(userId int) ([]model.Project, error)
 	GetMemberProjects(userId int) ([]model.Project, error)
-	GetByUniqueKey(username, projectName string) (model.Project, error)
 	GetMemberProject(userId int, ownername, projectName string) (model.Project, error)
 }
 
@@ -33,112 +31,14 @@ func NewProjectRepository() ProjectRepository {
 }
 
 
-func (rep *projectRepository) Insert(p *model.Project) (int, error) {
-	var projectId int
-
-	err := rep.db.QueryRow(
-		`INSERT INTO project (
-			project_name,
-			project_memo,
-			user_id,
-			username 
-		 ) VALUES(?,?,?,?)
-		 RETURNING project_id`,
-		p.ProjectName, 
-		p.ProjectMemo,
-		p.UserId,
-		p.Username,
-	).Scan(
-		&projectId,
-	)
-
-	return projectId, err
-}
-
-
-func (rep *projectRepository) Update(p *model.Project) error {
-	_, err := rep.db.Exec(
-		`UPDATE project 
-		 SET project_name = ?,
-		 	 project_memo = ? 
-		 WHERE project_id = ?`,
-		p.ProjectName, 
-		p.ProjectMemo,
-		p.ProjectId, 
-	)
-
-	return err
-}
-
-
-func (rep *projectRepository) Delete(p *model.Project) error {
-	_, err := rep.db.Exec(
-		`DELETE FROM project WHERE project_id = ?`, 
-		p.ProjectId,
-	)
-
-	return err
-}
-
-
-func (rep *projectRepository) DeleteTx(p *model.Project, tx *sql.Tx) error {
-	_, err := tx.Exec(
-		`DELETE FROM project WHERE project_id = ?`, 
-		p.ProjectId,
-	)
-
-	return err
-}
-
-
-func (rep *projectRepository) GetById(projectId int) (model.Project, error) {
-	var ret model.Project
-	err := rep.db.QueryRow(
-		`SELECT 
-			project_id,
-			project_name,
-			project_memo,
-			user_id,
-			username,
-			created_at,
-			updated_at 
-		 FROM 
-			 project
-		 WHERE project_id = ?`, 
-		 projectId,
-	).Scan(
-		&ret.ProjectId, 
-		&ret.ProjectName, 
-		&ret.ProjectMemo,
-		&ret.UserId,
-		&ret.Username,
-		&ret.CreatedAt,
-		&ret.UpdatedAt,
-	)
-
-	return ret, err
-}
-
-
-func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
-	rows, err := rep.db.Query(
-		`SELECT 
-			project_id,
-			project_name,
-			project_memo,
-			user_id,
-			username,
-			created_at,
-			updated_at 
-		 FROM 
-			 project
-		 WHERE user_id = ?`, 
-		 userId,
-	)
+func (rep *projectRepository) Get(p *model.Project) ([]model.Project, error) {
+	where, binds := db.BuildWhereClause(p)
+	query := "SELECT * FROM project " + where
+	rows, err := rep.db.Query(query, binds...)
 	defer rows.Close()
 
 	if err != nil {
-		return nil, err
+		return []model.Project{}, err
 	}
 
 	ret := []model.Project{}
@@ -154,12 +54,82 @@ func (rep *projectRepository) GetByUserId(userId int) ([]model.Project, error){
 			&p.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return []model.Project{}, err
 		}
 		ret = append(ret, p)
 	}
 
 	return ret, nil
+}
+
+
+func (rep *projectRepository) GetOne(p *model.Project) (model.Project, error) {
+	var ret model.Project
+	where, binds := db.BuildWhereClause(p)
+	query := "SELECT * FROM project " + where
+
+	err := rep.db.QueryRow(query, binds...).Scan(
+		&ret.ProjectId, 
+		&ret.ProjectName, 
+		&ret.ProjectMemo,
+		&ret.UserId,
+		&ret.Username,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
+	)
+
+	return ret, err
+}
+
+
+func (rep *projectRepository) Insert(p *model.Project, tx *sql.Tx) error {
+	cmd := 
+	`INSERT INTO project (
+		project_name,
+		project_memo,
+		user_id,
+		username 
+	 ) VALUES(?,?,?,?)`
+	binds := []interface{}{p.ProjectName, p.ProjectMemo, p.UserId, p.Username}
+
+	var err error
+	if tx != nil {
+        _, err = tx.Exec(cmd, binds...)
+    } else {
+        _, err = rep.db.Exec(cmd, binds...)
+    }
+	
+	return err
+}
+
+
+func (rep *projectRepository) Update(p *model.Project, tx *sql.Tx) error {
+	_, err := rep.db.Exec(
+		`UPDATE project 
+		 SET project_name = ?,
+		 	 project_memo = ? 
+		 WHERE project_id = ?`,
+		p.ProjectName, 
+		p.ProjectMemo,
+		p.ProjectId, 
+	)
+
+	return err
+}
+
+
+func (rep *projectRepository) Delete(p *model.Project, tx *sql.Tx) error {
+	where, binds := db.BuildWhereClause(p)
+	cmd := "DELETE FROM project " + where
+
+	var err error
+	if tx != nil {
+        _, err = tx.Exec(cmd, binds...)
+    } else {
+        _, err = rep.db.Exec(cmd, binds...)
+    }
+	
+	return err
 }
 
 
@@ -206,37 +176,6 @@ func (rep *projectRepository) GetMemberProjects(userId int) ([]model.Project, er
 	}
 
 	return ret, nil
-}
-
-
-func (rep *projectRepository) GetByUniqueKey(username, projectName string) (model.Project, error) {
-	var ret model.Project
-	err := rep.db.QueryRow(
-		`SELECT 
-			project_id,
-			project_name,
-			project_memo,
-			user_id,
-			username,
-			created_at,
-			updated_at 
-		 FROM 
-			 project
-		 WHERE username = ?
-		   AND project_name = ?`, 
-		 username,
-		 projectName,
-	).Scan(
-		&ret.ProjectId, 
-		&ret.ProjectName, 
-		&ret.ProjectMemo,
-		&ret.UserId,
-		&ret.Username,
-		&ret.CreatedAt,
-		&ret.UpdatedAt,
-	)
-
-	return ret, err
 }
 
 

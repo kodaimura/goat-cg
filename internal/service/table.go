@@ -40,8 +40,8 @@ func NewTableService() TableService {
 
 
 // GetTables get tables by projeectId.
-func (serv *tableService) GetTables(projectId int) ([]model.Table, error) {
-	tables, err := serv.tableRepository.GetByProjectId(projectId)
+func (srv *tableService) GetTables(projectId int) ([]model.Table, error) {
+	tables, err := srv.tableRepository.Get(&model.Table{ProjectId: projectId})
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -52,8 +52,8 @@ func (serv *tableService) GetTables(projectId int) ([]model.Table, error) {
 
 
 // GetTable get table by tableId.
-func (serv *tableService) GetTable(tableId int) (model.Table, error) {
-	table, err := serv.tableRepository.GetById(tableId)
+func (srv *tableService) GetTable(tableId int) (model.Table, error) {
+	table, err := srv.tableRepository.GetOne(&model.Table{TableId: tableId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -67,8 +67,8 @@ func (serv *tableService) GetTable(tableId int) (model.Table, error) {
 }
 
 // CreateTable create new Table.
-func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNameLogical string) error {
-	_, err := serv.tableRepository.GetByUniqueKey(tableName, projectId)
+func (srv *tableService) CreateTable(projectId, userId int, tableName, tableNameLogical string) error {
+	_, err := srv.tableRepository.GetOne(&model.Table{TableName: tableName, ProjectId: projectId})
 	if err == nil {
 		return errs.NewUniqueConstraintError("table_name")
 	}
@@ -80,8 +80,7 @@ func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNam
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
 
-	_, err = serv.tableRepository.Insert(&t);
-	if err != nil {
+	if err = srv.tableRepository.Insert(&t, nil); err != nil {
 		logger.Error(err.Error())
 	}
 
@@ -91,20 +90,25 @@ func (serv *tableService) CreateTable(projectId, userId int, tableName, tableNam
 
 // UpdateTable update Table by tableId.
 // contains logical delete. 
-func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName, tableNameLogical string, delFlg int) error {
-	table, err := serv.tableRepository.GetByUniqueKey(tableName, projectId)
+func (srv *tableService) UpdateTable(projectId, tableId, userId int, tableName, tableNameLogical string, delFlg int) error {
+	table, err := srv.tableRepository.GetOne(&model.Table{TableName: tableName, ProjectId: projectId})
 	if err == nil && table.TableId != tableId {
 		return errs.NewUniqueConstraintError("table_name")
 	}
 
-	var t model.Table
+	t, err := srv.tableRepository.GetOne(&model.Table{TableId: tableId})
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
 	t.TableId = tableId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
 	t.UpdateUserId = userId
 	t.DelFlg = delFlg
 
-	if err = serv.tableRepository.Update(&t); err != nil {
+	if err = srv.tableRepository.Update(&t, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -115,10 +119,7 @@ func (serv *tableService) UpdateTable(projectId, tableId, userId int, tableName,
 
 // DeleteTable delete Table by tableId.
 // (physical delete)
-func (serv *tableService) DeleteTable(tableId int) error {
-	var t model.Table
-	t.TableId= tableId
-
+func (srv *tableService) DeleteTable(tableId int) error {
 	tx, err := db.GetDB().Begin()
 	if err != nil {
 		tx.Rollback()
@@ -126,13 +127,13 @@ func (serv *tableService) DeleteTable(tableId int) error {
 		return err
 	}
 
-	if err = serv.tableRepository.DeleteTx(&t, tx); err != nil {
+	if err = srv.tableRepository.Delete(&model.Table{TableId: tableId}, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err
 	}
 
-	if err = serv.columnRepository.DeleteByTableIdTx(tableId, tx); err != nil {
+	if err = srv.columnRepository.Delete(&model.Column{TableId: tableId}, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err
@@ -147,8 +148,8 @@ func (serv *tableService) DeleteTable(tableId int) error {
 
 
 // GetTableLog get Table chenge log.
-func (serv *tableService) GetTableLog(tableId int) ([]dto.TableLog, error) {
-	tableLog, err := serv.tableQuery.GetTableLog(tableId)
+func (srv *tableService) GetTableLog(tableId int) ([]dto.TableLog, error) {
+	tableLog, err := srv.tableQuery.GetTableLog(tableId)
 
 	if err != nil {
 		logger.Error(err.Error())
