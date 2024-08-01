@@ -136,14 +136,17 @@ func (srv *userService) GenerateJWT(id int) (string, error) {
 func (srv *userService) UpdateName(id int, name string) error {
 	u, err := srv.userRepository.GetOne(&model.User{Username: name})
 	if err == nil && u.UserId != id{
-		return errs.NewUniqueConstraintError("username")
+		return errs.NewUniqueConstraintError("user_name")
 	}
 
-	var user model.User
-	user.UserId = id
-	user.Username = name
+	user, err := srv.userRepository.GetOne(&model.User{UserId: id})
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
 
-	if err = srv.userRepository.UpdateName(&user, nil); err != nil {
+	user.Username = name
+	if err = srv.userRepository.Update(&user, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -160,11 +163,14 @@ func (srv *userService) UpdatePassword(id int, password string) error {
 		return err
 	}
 
-	var user model.User
-	user.UserId = id
+	user, err := srv.userRepository.GetOne(&model.User{UserId: id})
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
 	user.Password = string(hashed)
-	
-	if err = srv.userRepository.UpdatePassword(&user, nil); err != nil {
+	if err = srv.userRepository.Update(&user, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -179,11 +185,14 @@ func (srv *userService) UpdateEmail(id int, email string) error {
 		return errs.NewUniqueConstraintError("email")
 	}
 
-	var user model.User
-	user.UserId = id
-	user.Email = email
+	user, err := srv.userRepository.GetOne(&model.User{UserId: id})
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
 
-	if err = srv.userRepository.UpdateEmail(&user, nil); err != nil {
+	user.Email = email
+	if err = srv.userRepository.Update(&user, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -193,10 +202,7 @@ func (srv *userService) UpdateEmail(id int, email string) error {
 
 
 func (srv *userService) DeleteUser(id int) error {
-	var user model.User
-	user.UserId = id
-
-	if err := srv.userRepository.Delete(&user, nil); err != nil {
+	if err := srv.userRepository.Delete(&model.User{UserId: id}, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}

@@ -14,10 +14,6 @@ type UserRepository interface {
 	Insert(u *model.User, tx *sql.Tx) error
 	Update(u *model.User, tx *sql.Tx) error
 	Delete(u *model.User, tx *sql.Tx) error
-
-	UpdateName(u *model.User, tx *sql.Tx) error
-	UpdatePassword(u *model.User, tx *sql.Tx) error
-	UpdateEmail(u *model.User, tx *sql.Tx) error
 }
 
 
@@ -120,8 +116,8 @@ func (rep *userRepository) Update(u *model.User, tx *sql.Tx) error {
 
 
 func (rep *userRepository) Delete(u *model.User, tx *sql.Tx) error {
-	cmd := "DELETE FROM users WHERE user_id = ?"
-	binds := []interface{}{u.UserId}
+	where, binds := db.BuildWhereClause(u)
+	cmd := "DELETE FROM users " + where
 
 	var err error
 	if tx != nil {
@@ -130,59 +126,5 @@ func (rep *userRepository) Delete(u *model.User, tx *sql.Tx) error {
         _, err = rep.db.Exec(cmd, binds...)
     }
 	
-	return err
-}
-
-
-func (rep *userRepository) UpdateName(u *model.User, tx *sql.Tx) error {
-	cmd := 
-	`UPDATE users
-	 SET username = ? 
-	 WHERE user_id = ?`
-	binds := []interface{}{u.Username, u.UserId}
-
-	var err error
-	if tx != nil {
-        _, err = tx.Exec(cmd, binds...)
-    } else {
-        _, err = rep.db.Exec(cmd, binds...)
-    }
-	
-	return err
-}
-
-
-func (rep *userRepository) UpdatePassword(u *model.User, tx *sql.Tx) error {
-	cmd := 
-	`UPDATE users 
-	 SET password = ? 
-	 WHERE user_id = ?`
-	binds := []interface{}{u.Password, u.UserId}
-
-	var err error
-	if tx != nil {
-        _, err = tx.Exec(cmd, binds...)
-    } else {
-        _, err = rep.db.Exec(cmd, binds...)
-    }
-
-	return err
-}
-
-
-func (rep *userRepository) UpdateEmail(u *model.User, tx *sql.Tx) error {
-	cmd := 
-	`UPDATE users 
-	 SET email = ? 
-	 WHERE user_id = ?`
-	binds := []interface{}{u.Email, u.UserId}
-
-	var err error
-	if tx != nil {
-        _, err = tx.Exec(cmd, binds...)
-    } else {
-        _, err = rep.db.Exec(cmd, binds...)
-    }
-
 	return err
 }
