@@ -73,7 +73,7 @@ func validateProjectNameAndGetProject (c *gin.Context) (model.Project, error) {
 	pr := repository.NewProjectRepository()
 
 	if username == ownername {
-		p, err = pr.GetByUniqueKey(username, projectName)
+		p, err = pr.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	} else {
 		p, err = pr.GetMemberProject(userId, ownername, projectName)
 	}

@@ -37,7 +37,7 @@ func NewProjectService() ProjectService {
 
 
 func (serv *projectService) GetProject(projectId int) (model.Project, error) {
-	project, err := serv.projectRepository.GetById(projectId)
+	project, err := serv.projectRepository.GetOne(&model.Project{ProjectId: projectId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -53,7 +53,7 @@ func (serv *projectService) GetProject(projectId int) (model.Project, error) {
 
 // ログインユーザのプロジェクを取得
 func (serv *projectService) GetProjects(userId int) ([]model.Project, error) {
-	projects, err := serv.projectRepository.GetByUserId(userId)
+	projects, err := serv.projectRepository.Get(&model.Project{UserId: userId})
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -80,7 +80,7 @@ func (serv *projectService) GetMemberProjects(userId int) ([]model.Project, erro
 
 
 func (serv *projectService) CreateProject(userId int, username, projectName, projectMemo string) error {
-	_, err := serv.projectRepository.GetByUniqueKey(username, projectName)
+	_, err := serv.projectRepository.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	if err == nil {
 		return errs.NewUniqueConstraintError("project_name")
 	}
@@ -91,8 +91,7 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 	p.UserId = userId
 	p.Username = username
 
-	_, err = serv.projectRepository.Insert(&p)
-	if err != nil {
+	if err = serv.projectRepository.Insert(&p, nil); err != nil {
 		logger.Error(err.Error())
 	}
 
@@ -101,17 +100,20 @@ func (serv *projectService) CreateProject(userId int, username, projectName, pro
 
 
 func (serv *projectService) UpdateProject(username string, projectId int, projectName, projectMemo string) error {
-	project, err := serv.projectRepository.GetByUniqueKey(username, projectName)
+	project, err := serv.projectRepository.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	if err == nil && project.ProjectId != projectId {
 		return errs.NewUniqueConstraintError("project_name")
 	}
 
-	var p model.Project
-	p.ProjectId = projectId
+	p, err := serv.projectRepository.GetOne(&model.Project{ProjectId: projectId})
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
 	p.ProjectName = projectName
 	p.ProjectMemo = projectMemo
-
-	if err = serv.projectRepository.Update(&p); err != nil {
+	if err = serv.projectRepository.Update(&p, nil); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -136,7 +138,7 @@ func (serv *projectService) DeleteProject(projectId int) error {
 		return err
 	}
 
-	if err = serv.projectRepository.DeleteTx(&p, tx); err != nil {
+	if err = serv.projectRepository.Delete(&p, tx); err != nil {
 		tx.Rollback()
 		logger.Error(err.Error())
 		return err
