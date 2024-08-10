@@ -15,10 +15,10 @@ stop:
 	docker compose stop
 
 in:
-	docker exec -i -t goat-cg_app bash
+	docker compose exec app bash
 
-db:
-	docker exec -i -t goat-cg_db bash
+indb:
+	docker compose exec db bash
 
 build:
 	docker compose build --no-cache
