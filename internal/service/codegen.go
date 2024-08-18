@@ -564,31 +564,40 @@ func (srv *codegenService) generateRepositoryGet(table *model.Table, columns []m
 	tnp := SnakeToPascal(tn)
 	tni := GetSnakeInitial(tn)
 
-	s := fmt.Sprintf("func (rep *%sRepository) Get() ([]model.%s, error) {\n", tnc, tnp) +
-		fmt.Sprintf("\trows, err := rep.db.Query(\n", tni)
+	s := fmt.Sprintf(
+		"func (rep *%sRepository) Get(%s *model.%s) ([]model.%s, error) {\n", 
+		tnc, tni, tnp, tnp,
+	)
 
-	s += "\t\t`SELECT\n"
+	s += fmt.Sprintf("\twhere, binds := db.BuildWhereClause(%s)\n", tni)
+	s += "\tquery :=\n"
+
+	s += "\t`SELECT\n"
 	for i, c := range columns {
 		if i == 0 {
-			s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
+			s += fmt.Sprintf("\t\t%s", c.ColumnName)
 		} else {
-			s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
+			s += fmt.Sprintf("\n\t\t,%s", c.ColumnName)
 		}
 	}
-	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" +
-		fmt.Sprintf("\n\t\t FROM %s`,\n\t)\n\tdefer rows.Close()\n\n", tn) +
-		"\tif err != nil {\n\t\treturn nil, err\n\t}\n\n" +
-		fmt.Sprintf("\tret := []model.%s{}\n", tnp) +
-		"\tfor rows.Next() {\n" +
-		fmt.Sprintf("\t\t%s := model.%s{}\n\t\terr = rows.Scan(\n", tni, tnp)
+	s += "\n\t\t,created_at\n\t\t,updated_at" 
+	s += fmt.Sprintf("\n\t FROM %s ` + where\n\n", tn)
+
+	s += "\trows, err := rep.db.Query(query, binds...)\n"
+	s += "\tdefer rows.Close()\n\n"
+	s += fmt.Sprintf("\tif err != nil {\n\t\treturn []model.%s{}, err\n\t}\n\n", tnp)
+	s += fmt.Sprintf("\tret := []model.%s{}\n", tnp)
+	s += "\tfor rows.Next() {\n"
+	s += fmt.Sprintf("\t\t%s := model.%s{}\n\t\terr = rows.Scan(\n", tni, tnp)
 
 	for _, c := range columns {
 		s += fmt.Sprintf("\t\t\t&%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 	}
 	s += fmt.Sprintf("\t\t\t&%s.CreatedAt,\n", tni) + fmt.Sprintf("\t\t\t&%s.UpdatedAt,\n", tni)
 
-	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t\tret = append(ret, %s)\n", tni) +
-		"\t}\n\n\treturn ret, nil\n}"
+	s += fmt.Sprintf("\t\t)\n\t\tif err != nil {\n\t\t\treturn []model.%s{}, err\n\t\t}\n", tnp)
+	s += fmt.Sprintf("\t\tret = append(ret, %s)\n", tni)
+	s += "\t}\n\n\treturn ret, nil\n}"
 
 	return s
 }
