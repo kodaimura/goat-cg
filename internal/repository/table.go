@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 
-	"goat-cg/internal/shared/constant"
 	"goat-cg/internal/core/db"
 	"goat-cg/internal/model"
 )
@@ -44,11 +43,12 @@ func (rep *tableRepository) Get(t *model.Table) ([]model.Table, error){
 		t := model.Table{}
 		err = rows.Scan(
 			&t.TableId, 
+			&t.ProjectId, 
 			&t.TableName,
 			&t.TableNameLogical,
-			&t.DelFlg,
 			&t.CreateUserId,
 			&t.UpdateUserId,
+			&t.DelFlg,
 			&t.CreatedAt,
 			&t.UpdatedAt,
 		)
@@ -68,13 +68,15 @@ func (rep *tableRepository) GetOne(t *model.Table) (model.Table, error){
 	query := "SELECT * FROM table_def " + where
 
 	err := rep.db.QueryRow(query, binds...).Scan(
-		&ret.ProjectId, 
 		&ret.TableId, 
+		&ret.ProjectId, 
 		&ret.TableName,
 		&ret.TableNameLogical,
-		&ret.DelFlg,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
+		&t.DelFlg,
+		&ret.CreatedAt,
+		&ret.UpdatedAt,
 	)
 
 	return ret, err
@@ -95,7 +97,7 @@ func (rep *tableRepository) Insert(t *model.Table, tx *sql.Tx) error {
 		t.ProjectId, 
 		t.TableName,
 		t.TableNameLogical,
-		constant.FLG_OFF,
+		t.DelFlg,
 		t.CreateUserId,
 		t.UpdateUserId,
 	}

@@ -77,6 +77,7 @@ func (srv *tableService) CreateTable(projectId, userId int, tableName, tableName
 	t.ProjectId = projectId
 	t.TableName = tableName
 	t.TableNameLogical = tableNameLogical
+	t.DelFlg = 0
 	t.CreateUserId = userId
 	t.UpdateUserId = userId
 
