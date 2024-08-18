@@ -522,33 +522,12 @@ func (srv *codegenService) generateRepositoryCode(rdbms string, table *model.Tab
 
 	s += srv.generateRepositoryGet(table, columns) + "\n\n\n"
 	if len(srv.extractPrimaryKeys(columns)) > 0 {
-		s += srv.generateRepositoryGetByPk(rdbms, table, columns) + "\n\n\n"
-		s += srv.generateRepositoryInsertPk(rdbms, table, columns) + "\n\n\n"
+		s += srv.generateRepositoryGetOne(rdbms, table, columns) + "\n\n\n"
+		s += srv.generateRepositoryInsert(rdbms, table, columns) + "\n\n\n"
 		s += srv.generateRepositoryUpdate(rdbms, table, columns) + "\n\n\n"
 		s += srv.generateRepositoryDelete(rdbms, table, columns)
 	} else {
 		s += srv.generateRepositoryInsert(rdbms, table, columns)
-	}
-
-	return s
-}
-
-
-func (srv *codegenService) generateInsertReturnType(columns []model.Column) string {
-	pkcolumns := srv.extractPrimaryKeys(columns)
-	s := "error"
-	if len(pkcolumns) > 0 {
-		s = "("
-		isFirst := true
-		for _, column := range pkcolumns {
-			if isFirst {
-				s += dbDataTypeGoTypeMap[column.DataTypeCls]
-				isFirst = false
-			} else {
-				s += ", " + dbDataTypeGoTypeMap[column.DataTypeCls] 
-			}
-		}
-		s += ", error)"
 	}
 
 	return s
@@ -564,8 +543,8 @@ func (srv *codegenService) generateRepositoryInterfaceCode(table *model.Table, c
 		fmt.Sprintf("\tGet() ([]model.%s, error)\n", tnp)
 
 	if len(srv.extractPrimaryKeys(columns)) > 0 {
-		s += fmt.Sprintf("\tGetByPk(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
-		fmt.Sprintf("\tInsert(%s *model.%s) %s\n", tni, tnp, srv.generateInsertReturnType(columns)) +
+		s += fmt.Sprintf("\tGetOne(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
+		fmt.Sprintf("\tInsert(%s *model.%s) error\n", tni, tnp) +
 		fmt.Sprintf("\tUpdate(%s *model.%s) error\n", tni, tnp) +
 		fmt.Sprintf("\tDelete(%s *model.%s) error\n", tni, tnp)
 	} else {
@@ -585,8 +564,8 @@ func (srv *codegenService) generateRepositoryGet(table *model.Table, columns []m
 	tnp := SnakeToPascal(tn)
 	tni := GetSnakeInitial(tn)
 
-	s := fmt.Sprintf("func (%sr *%sRepository) Get() ([]model.%s, error) {\n", tni, tnc, tnp) +
-		fmt.Sprintf("\trows, err := %sr.db.Query(\n", tni)
+	s := fmt.Sprintf("func (rep *%sRepository) Get() ([]model.%s, error) {\n", tnc, tnp) +
+		fmt.Sprintf("\trows, err := rep.db.Query(\n", tni)
 
 	s += "\t\t`SELECT\n"
 	for i, c := range columns {
@@ -615,9 +594,9 @@ func (srv *codegenService) generateRepositoryGet(table *model.Table, columns []m
 }
 
 
-// generateRepositoryGetByPk generate repository function 'GetByPk'.
-// return "func (ur *userRepository) GetByPk(u *model.User) (model.User, error) {...}"
-func (srv *codegenService) generateRepositoryGetByPk(
+// generateRepositoryGetOne generate repository function 'GetOne'.
+// return "func (ur *userRepository) GetOne(u *model.User) (model.User, error) {...}"
+func (srv *codegenService) generateRepositoryGetOne(
 	rdbms string, table *model.Table, columns []model.Column,
 ) string {
 	tn := table.TableName
@@ -626,29 +605,30 @@ func (srv *codegenService) generateRepositoryGetByPk(
 	tni := GetSnakeInitial(tn)
 
 	s := fmt.Sprintf(
-		"func (%sr *%sRepository) GetByPk(%s *model.%s) (model.%s, error) {\n", 
-		tni, tnc, tni, tnp, tnp,
-	) + fmt.Sprintf("\tvar ret model.%s\n\n\terr := %sr.db.QueryRow(\n", tnp, tni)
+		"func (rep *%sRepository) GetOne(%s *model.%s) (model.%s, error) {\n", 
+		tnc, tni, tnp, tnp,
+	)
+	
+	s += fmt.Sprintf("\tvar ret model.%s\n", tnp)
+	s += fmt.Sprintf("\twhere, binds := db.BuildWhereClause(%s)\n", tni)
+	s += "\tquery :=\n"
 
-	bindCount := 0
-	s += "\t\t`SELECT\n"
+	s += "\t`SELECT\n"
 	for i, c := range columns {
 		if i == 0 {
-			s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
+			s += fmt.Sprintf("\t\t%s", c.ColumnName)
 		} else {
-			s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
+			s += fmt.Sprintf("\n\t\t,%s", c.ColumnName)
 		}
 	}
-	s += "\n\t\t\t,created_at\n\t\t\t,updated_at" + fmt.Sprintf("\n\t\t FROM %s\n", tn)
-	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
-	s += "`,\n"
-	s += srv.generateRepositoryWhereClauseBindVals(table, columns)
-	s += "\t).Scan(\n"
+	s += "\n\t\t,created_at\n\t\t,updated_at" 
+	s += fmt.Sprintf("\n\t FROM %s ` + where\n\n", tn)
+	s += "\terr := rep.db.QueryRow(query, binds...).Scan(\n"
 	for _, c := range columns {
 		s += fmt.Sprintf("\t\t&ret.%s,\n", SnakeToPascal(c.ColumnName))
 	}
-	s += "\t\t&ret.CreatedAt,\n\t\t&ret.UpdatedAt,\n" +
-		"\t)\n\n\treturn ret, err\n}"
+	s += "\t\t&ret.CreatedAt,\n\t\t&ret.UpdatedAt,\n"
+	s += "\t)\n\n\treturn ret, err\n}"
 
 	return s
 }
@@ -684,9 +664,9 @@ func (srv *codegenService) generateRepositoryInsert(
 	tni := GetSnakeInitial(tn)
 
 	s := fmt.Sprintf(
-		"func (%sr *%sRepository) Insert(%s *model.%s) error {\n", 
-		tni, tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) +fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
+		"func (rep *%sRepository) Insert(%s *model.%s) error {\n", 
+		tnc, tni, tnp,
+	) + fmt.Sprintf("\t_, err := rep.db.Exec(\n", tni) +fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
 
 	bindCount := 0
 	for _, c := range columns {
@@ -712,73 +692,6 @@ func (srv *codegenService) generateRepositoryInsert(
 }
 
 
-// generateRepositoryInsertPk generate repository function 'Insert'.
-// return "func (ur *userRepository) Insert(u *model.User) (int, error) {...}"
-func (srv *codegenService) generateRepositoryInsertPk(
-	rdbms string, table *model.Table, columns []model.Column,
-) string {
-	tn := table.TableName
-	tnc := SnakeToCamel(tn)
-	tnp := SnakeToPascal(tn)
-	tni := GetSnakeInitial(tn)
-
-	s := fmt.Sprintf(
-		"func (%sr *%sRepository) Insert(%s *model.%s) %s {\n", 
-		tni, tnc, tni, tnp, srv.generateInsertReturnType(columns),
-	)
-
-	pkcolumns := srv.extractPrimaryKeys(columns)
-	for _, column := range pkcolumns {
-		s += fmt.Sprintf(
-			"\tvar %s %s\n", 
-			SnakeToCamel(column.ColumnName), dbDataTypeGoTypeMap[column.DataTypeCls],
-		)
-	}
-	s += fmt.Sprintf("\n\terr := %sr.db.QueryRow(\n", tni) +fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
-
-	bindCount := 0
-	for _, c := range columns {
-		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
-			bindCount += 1
-			if bindCount == 1 {
-				s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
-			} else {
-				s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
-			}
-		}	
-	}
-	s += fmt.Sprintf("\n\t\t ) VALUES(%s)\n\t\t RETURNING ", srv.concatBindVariableWithCommas(rdbms, bindCount))
-	isFirst := true
-	for _, column := range pkcolumns {
-		if isFirst {
-			s += column.ColumnName
-			isFirst = false
-		} else {
-			s += ", " + column.ColumnName
-		}
-	}
-	s += "`,\n"
-
-	for _, c := range columns {
-		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
-			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
-		}
-	}
-	s += "\t).Scan(\n"
-	for _, column := range pkcolumns {
-		s += fmt.Sprintf("\t\t&%s,\n", SnakeToCamel(column.ColumnName))
-	}
-
-	s += "\t)\n\n\treturn "
-	for _, column := range pkcolumns {
-		s += fmt.Sprintf("%s, ", SnakeToCamel(column.ColumnName))
-	}
-	s += "err\n}"
-
-	return s
-}
-
-
 // generateRepositoryUpdate generate repository function 'Update'.
 // return "func (ur *userRepository) Update(u *model.User) error {...}"
 func (srv *codegenService) generateRepositoryUpdate(
@@ -790,9 +703,9 @@ func (srv *codegenService) generateRepositoryUpdate(
 	tni := GetSnakeInitial(tn)
 	
 	s := fmt.Sprintf(
-		"func (%sr *%sRepository) Update(%s *model.%s) error {\n", 
-		tni, tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET ", tn)
+		"func (rep *%sRepository) Update(%s *model.%s) error {\n", 
+		tnc, tni, tnp,
+	) + fmt.Sprintf("\t_, err := rep.db.Exec(\n", tni) + fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET ", tn)
 
 	bindCount := 0
 	for _, c := range columns {
@@ -834,9 +747,9 @@ func (srv *codegenService) generateRepositoryDelete(
 	tni := GetSnakeInitial(tn)
 	
 	s := fmt.Sprintf(
-		"func (%sr *%sRepository) Delete(%s *model.%s) error {\n", 
-		tni, tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := %sr.db.Exec(\n", tni) + fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
+		"func (rep *%sRepository) Delete(%s *model.%s) error {\n", 
+		tnc, tni, tnp,
+	) + fmt.Sprintf("\t_, err := rep.db.Exec(\n", tni) + fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
 
 	bindCount := 0
 	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
