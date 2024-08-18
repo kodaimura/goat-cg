@@ -30,7 +30,18 @@ func NewTableRepository() TableRepository {
 
 func (rep *tableRepository) Get(t *model.Table) ([]model.Table, error){
 	where, binds := db.BuildWhereClause(t)
-	query := "SELECT * FROM table_def " + where
+	query := 
+	`SELECT 
+		table_id,
+	 	project_id,
+		table_name,
+		table_name_logical,
+		del_flg,
+		create_user_id,
+		update_user_id,
+		created_at,
+		updated_at
+	 FROM table_def ` + where
 	rows, err := rep.db.Query(query, binds...)
 	defer rows.Close()
 
@@ -46,9 +57,9 @@ func (rep *tableRepository) Get(t *model.Table) ([]model.Table, error){
 			&t.ProjectId, 
 			&t.TableName,
 			&t.TableNameLogical,
+			&t.DelFlg,
 			&t.CreateUserId,
 			&t.UpdateUserId,
-			&t.DelFlg,
 			&t.CreatedAt,
 			&t.UpdatedAt,
 		)
@@ -65,16 +76,27 @@ func (rep *tableRepository) Get(t *model.Table) ([]model.Table, error){
 func (rep *tableRepository) GetOne(t *model.Table) (model.Table, error){
 	var ret model.Table
 	where, binds := db.BuildWhereClause(t)
-	query := "SELECT * FROM table_def " + where
+	query :=
+	`SELECT 
+	 	table_id,
+	 	project_id,
+		table_name,
+		table_name_logical,
+		del_flg,
+		create_user_id,
+		update_user_id,
+		created_at,
+		updated_at
+	 FROM table_def ` + where
 
 	err := rep.db.QueryRow(query, binds...).Scan(
 		&ret.TableId, 
 		&ret.ProjectId, 
 		&ret.TableName,
 		&ret.TableNameLogical,
+		&t.DelFlg,
 		&ret.CreateUserId,
 		&ret.UpdateUserId,
-		&t.DelFlg,
 		&ret.CreatedAt,
 		&ret.UpdatedAt,
 	)

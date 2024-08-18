@@ -30,7 +30,16 @@ func NewProjectRepository() ProjectRepository {
 
 func (rep *projectRepository) Get(p *model.Project) ([]model.Project, error) {
 	where, binds := db.BuildWhereClause(p)
-	query := "SELECT * FROM project " + where
+	query := 
+	`SELECT
+		project_id,
+		project_name,
+		project_memo,
+		user_id,
+		username,
+		created_at,
+		updated_at
+	 FROM project ` + where
 	rows, err := rep.db.Query(query, binds...)
 	defer rows.Close()
 
@@ -63,7 +72,16 @@ func (rep *projectRepository) Get(p *model.Project) ([]model.Project, error) {
 func (rep *projectRepository) GetOne(p *model.Project) (model.Project, error) {
 	var ret model.Project
 	where, binds := db.BuildWhereClause(p)
-	query := "SELECT * FROM project " + where
+	query :=
+	`SELECT
+		project_id,
+		project_name,
+		project_memo,
+		user_id,
+		username,
+		created_at,
+		updated_at
+	 FROM project ` + where
 
 	err := rep.db.QueryRow(query, binds...).Scan(
 		&ret.ProjectId, 

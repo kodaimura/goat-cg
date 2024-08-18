@@ -28,7 +28,15 @@ func NewUserRepository() UserRepository {
 
 func (rep *userRepository) Get(u *model.User) ([]model.User, error) {
 	where, binds := db.BuildWhereClause(u)
-	query := "SELECT * FROM users " + where
+	query := 
+	`SELECT
+		user_id,
+		username,
+		password,
+		email,
+		created_at,
+		updated_at
+	 FROM users ` + where
 	rows, err := rep.db.Query(query, binds...)
 	defer rows.Close()
 
@@ -60,7 +68,15 @@ func (rep *userRepository) Get(u *model.User) ([]model.User, error) {
 func (rep *userRepository) GetOne(u *model.User) (model.User, error) {
 	var ret model.User
 	where, binds := db.BuildWhereClause(u)
-	query := "SELECT * FROM users " + where
+	query :=
+	`SELECT
+		user_id,
+		username,
+		password,
+		email,
+		created_at,
+		updated_at
+	 FROM users ` + where
 
 	err := rep.db.QueryRow(query, binds...).Scan(
 		&ret.UserId, 
