@@ -30,7 +30,27 @@ func NewColumnRepository() ColumnRepository {
 
 func (rep *columnRepository) Get(c *model.Column) ([]model.Column, error) {
 	where, binds := db.BuildWhereClause(c)
-	query := "SELECT * FROM column_def " + where
+	query := 
+	`SELECT 
+		column_id,
+		table_id,
+		column_name,
+		column_name_logical,
+		data_type_cls,
+		precision,
+		scale,
+		primary_key_flg,
+		not_null_flg,
+		unique_flg,
+		default_value,
+		remark,
+		align_seq,
+		del_flg,
+		create_user_id,
+		update_user_id,
+		created_at,
+		updated_at
+	 FROM column_def ` + where
 
 	rows, err := rep.db.Query(query, binds...)
 	defer rows.Close()
@@ -75,7 +95,27 @@ func (rep *columnRepository) Get(c *model.Column) ([]model.Column, error) {
 func (rep *columnRepository) GetOne(c *model.Column) (model.Column, error) {
 	var ret model.Column
 	where, binds := db.BuildWhereClause(c)
-	query := "SELECT * FROM column_def " + where
+	query :=
+	`SELECT 
+		column_id,
+		table_id,
+		column_name,
+		column_name_logical,
+		data_type_cls,
+		precision,
+		scale,
+		primary_key_flg,
+		not_null_flg,
+		unique_flg,
+		default_value,
+		remark,
+		align_seq,
+		del_flg,
+		create_user_id,
+		update_user_id,
+		created_at,
+		updated_at
+	 FROM column_def ` + where
 
 	err := rep.db.QueryRow(query, binds...).Scan(
 		&ret.ColumnId,

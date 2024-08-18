@@ -8,6 +8,7 @@ import (
 	"goat-cg/internal/core/db"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
+	"goat-cg/internal/query"
 )
 
 
@@ -22,6 +23,7 @@ type ProjectService interface {
 
 
 type projectService struct {
+	projectQuery query.ProjectQuery
 	projectRepository repository.ProjectRepository
 	tableRepository repository.TableRepository
 	columnRepository repository.ColumnRepository
@@ -29,10 +31,16 @@ type projectService struct {
 
 
 func NewProjectService() ProjectService {
+	projectQuery := query.NewProjectQuery()
 	projectRepository := repository.NewProjectRepository()
 	tableRepository := repository.NewTableRepository()
 	columnRepository := repository.NewColumnRepository()
-	return &projectService{projectRepository, tableRepository, columnRepository}
+	return &projectService{
+		projectQuery, 
+		projectRepository, 
+		tableRepository, 
+		columnRepository,
+	}
 }
 
 
@@ -69,7 +77,7 @@ func (srv *projectService) GetProjects(userId int) ([]model.Project, error) {
 
 //参画しているプロジェクトを取得
 func (srv *projectService) GetMemberProjects(userId int) ([]model.Project, error) {
-	projects, err := srv.projectRepository.GetMemberProjects(userId)
+	projects, err := srv.projectQuery.GetMemberProjects(userId)
 
 	if err != nil {
 		logger.Error(err.Error())
