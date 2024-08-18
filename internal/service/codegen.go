@@ -544,9 +544,9 @@ func (srv *codegenService) generateRepositoryInterfaceCode(table *model.Table, c
 
 	if len(srv.extractPrimaryKeys(columns)) > 0 {
 		s += fmt.Sprintf("\tGetOne(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
-		fmt.Sprintf("\tInsert(%s *model.%s) error\n", tni, tnp) +
-		fmt.Sprintf("\tUpdate(%s *model.%s) error\n", tni, tnp) +
-		fmt.Sprintf("\tDelete(%s *model.%s) error\n", tni, tnp)
+		fmt.Sprintf("\tInsert(%s *model.%s, tx *sql.Tx) error\n", tni, tnp) +
+		fmt.Sprintf("\tUpdate(%s *model.%s, tx *sql.Tx) error\n", tni, tnp) +
+		fmt.Sprintf("\tDelete(%s *model.%s, tx *sql.Tx) error\n", tni, tnp)
 	} else {
 		s += fmt.Sprintf("\tInsert(%s *model.%s) error\n", tni, tnp,)
 	}
@@ -673,29 +673,34 @@ func (srv *codegenService) generateRepositoryInsert(
 	tni := GetSnakeInitial(tn)
 
 	s := fmt.Sprintf(
-		"func (rep *%sRepository) Insert(%s *model.%s) error {\n", 
+		"func (rep *%sRepository) Insert(%s *model.%s, tx *sql.Tx) error {\n", 
 		tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := rep.db.Exec(\n", tni) +fmt.Sprintf("\t\t`INSERT INTO %s (\n", tn)
+	) 
+	s += fmt.Sprintf("\tcmd := \n\t`INSERT INTO %s (\n", tn)
 
 	bindCount := 0
 	for _, c := range columns {
 		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
 			bindCount += 1
 			if bindCount == 1 {
-				s += fmt.Sprintf("\t\t\t%s", c.ColumnName)
+				s += fmt.Sprintf("\t\t%s", c.ColumnName)
 			} else {
-				s += fmt.Sprintf("\n\t\t\t,%s", c.ColumnName)
+				s += fmt.Sprintf("\n\t\t,%s", c.ColumnName)
 			}
 		}	
 	}
-	s += fmt.Sprintf("\n\t\t ) VALUES(%s)`,\n", srv.concatBindVariableWithCommas(rdbms, bindCount))
+	s += fmt.Sprintf("\n\t ) VALUES(%s)`\n", srv.concatBindVariableWithCommas(rdbms, bindCount))
+
+	s += "\tbinds := []interface{}{\n"
 
 	for _, c := range columns {
 		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL {
 			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
-	s += "\t)\n\n\treturn err\n}"
+	s += "\t}\n\n\tvar err error\n\tif tx != nil {\n\t\t_, err = tx.Exec(cmd, binds...)\n"
+	s += "\t} else {\n\t\t_, err = rep.db.Exec(cmd, binds...)\n\t}\n\n"
+	s += "\treturn err\n}"
 
 	return s
 }
@@ -712,9 +717,10 @@ func (srv *codegenService) generateRepositoryUpdate(
 	tni := GetSnakeInitial(tn)
 	
 	s := fmt.Sprintf(
-		"func (rep *%sRepository) Update(%s *model.%s) error {\n", 
+		"func (rep *%sRepository) Update(%s *model.%s, tx *sql.Tx) error {\n", 
 		tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := rep.db.Exec(\n", tni) + fmt.Sprintf("\t\t`UPDATE %s\n\t\t SET ", tn)
+	) 
+	s += fmt.Sprintf("\tcmd := \n\t`UPDATE %s\n\t SET \n", tn) 
 
 	bindCount := 0
 	for _, c := range columns {
@@ -722,15 +728,26 @@ func (srv *codegenService) generateRepositoryUpdate(
 		c.PrimaryKeyFlg != constant.FLG_ON {
 			bindCount += 1
 			if bindCount == 1 {
-				s += fmt.Sprintf("%s = %s", c.ColumnName, srv.getBindVar(rdbms, bindCount))
+				s += fmt.Sprintf("\t\t%s = %s\n", c.ColumnName, srv.getBindVar(rdbms, bindCount))
 			} else {
-				s += fmt.Sprintf("\n\t\t\t,%s = %s", c.ColumnName, srv.getBindVar(rdbms, bindCount))
+				s += fmt.Sprintf("\t\t,%s = %s\n", c.ColumnName, srv.getBindVar(rdbms, bindCount))
 			}
 		}
 	}
-	s += "\n"
-	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
-	s += "`,\n"
+	s += "\t WHERE "
+	isFirst := true
+	for _, c := range columns {
+		if c.PrimaryKeyFlg == constant.FLG_ON {
+			bindCount += 1
+			if isFirst {
+				s += fmt.Sprintf("%s = %s", c.ColumnName, srv.getBindVar(rdbms, bindCount))
+				isFirst = false
+			} else {
+				s += fmt.Sprintf("\n\t   AND %s = %s", c.ColumnName, srv.getBindVar(rdbms, bindCount))
+			}
+		}
+	}
+	s += "`\n\tbinds := []interface{}{\n"
 
 	for _, c := range columns {
 		if c.DataTypeCls != constant.DATA_TYPE_CLS_SERIAL && 
@@ -738,8 +755,14 @@ func (srv *codegenService) generateRepositoryUpdate(
 			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
 		}
 	}
-	s += srv.generateRepositoryWhereClauseBindVals(table, columns)
-	s += "\t)\n\n\treturn err\n}"
+	for _, c := range columns {
+		if c.PrimaryKeyFlg == constant.FLG_ON {
+			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
+		}
+	}
+	s += "\t}\n\n\tvar err error\n\tif tx != nil {\n\t\t_, err = tx.Exec(cmd, binds...)\n"
+	s += "\t} else {\n\t\t_, err = rep.db.Exec(cmd, binds...)\n\t}\n\n"
+	s += "\treturn err\n}"
 
 	return s
 }
@@ -756,52 +779,15 @@ func (srv *codegenService) generateRepositoryDelete(
 	tni := GetSnakeInitial(tn)
 	
 	s := fmt.Sprintf(
-		"func (rep *%sRepository) Delete(%s *model.%s) error {\n", 
+		"func (rep *%sRepository) Delete(%s *model.%s, tx *sql.Tx) error {\n", 
 		tnc, tni, tnp,
-	) + fmt.Sprintf("\t_, err := rep.db.Exec(\n", tni) + fmt.Sprintf("\t\t`DELETE FROM %s\n", tn)
+	)
+	s += fmt.Sprintf("\twhere, binds := db.BuildWhereClause(%s)\n", tni)
+	s += fmt.Sprintf("\tcmd := \"DELETE FROM %s \" + where\n\n", tn)
 
-	bindCount := 0
-	s += srv.generateRepositoryWhereClause(rdbms, columns, &bindCount)
-	s += "`,\n"
-	s += srv.generateRepositoryWhereClauseBindVals(table, columns)
-	s += "\t)\n\n\treturn err\n}"
+	s += "\tvar err error\n\tif tx != nil {\n\t\t_, err = tx.Exec(cmd, binds...)\n"
+	s += "\t} else {\n\t\t_, err = rep.db.Exec(cmd, binds...)\n\t}\n\n"
+	s += "\treturn err\n}"
 
-	return s
-}
-
-
-func (srv *codegenService) generateRepositoryWhereClause(
-	rdbms string, columns []model.Column, bindCount *int,
-) string {
-	s := "\t\t WHERE "
-
-	isFirst := true
-	for _, c := range columns {
-		if c.PrimaryKeyFlg == constant.FLG_ON {
-			*bindCount += 1
-			if isFirst {
-				s += fmt.Sprintf("%s = %s", c.ColumnName, srv.getBindVar(rdbms, *bindCount))
-				isFirst = false
-			} else {
-				s += fmt.Sprintf("\n\t\t   AND %s = %s", c.ColumnName, srv.getBindVar(rdbms, *bindCount))
-			}
-		}
-	}
-
-	return s
-}
-
-
-func (srv *codegenService) generateRepositoryWhereClauseBindVals(
-	table *model.Table, columns []model.Column,
-) string {
-	s := ""
-	tni := GetSnakeInitial(table.TableName)
-
-	for _, c := range columns {
-		if c.PrimaryKeyFlg == constant.FLG_ON {
-			s += fmt.Sprintf("\t\t%s.%s,\n", tni, SnakeToPascal(c.ColumnName))
-		}
-	}
 	return s
 }
