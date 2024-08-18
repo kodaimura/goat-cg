@@ -539,8 +539,8 @@ func (srv *codegenService) generateRepositoryInterfaceCode(table *model.Table, c
 	tnp := SnakeToPascal(table.TableName)
 	tni := GetSnakeInitial(table.TableName)
 
-	s := fmt.Sprintf("type %sRepository interface {\n", tnp) +
-		fmt.Sprintf("\tGet() ([]model.%s, error)\n", tnp)
+	s := fmt.Sprintf("type %sRepository interface {\n", tnp)
+	s += fmt.Sprintf("\tGet(%s *model.%s) ([]model.%s, error)\n", tni, tnp, tnp)
 
 	if len(srv.extractPrimaryKeys(columns)) > 0 {
 		s += fmt.Sprintf("\tGetOne(%s *model.%s) (model.%s, error)\n", tni, tnp, tnp) +
