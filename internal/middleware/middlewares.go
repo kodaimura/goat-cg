@@ -8,6 +8,7 @@ import (
 	"goat-cg/internal/core/jwt"
 	"goat-cg/internal/model"
 	"goat-cg/internal/repository"
+	"goat-cg/internal/query"
 )
 
 
@@ -70,12 +71,13 @@ func validateProjectNameAndGetProject (c *gin.Context) (model.Project, error) {
 
 	var err error
 	var p model.Project
-	pr := repository.NewProjectRepository()
 
 	if username == ownername {
+		pr := repository.NewProjectRepository()
 		p, err = pr.GetOne(&model.Project{Username: username, ProjectName: projectName})
 	} else {
-		p, err = pr.GetMemberProject(userId, ownername, projectName)
+		pq := query.NewProjectQuery()
+		p, err = pq.GetMemberProject(userId, ownername, projectName)
 	}
 
 	if err != nil {
