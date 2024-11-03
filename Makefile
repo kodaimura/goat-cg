@@ -24,5 +24,5 @@ stop:
 in:
 	$(DOCKER_COMPOSE_DEV) exec app bash || $(DOCKER_COMPOSE_PROD) exec app bash
 
-log:
+logapp:
 	docker compose logs -f app
