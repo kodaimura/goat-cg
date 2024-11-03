@@ -1,33 +1,28 @@
-deploy:
-	go build cmd/goat-cg/main.go
-	nohup ./main &
+DOCKER_COMPOSE_DEV = docker compose
+DOCKER_COMPOSE_PROD = docker compose -f docker-compose.prod.yml
 
-up:
-	docker compose up -d
+dev:
+	$(DOCKER_COMPOSE_DEV) up -d
+
+prod:
+	$(DOCKER_COMPOSE_PROD) up -d
+
+dev-build:
+	$(DOCKER_COMPOSE_DEV) build --no-cache
+
+prod-build:
+	$(DOCKER_COMPOSE_PROD) build --no-cache
 
 down:
-	docker compose down
-
-start:
-	docker compose start
+	$(DOCKER_COMPOSE_DEV) down
+	$(DOCKER_COMPOSE_PROD) down
 
 stop:
-	docker compose stop
+	$(DOCKER_COMPOSE_DEV) stop
+	$(DOCKER_COMPOSE_PROD) stop
 
 in:
-	docker compose exec app bash
+	$(DOCKER_COMPOSE_DEV) exec app bash || $(DOCKER_COMPOSE_PROD) exec app bash
 
-indb:
-	docker compose exec db bash
-
-build:
-	docker compose build --no-cache
-
-run:
-	go run cmd/goat-cg/main.go
-
-test:
-	go test
-
-
-
+log:
+	docker compose logs -f spp
