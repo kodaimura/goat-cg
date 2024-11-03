@@ -5,7 +5,7 @@ services:
     build:
       context: .
     ports:
-      - "3000:3000"
+      - "3300:3300"
     volumes:
       - .:/usr/src/app
     working_dir: /usr/src/app

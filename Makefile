@@ -25,4 +25,4 @@ in:
 	$(DOCKER_COMPOSE_DEV) exec app bash || $(DOCKER_COMPOSE_PROD) exec app bash
 
 log:
-	docker compose logs -f spp
+	docker compose logs -f app
